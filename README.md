@@ -2,13 +2,13 @@
 
 ## Setup
 
-Install `npm` dependencies:  
-`lein deps`
+Install npm dependencies:
+`> lein deps`
 
-Run `Figwheel`:  
-`lein figwheel server-dev`
+Run Figwheel:
+`> lein figwheel server-dev`
 
-Run the node express server in a new terminal:  
-`node target/server/index-dev.js`
+Run the node express server in a new terminal:
+`> node target/server/index-dev.js`
 
 Your app should now hot-reload when you make changes to your files.
