@@ -6,7 +6,6 @@
             [figwheel.client :as fw]))
 
 (enable-console-print!)
-(log/info "starting shit up....")
 
 (def -main #(express/init)) ; http://bit.ly/1MZE1zx
 

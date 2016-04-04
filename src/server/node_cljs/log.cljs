@@ -7,8 +7,8 @@
 (defn logit [out-fn level & args]
   (apply out-fn (cons level args)))
 
-(def debug (partial logit stdout "debug"))
+(def debug (partial logit stdout "debug:"))
 
-(def info (partial logit stdout "info"))
+(def info (partial logit stdout "info:"))
 
-(def error (partial stderr "error"))
+(def error (partial stderr "error:"))
