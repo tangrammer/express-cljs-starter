@@ -3,3 +3,4 @@ target
 *.log
 notes.md
 .nrepl-port
+.lein-repl-history
