@@ -1,7 +1,14 @@
-(defproject node-cljs "0.1.0-SNAPSHOT"
+(defproject rebujito "0.1.0-SNAPSHOT"
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.8.40"]]
+                 [org.clojure/clojurescript "1.8.40"]
+                 [cljs-hash "0.0.2"]
+                 [com.andrewmcveigh/cljs-time "0.4.0"]
+                 [org.clojure/core.async "0.2.374"]
+                 [io.nervous/kvlt "0.1.1"]
+                 [com.cognitect/transit-cljs "0.8.237"]
+
+                 ]
 
   :npm {:dependencies [[source-map-support "0.4.0"]
                        [express "4.13.4"]
@@ -12,13 +19,21 @@
             [lein-figwheel "0.5.2"]
             [lein-npm "0.6.2"]]
 
-  :source-paths ["target/server" "target/classes"]
+  :source-paths ["src/server"]
 
   :clean-targets ["target"]
 
+  ;; this is for developing using CIDER
+  :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.1"]
+                                 [figwheel-sidecar "0.5.0-1"]]
+                   :source-paths ["src/server" "dev"]
+                   :plugins [[cider/cider-nrepl "0.10.1"]] }
+             :repl {:plugins [[cider/cider-nrepl "0.10.1"]] }} ; <-- Note this
+
+
   :cljsbuild {
     :builds [{:id "server-dev"
-              :source-paths ["src"]
+              :source-paths ["src/server"]
               :compiler {:main node-cljs.core
                          :output-to "target/server/index-dev.js"
                          :output-dir "target/server"

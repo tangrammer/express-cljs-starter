@@ -1,4 +1,8 @@
-(ns node-cljs.log)
+(ns node-cljs.log
+  (:require  [taoensso.timbre :as log ]))
+
+(log/set-config!  {:level :debug
+                   :ns-blacklist  ["kvlt.*"]})
 
 (def stdout js/console.log)
 

@@ -1,3 +1,5 @@
 node_modules
 target
 *.log
+notes.md
+.nrepl-port
