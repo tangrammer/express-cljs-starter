@@ -27,4 +27,4 @@
       (try
         (s/validate  query-schema (-> ctx :req :query))
         (catch js/Error e
-          (e/new-error  404 (cuerdas/format "Schema Validation Error: %s " (.-message e))))))))
+          (e/new-error  400 (cuerdas/format "Schema Validation Error: %s " (.-message e))))))))
