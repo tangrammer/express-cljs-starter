@@ -7,7 +7,9 @@
                  [org.clojure/core.async "0.2.374"]
                  [io.nervous/kvlt "0.1.1"]
                  [com.cognitect/transit-cljs "0.8.237"]
-
+                 [prismatic/schema "1.1.0"]
+                 [prismatic/plumbing "0.5.3"]
+                 [bidi "2.0.6"]
                  ]
 
   :npm {:dependencies [[source-map-support "0.4.0"]
