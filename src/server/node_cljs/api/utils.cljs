@@ -38,12 +38,16 @@
                           :params (extract-path-params req)}
                      :res res}]
             (when-let [query-schema (-> method-found :parameters :query)]
-              (log/debug "SCHEMAAAAA" (clj->js (-> ctx :req :query)))
-              (s/validate  query-schema (-> ctx :req :query))
-              )
-            (let [r ((-> method-found :response) ctx)]
-;              (log/info ">>>>>>>>>>> R type:" (clj->js r) (type r))
-              (p/send r res)))
+              (try
+                (s/validate  query-schema (-> ctx :req :query))
+                (let [r ((-> method-found :response) ctx)]
+                  (p/send r res))
+                (catch js/Error e
+                  (do (.status res 400)
+                      (.send res (.-message e)))
+                  )
+                ))
+            )
           (do (.status res 405)
               (.send res nil))))
       (do  (.status res 404)
