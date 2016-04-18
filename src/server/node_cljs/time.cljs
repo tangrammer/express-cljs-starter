@@ -4,5 +4,6 @@
 
 (tc/second(tc/now))
 
+
 (defn timestamp-in-seconds []
   (js/Math.floor (/ (.now js/Date) 1000)))
