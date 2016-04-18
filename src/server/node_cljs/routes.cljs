@@ -13,27 +13,19 @@
      [node-cljs.api.card :as card]
      [node-cljs.config :as config]
      [node-cljs.security :as security]
-     [node-cljs.api.utils :as api.utils :refer (GET POST defroute defroute* resource )]
+     [node-cljs.api.utils :as api.utils :refer (GET POST #_defroute defroute* resource )]
      [schema.core :as s :include-macros true]
      ))
 
 
 (def r (t/reader :json))
 (def w (t/writer :json))
+
 (.use app
       (fn [req res next]
         (log/debug "start" (.-method req) (.-path req))
         (next)))
 
-(.get app "/" #(.send %2 "home"))
-
-(defroute GET "/v1/customer/:customerId"
-  (fn [req res]
-    #js {:customer (-> req :params :customerId)}))
-
-(.get app "/1" api.utils/path-info)
-(.get app "/2" api.utils/path-info)
-(.get app "/3" api.utils/path-info)
 
 
 (def mock-oauth (resource {:methods {:get

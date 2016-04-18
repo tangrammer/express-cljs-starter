@@ -6,8 +6,11 @@
      [node-cljs.express :refer (app)]
      [node-cljs.log :as log]
      [node-cljs.api.protocols :as p]
-     [schema.core :as s :include-macros true]))
-
+     [node-cljs.api.interceptor :as i]
+     [node-cljs.api.error :as e]
+     [cuerdas.core :as cuerdas]
+     [schema.core :as s :include-macros true]
+     [node-cljs.api.macros :as m :include-macros true]))
 
 
 (def GET ::get)
@@ -15,43 +18,34 @@
 
 (def routes (atom []))
 
-(defn extract-query-params[req]
-  (js->clj (.-query req) :keywordize-keys true))
-
-(defn extract-path-params[req]
-  (js->clj (.-params req) :keywordize-keys true))
 
 (defn path-info [req res]
   (log/debug "path-info controller")
   (.json res #js {"path" (.-path req)}))
 
 
+(defn extract-query-params[req]
+  (js->clj (.-query req) :keywordize-keys true))
+
+(defn extract-path-params[req]
+  (js->clj (.-params req) :keywordize-keys true))
+
 (defn default-route [req res]
   (let [path (.-path req)
-        method (keyword (.toLowerCase (.-method req)))
-        r (:handler (bidi/match-route @routes path))]
-    (log/info ">>>>>>>>" (str method) path )
-    (if (some? r)
-      (let [resource-map (r)]
-        (if-let [method-found (-> resource-map :methods method)]
-          (let [ctx {:req{:query (extract-query-params req)
-                          :params (extract-path-params req)}
-                     :res res}]
-            (when-let [query-schema (-> method-found :parameters :query)]
-              (try
-                (s/validate  query-schema (-> ctx :req :query))
-                (let [r ((-> method-found :response) ctx)]
-                  (p/send r res))
-                (catch js/Error e
-                  (do (.status res 400)
-                      (.send res (.-message e)))
-                  )
-                ))
-            )
-          (do (.status res 405)
-              (.send res nil))))
-      (do  (.status res 404)
-           (.send res nil)))))
+        method (keyword (.toLowerCase (.-method req)))]
+       (log/info ">>>>>>>>" (str method) path)
+       (go
+         (try
+           (let [resource (m/<? (i/extract-resource @routes path))
+                 method-found (m/<? (i/extract-method resource method))
+                 ctx {:req{:query (extract-query-params req)
+                           :params (extract-path-params req)
+                           :cookies "TODO"}
+                      :res res}]
+             (m/<? (i/validate-schemas ctx method-found))
+             (let [r ((-> method-found :response) ctx)]
+               (p/send r res)))
+           (catch js/Error e (e/send-error-response e res))))))
 
 
 (defn defroute [a b fn-controller]

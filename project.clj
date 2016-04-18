@@ -10,6 +10,7 @@
                  [prismatic/schema "1.1.0"]
                  [prismatic/plumbing "0.5.3"]
                  [bidi "2.0.6"]
+                 [funcool/cuerdas "0.7.1"]
                  ]
 
   :npm {:dependencies [[source-map-support "0.4.0"]
