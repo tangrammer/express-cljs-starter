@@ -40,7 +40,7 @@
                                                             {:sign sign
                                                              :status status
                                                              :success success
-                                                             :body  (json body)})))}}}))
+                                                             :body  (json/read body)})))}}}))
 
 (def create-digital-card (resource {:description "Create digital card"
                                     :produces [{:media-type
