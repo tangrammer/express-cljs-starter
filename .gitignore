@@ -4,3 +4,5 @@ target
 notes.md
 .nrepl-port
 .lein-repl-history
+todo.md
+.lein-env

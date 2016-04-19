@@ -1,14 +1,7 @@
-# Express CLJS starter template
+# rebujito
+a clojure starbucks api
 
-## Setup
 
-Install npm dependencies:  
-`> lein deps`
+# Copyright and License
 
-Run Figwheel:  
-`> lein figwheel server-dev`
-
-Run the node express server in a new terminal:  
-`> node target/server/index-dev.js`
-
-Your app should now hot-reload when you make changes to your files.
+Copyright © 2016 swarmloyalty.co.za

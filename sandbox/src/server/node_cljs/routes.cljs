@@ -23,28 +23,24 @@
 
 (def mock-oauth-url (str config/host config/port "/mock/oauth"))
 
-
 (def mock-oauth (resource {:methods {:get
                                      {:parameters {:query {:sign s/Str}}
                                       :response  (fn [ctx]
                                                    {:sign (-> ctx :req :query :sign)})}}}))
 
+(def oauth-token (resource {:methods {:get {:response
+                                            (fn [ctx]
+                                              (go
+                                                (let [sign (security/sign "api-key" "api-pw")
+                                                      {:keys [status success body] :as m}  (<! (kvlt.chan/request! {:url (str mock-oauth-url "?sign=" sign)}))]
 
-
-(def oauth-token (resource
-                           {:methods {:get {:response (fn [ctx]
-                                                        (go
-                                                          (let [sign (security/sign "api-key" "api-pw")
-                                                                {:keys [status success body] :as m}  (<! (kvlt.chan/request! {:url (str mock-oauth-url "?sign=" sign)}))]
-
-                                                            {:sign sign
-                                                             :status status
-                                                             :success success
-                                                             :body  (json/read body)})))}}}))
+                                                  {:sign sign
+                                                   :status status
+                                                   :success success
+                                                   :body  (json/read body)})))}}}))
 
 (def create-digital-card (resource {:description "Create digital card"
-                                    :produces [{:media-type
-                                                #{"application/xml;q=0.8" "application/json;q=0.8"}
+                                    :produces [{:media-type #{"application/xml;q=0.8" "application/json;q=0.8"}
                                                 :charset "UTF-8"}]
                                     :methods
                                     {:post {:parameters {:query {:access_token s/Str}}
@@ -63,7 +59,7 @@
                                               )}}}))
 
 (reset! routes ["/" {"me/cards/register-digital" create-digital-card
-                               "v1/oauth/token" oauth-token
-                               "mock/oauth" mock-oauth}])
+                     "v1/oauth/token" oauth-token
+                     "mock/oauth" mock-oauth}])
 
-(.use app  default-route)
+(.use app default-route)
