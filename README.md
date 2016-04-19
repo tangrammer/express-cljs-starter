@@ -1,5 +1,19 @@
 # rebujito
-a clojure starbucks api
+A clojure starbucks api
+
+
+# development flow 
+
+
+```
+
+lein repl 
+user> (dev)
+dev> (reset)
+dev> (open-app)
+
+
+```
 
 
 # Copyright and License

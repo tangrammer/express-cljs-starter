@@ -6,7 +6,7 @@
   :source-paths ["src/main/clojure"]
   :test-paths ["src/test/clojure"]
 
-  :main rebujito.handler
+;  :main rebujito.handler
 
   :dependencies [[org.clojure/clojure "1.8.0"]
 
