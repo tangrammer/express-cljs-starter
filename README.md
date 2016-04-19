@@ -1,18 +1,14 @@
 # rebujito
-A clojure starbucks api
+A clojure starbucks api ([wiki](https://github.com/naartjie/rebujito/wiki)).
 
-
-# development flow 
+# development flow
 
 
 ```
-
-lein repl 
+lein repl
 user> (dev)
 dev> (reset)
 dev> (open-app)
-
-
 ```
 
 
