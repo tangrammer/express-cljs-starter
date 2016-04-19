@@ -1,0 +1,20 @@
+{
+  "name": "commie",
+  "dependencies": {
+    "body-parser": "1.15.0",
+    "express": "4.13.4",
+    "express-jwt": "3.3.0",
+    "morgan": "1.7.0",
+    "push": "git+ssh://git@github.com:naartjie/swarm-bucket.git#push-v1.3.0",
+    "request": "2.70.0",
+    "source-map-support": "0.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "1.9.1",
+    "ws": "1.0.1"
+  },
+  "scripts": {
+    "start": "target/index.js",
+    "dev": "nodemon target/index.js"
+  }
+}

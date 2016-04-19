@@ -1,0 +1,616 @@
+{
+   "tippingPreferences": {
+      "defaultAmount": 13,
+      "enabled": true,
+      "receivePushNotifications": true
+   },
+   "devices": [
+      {
+         "id": "80354465-386A-43FB-AE2C-93A5C576B72L",
+         "applicationId": "2",
+         "hardwareDeviceId": "80354465-386A-43FB-AE2C-93A5C576B72L",
+         "osVersion": "6.0",
+         "notificationToken": null,
+         "startScreenPreference": null,
+         "tabOrderPreference": null,
+         "springBoardSequencePreference": null,
+         "countryCode": null,
+         "languageCode": null,
+         "uaInboxUserName": null,
+         "uaDeviceId": null,
+         "pickOfTheWeekNotifications": false,
+         "pickOfTheWeekRichNotifications": false,
+         "specialOffersNotifications": false,
+         "specialOffersRichNotifications": false
+      },
+      {
+         "id": "80354465-386A-43FB-AE2C-93A5C576B72P",
+         "applicationId": "2",
+         "hardwareDeviceId": "80354465-386A-43FB-AE2C-93A5C576B72P",
+         "osVersion": "6.0",
+         "notificationToken": null,
+         "startScreenPreference": "Last Screen",
+         "tabOrderPreference": "0,9,10,11,1",
+         "springBoardSequencePreference": "17,12,3,4,2,14,15",
+         "countryCode": "US",
+         "languageCode": "en",
+         "uaInboxUserName": "qjr08tULSqyT78gmviW_Nw",
+         "uaDeviceId": null,
+         "pickOfTheWeekNotifications": false,
+         "pickOfTheWeekRichNotifications": false,
+         "specialOffersNotifications": false,
+         "specialOffersRichNotifications": false
+      }
+   ],
+   "favoriteStores": [
+      {
+         "storeId": 22665,
+         "nickname": "SODOOO"
+      },
+      {
+         "storeId": 32245,
+         "nickname": "Sunshine"
+      },
+      {
+         "storeId": 33228,
+         "nickname": "Rainy Cafe"
+      }
+   ],
+   "user": {
+      "subMarket": "FR",
+      "exId": "93A985A0-12E2-42B6-A995-AA701358BD47",
+      "userName": "sbuxapitestuser@gmail.com",
+      "firstName": "API Test",
+      "lastName": "User1",
+      "email": "sbuxapitestuser@gmail.com",
+      "partner": false
+   },
+   "socialProfile": {
+      "account": {
+         "accountImageUrl": null
+      },
+      "facebook": {
+         "facebookToken": null
+      },
+      "twitter": {
+         "twitterUserId": null,
+         "accessToken": null,
+         "accessTokenSecret": null,
+         "consumerKey": null
+      }
+   },
+   "addresses": [
+      {
+         "addressId": "65c651fb-9fde-4c58-b757-c5cec1aa6c96",
+         "type": "Shipping",
+         "firstName": "API Test",
+         "lastName": "User1",
+         "phoneNumber": "918-444-2222",
+         "addressLine1": "4545",
+         "addressLine2": null,
+         "city": "Seattle",
+         "postalCode": "98122",
+         "countrySubdivision": "Wa",
+         "country": "US",
+         "name": null
+      },
+      {
+         "addressId": "b6cdb7f9-1660-40bc-a488-85401fae4520",
+         "type": "Shipping",
+         "firstName": "API Test",
+         "lastName": "User1",
+         "phoneNumber": "918-444-2222",
+         "addressLine1": "4545",
+         "addressLine2": null,
+         "city": "Seattle",
+         "postalCode": "98122",
+         "countrySubdivision": "Wa",
+         "country": "US",
+         "name": null
+      },
+      {
+         "addressId": "b45d049b-78e0-44f4-bcb0-32d9aecd69b8",
+         "type": "Billing",
+         "firstName": "API Test",
+         "lastName": "User1",
+         "phoneNumber": "918-444-2222",
+         "addressLine1": "4454",
+         "addressLine2": null,
+         "city": "Seattle",
+         "postalCode": "98122",
+         "countrySubdivision": "Wa",
+         "country": "US",
+         "name": null
+      },
+      {
+         "addressId": "706F596A-A147-4EBA-9CEA-2CFC0A2A31D8",
+         "type": "Registration",
+         "firstName": "API Test",
+         "lastName": "User1",
+         "phoneNumber": null,
+         "addressLine1": "Your Street Address",
+         "addressLine2": null,
+         "city": "Seattle",
+         "postalCode": "98118",
+         "countrySubdivision": "WA",
+         "country": "US",
+         "name": null
+      }
+   ],
+   "starbucksCards": [
+      {
+         "cardId": "856F75FA",
+         "cardNumber": "7777005331886756",
+         "nickname": "My Card (6756)",
+         "type": "Standard",
+         "balanceCurrencyCode": "USD",
+         "submarketCode": "FR",
+         "balance": 323.76,
+         "balanceDate": "2013-12-16T12:42:37.0000000Z",
+         "imageUrls": [
+            {
+               "imageType": "ImageIcon",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_88.png"
+            },
+            {
+               "imageType": "ImageSmall",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_115.png"
+            },
+            {
+               "imageType": "ImageMedium",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_165.png"
+            },
+            {
+               "imageType": "ImageLarge",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_261.png"
+            },
+            {
+               "imageType": "iosThumb",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_thumb_82.png"
+            },
+            {
+               "imageType": "iosThumbHighRes",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_thumb_82@2x.png"
+            },
+            {
+               "imageType": "iosLarge",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270.png"
+            },
+            {
+               "imageType": "iosLargeHighRes",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270@2x.png"
+            }
+         ],
+         "primary": false,
+         "partner": false,
+         "autoReloadProfile": null,
+         "digital": false,
+         "owner": true,
+         "actions": [
+            "AutoReload",
+            "Transfer",
+            "Reload"
+         ]
+      },
+      {
+         "cardId": "85607AFB93D21F",
+         "cardNumber": "7777064158669559",
+         "nickname": "My Card (9559)",
+         "type": "Standard",
+         "balanceCurrencyCode": "USD",
+         "submarketCode": "FR",
+         "balance": 178.83,
+         "balanceDate": "2014-01-16T22:07:28.0000000Z",
+         "imageUrls": [
+            {
+               "imageType": "ImageIcon",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_88.png"
+            },
+            {
+               "imageType": "ImageSmall",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_115.png"
+            },
+            {
+               "imageType": "ImageMedium",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_165.png"
+            },
+            {
+               "imageType": "ImageLarge",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_261.png"
+            },
+            {
+               "imageType": "iosThumb",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_thumb_82.png"
+            },
+            {
+               "imageType": "iosThumbHighRes",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_thumb_82@2x.png"
+            },
+            {
+               "imageType": "iosLarge",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270.png"
+            },
+            {
+               "imageType": "iosLargeHighRes",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270@2x.png"
+            }
+         ],
+         "primary": true,
+         "partner": false,
+         "autoReloadProfile": null,
+         "digital": false,
+         "owner": true,
+         "actions": [
+            "AutoReload",
+            "Transfer",
+            "Reload"
+         ]
+      },
+      {
+         "cardId": "85607AFB93D21E",
+         "cardNumber": "7777064158671182",
+         "nickname": "My Card (1182)",
+         "type": "Standard",
+         "balanceCurrencyCode": "USD",
+         "submarketCode": "FR",
+         "balance": 11,
+         "balanceDate": "2014-01-21T05:06:40.0000000Z",
+         "imageUrls": [
+            {
+               "imageType": "ImageIcon",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_88.png"
+            },
+            {
+               "imageType": "ImageSmall",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_115.png"
+            },
+            {
+               "imageType": "ImageMedium",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_165.png"
+            },
+            {
+               "imageType": "ImageLarge",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_261.png"
+            },
+            {
+               "imageType": "iosThumb",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_thumb_82.png"
+            },
+            {
+               "imageType": "iosThumbHighRes",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_thumb_82@2x.png"
+            },
+            {
+               "imageType": "iosLarge",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270.png"
+            },
+            {
+               "imageType": "iosLargeHighRes",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270@2x.png"
+            }
+         ],
+         "primary": false,
+         "partner": false,
+         "autoReloadProfile": null,
+         "digital": false,
+         "owner": true,
+         "actions": [
+            "AutoReload",
+            "Transfer",
+            "Reload"
+         ]
+      },
+      {
+         "cardId": "85607AFB93D211",
+         "cardNumber": "7777064158689581",
+         "nickname": "tryMe",
+         "type": "Standard",
+         "balanceCurrencyCode": "USD",
+         "submarketCode": "FR",
+         "balance": 270.81,
+         "balanceDate": "2014-01-16T22:03:35.0000000Z",
+         "imageUrls": [
+            {
+               "imageType": "ImageIcon",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_88.png"
+            },
+            {
+               "imageType": "ImageSmall",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_115.png"
+            },
+            {
+               "imageType": "ImageMedium",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_165.png"
+            },
+            {
+               "imageType": "ImageLarge",
+               "uri": "http://globalassets.starbucks.com/images/cardimages/card_Coffee_Aroma_Card_FY11_261.png"
+            },
+            {
+               "imageType": "iosThumb",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_thumb_82.png"
+            },
+            {
+               "imageType": "iosThumbHighRes",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_thumb_82@2x.png"
+            },
+            {
+               "imageType": "iosLarge",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270.png"
+            },
+            {
+               "imageType": "iosLargeHighRes",
+               "uri": "https://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270@2x.png"
+            }
+         ],
+         "primary": false,
+         "partner": false,
+         "autoReloadProfile": null,
+         "digital": false,
+         "owner": true,
+         "actions": [
+            "AutoReload",
+            "Transfer",
+            "Reload"
+         ]
+      }
+   ],
+   "paymentMethods": [
+      {
+         "paymentMethodId": "866174F89ED5",
+         "billingAddressId": "b45d049b-78e0-44f4-bcb0-32d9aecd69b8",
+         "paymentType": "VISA",
+         "accountNumberLastFour": "1111",
+         "expirationMonth": 5,
+         "expirationYear": 2017,
+         "fullName": "API Test User1",
+         "isDefault": true,
+         "nickname": "SODOOO1"
+      }
+   ],
+   "rewardsSummary": {
+      "reevaluationDate": "2014-11-09T23:59:59.0000000Z",
+      "myTiers": [
+         {
+            "tierNumber": 1,
+            "tierLevelName": "Welcome",
+            "tierAnniversaryDate": null
+         },
+         {
+            "tierNumber": 2,
+            "tierLevelName": "Green",
+            "tierAnniversaryDate": "2013-11-08T00:00:00.0000000Z"
+         },
+         {
+            "tierNumber": 3,
+            "tierLevelName": "Gold",
+            "tierAnniversaryDate": "2013-11-11T00:00:00.0000000Z"
+         }
+      ],
+      "currentLevel": "Gold",
+      "nextLevel": null,
+      "pointsTotal": 101,
+      "pointsNeededForNextLevel": -1,
+      "pointsNeededForNextFreeReward": 7,
+      "pointsNeededForReevaluation": 0,
+      "coupons": [
+         {
+            "status": "Available",
+            "posCouponCode": "354",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "354",
+            "expirationDate": "2023-11-09T08:54:55.0000000Z",
+            "issueDate": "2013-11-11T00:00:00.0000000Z",
+            "name": "Code 354-50% OFF ESPRESSO",
+            "startDate": "2013-11-11T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "365",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "365",
+            "expirationDate": "2023-11-10T14:43:49.0000000Z",
+            "issueDate": "2013-11-12T00:00:00.0000000Z",
+            "name": "Code 365-BOGO TEA",
+            "startDate": "2013-11-12T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "367",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "367",
+            "expirationDate": "2023-11-10T14:44:03.0000000Z",
+            "issueDate": "2013-11-12T00:00:00.0000000Z",
+            "name": "Code 367-FREE TEA",
+            "startDate": "2013-11-12T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "398",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "398",
+            "expirationDate": "2023-11-10T09:24:49.0000000Z",
+            "issueDate": "2013-11-12T00:00:00.0000000Z",
+            "name": "Code 398-FREE OATMEAL",
+            "startDate": "2013-11-12T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "560",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "560",
+            "expirationDate": "2023-11-09T09:50:42.0000000Z",
+            "issueDate": "2013-11-11T00:00:00.0000000Z",
+            "name": "Code 560-FREE TALL DRINK",
+            "startDate": "2013-11-11T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "560",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "560",
+            "expirationDate": "2023-11-10T14:56:36.0000000Z",
+            "issueDate": "2013-11-12T00:00:00.0000000Z",
+            "name": "Code 560-FREE TALL DRINK",
+            "startDate": "2013-11-12T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "569",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "569",
+            "expirationDate": "2023-11-10T09:23:45.0000000Z",
+            "issueDate": "2013-11-12T00:00:00.0000000Z",
+            "name": "Code 569-$1 OFF ESPRESSO/TEA",
+            "startDate": "2013-11-12T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "647",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "647",
+            "expirationDate": "2023-11-09T09:51:27.0000000Z",
+            "issueDate": "2013-11-11T00:00:00.0000000Z",
+            "name": "Code 647-$10 OFF $30 PURCHASE",
+            "startDate": "2013-11-11T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "660",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "660",
+            "expirationDate": "2023-11-09T09:50:19.0000000Z",
+            "issueDate": "2013-11-11T00:00:00.0000000Z",
+            "name": "Code 660-$5 OFF PRODUCT",
+            "startDate": "2013-11-11T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "715",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "715",
+            "expirationDate": "2023-11-09T08:55:10.0000000Z",
+            "issueDate": "2013-11-11T00:00:00.0000000Z",
+            "name": "Code 715-FREE FOOD ITEM",
+            "startDate": "2013-11-11T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "715",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "715",
+            "expirationDate": "2023-11-10T14:56:42.0000000Z",
+            "issueDate": "2013-11-12T00:00:00.0000000Z",
+            "name": "Code 715-FREE FOOD ITEM",
+            "startDate": "2013-11-12T00:00:00.0000000Z"
+         },
+         {
+            "status": "Available",
+            "posCouponCode": "727",
+            "deliveryMethod": "Email",
+            "source": null,
+            "allowedRedemptionCount": 1,
+            "lastRedemptionDate": "1904-01-01T00:00:00.0000000Z",
+            "redemptionCount": 0,
+            "voucherType": "MSRPromotionalCoupon",
+            "couponCode": "727",
+            "expirationDate": "2023-11-10T15:16:26.0000000Z",
+            "issueDate": "2013-11-12T00:00:00.0000000Z",
+            "name": "Code 727-MSR FREE DRINK",
+            "startDate": "2013-11-12T00:00:00.0000000Z"
+         }
+      ],
+      "cardHolderSinceDate": "2013-11-06T00:00:00.0000000Z",
+      "pointsEarnedTowardNextFreeReward": 5,
+      "dateRetrieved": "2014-02-05T23:35:30.5102177Z",
+      "rewardsProgram": {
+         "programName": "My Starbucks Rewards",
+         "numberOfTiers": 3,
+         "countryCodes": [
+            "US",
+            "CA"
+         ],
+         "tierInfos": [
+            {
+               "tierNumber": 1,
+               "tierLevelName": "Welcome",
+               "tierPointsEntryThreshold": 0,
+               "tierPointsExitThreshold": 5,
+               "tierPointsReevaluationThreshold": null,
+               "tierPointsFreeItemThreshold": null
+            },
+            {
+               "tierNumber": 2,
+               "tierLevelName": "Green",
+               "tierPointsEntryThreshold": 5,
+               "tierPointsExitThreshold": 30,
+               "tierPointsReevaluationThreshold": 5,
+               "tierPointsFreeItemThreshold": null
+            },
+            {
+               "tierNumber": 3,
+               "tierLevelName": "Gold",
+               "tierPointsEntryThreshold": 30,
+               "tierPointsExitThreshold": null,
+               "tierPointierPointsReevaluationThreshold": 30,
+               "tierPointsFreeItemThreshold": 12
+            }
+         ]
+      }
+   }
+}
