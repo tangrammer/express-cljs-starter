@@ -6,18 +6,18 @@
     [ co.za.swarmloyalty.rebujito.resources :as resources]
     ))
 
-(defn api [session-store signer]
+(defn api [signer]
   ["/phonebook"
    [["" (-> (resources/new-index-resource)
             (assoc :id ::index))]
     [["/" :entry] (-> (resources/new-entry-resource)
                       (assoc :id ::entry))]]])
 
-(s/defrecord ApiComponent [session-store signer]
+(s/defrecord ApiComponent [signer]
   component/Lifecycle
   (start [component]
     (assoc component
-           :routes (api session-store signer)))
+           :routes (api signer)))
   (stop [component]))
 
 (defn new-api-component []

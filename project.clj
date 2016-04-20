@@ -27,7 +27,6 @@
 
                  ;; security libs
                  [buddy "0.10.0" :exclusions [com.stuartsierra/component metosin/ring-swagger-ui org.clojure/clojure metosin/ring-swagger buddy bidi prismatic/schema]]
-                 [ch.deepimpact/bolt "0.6.0-SNAPSHOT" :exclusions [buddy prismatic/schema prismatic/plumbing cheshire yada clj-time]]
                  [crypto-random "1.2.0" :exclusions [commons-codec]]
 
                  ;; data / data manipulation

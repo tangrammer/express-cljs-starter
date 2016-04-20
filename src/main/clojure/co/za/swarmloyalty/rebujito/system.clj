@@ -3,8 +3,6 @@
   "Components and their dependency reationships"
   (:refer-clojure :exclude (read))
   (:require
-    [bolt.session.cookie-session-store :refer [new-cookie-session-store]]
-    [bolt.token-store.atom-backed-store :refer [new-atom-backed-token-store]]
     [co.za.swarmloyalty.rebujito.api :as api]
     [co.za.swarmloyalty.rebujito.handler :as wh]
     [co.za.swarmloyalty.rebujito.auth :as auth]
@@ -60,14 +58,7 @@
   (apply system-map
          (apply concat
                 (->
-                 {:token-store (new-atom-backed-token-store :tokens (atom {"ADMIN_TEST"
-                                                                           {:bolt/expiry   (Date.
-                                                                                            (long (+ (.getTime (Date.))
-                                                                                                     (* 60 60 1000 1000 1000))))
-                                                                            :bolt/token-id "ADMIN_TEST"
-                                                                            :username      "admin@admin.com"
-                                                                            :password      "pw"}}))
-                  :session-store (new-cookie-session-store :cookie-id (str (load-env-value :rebujito-cookie-name true)))
+                 {
                   :docsite-router (new-router)
 
                   :signer (auth/signer config)
@@ -85,11 +76,11 @@
 
 (defn new-dependency-map
   []
-  {:session-store            {:token-store :token-store}
-   :webserver                {:request-handler :docsite-router}
-   :resources [:session-store  :signer]
-   :yada                     [:resources :signer]
-   :docsite-router           [:swagger-ui :yada :jquery]})
+  {
+   :webserver {:request-handler :docsite-router}
+   :resources [:signer]
+   :yada [:resources :signer]
+   :docsite-router [:swagger-ui :yada :jquery]})
 
 (defn new-production-system
   "Create the production system"
