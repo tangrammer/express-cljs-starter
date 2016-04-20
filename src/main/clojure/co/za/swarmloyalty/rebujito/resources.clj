@@ -13,7 +13,7 @@
 
 (def access-control
   {:access-control
-   {:realm "phonebook"
+   {:realm "swarmloyalty"
     :authentication-schemes
     [{:scheme "Basic"
       :verify {["tom" "watson"] {:email "tom@ibm.com"
@@ -91,7 +91,19 @@
              :consumes [{:media-type #{"application/json" "application/xml"}
                          :charset "UTF-8"}]
              :response (fn [ctx]
-                         mocks/card
+                         (condp = (get-in ctx [:parameters :query :access_token])
+                           "400" (-> ctx :response (assoc :status 400)
+                                     (assoc :body ["No registration address on file. Registration address must already exist for user."])
+                                     )
+                           "500" (-> ctx :response (assoc :status 500)
+                                     (assoc :body ["Internal Server Error :( "]))
+                            (-> ctx :response (assoc :status 201)
+                                   (assoc :body mocks/card))
+                           )
+
+
+
+
                          )}}}
 
     (merge access-control))))
