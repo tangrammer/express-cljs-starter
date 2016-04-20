@@ -1,7 +1,7 @@
-(ns co.za.swarmloyalty.rebujito.auth
+(ns rebujito.auth
   (:require [buddy.core.codecs :as codecs]
-            [co.za.swarmloyalty.rebujito.auth.auth-token :as token]
-            [co.za.swarmloyalty.rebujito.protocols :as protocols]
+            [rebujito.auth.auth-token :as token]
+            [rebujito.protocols :as protocols]
             [com.stuartsierra.component :refer [system-map system-using using] :as component]
 
             [environ.core :refer [env]]

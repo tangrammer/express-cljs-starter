@@ -3,7 +3,7 @@
   (:require
    [bidi.bidi :refer [RouteProvider]]
    [bidi.ring :refer (make-handler)]
-   [co.za.swarmloyalty.rebujito.system :refer (config new-system-map new-dependency-map)]
+   [rebujito.system :refer (config new-system-map new-dependency-map)]
    [clojure.java.io :as io]
    [com.stuartsierra.component :as component :refer (using)]
    [modular.aleph :refer (new-webserver)]

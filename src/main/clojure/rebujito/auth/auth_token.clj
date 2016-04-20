@@ -1,4 +1,4 @@
-(ns co.za.swarmloyalty.rebujito.auth.auth-token
+(ns rebujito.auth.auth-token
   "Namespace for handling authentication token creation and validation."
   (:require [buddy.sign.jws :as jws])
   (:import (java.time ZonedDateTime)))

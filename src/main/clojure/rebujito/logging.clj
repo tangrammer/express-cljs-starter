@@ -1,4 +1,4 @@
-(ns co.za.swarmloyalty.rebujito.logging
+(ns rebujito.logging
   (:require [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.core :as appenders]
             [clojure.string :as str]))

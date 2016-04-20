@@ -6,7 +6,7 @@
   :source-paths ["src/main/clojure"]
   :test-paths ["src/test/clojure"]
 
-;  :main rebujito.handler
+;  :main rebujito.rebujito
 
   :dependencies [[org.clojure/clojure "1.8.0"]
 
@@ -66,7 +66,7 @@
             [lein-environ "1.0.1"]]
 
 
-  :profiles {:uberjar {:main       rebujito.handler
+  :profiles {:uberjar {:main       rebujito.rebujito
                        :aot        :all}
              :dev     {:dependencies   [[org.clojure/tools.nrepl "0.2.11"]
                                         [org.clojure/tools.namespace "0.2.11"]]

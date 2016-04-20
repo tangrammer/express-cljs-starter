@@ -1,6 +1,6 @@
-(ns co.za.swarmloyalty.rebujito.access-token
+(ns rebujito.access-token
   "Small ns for access token. Feel free to move this somewhere else if wanted."
-  (:require [co.za.swarmloyalty.rebujito.auth.auth-token :as token])
+  (:require [rebujito.auth.auth-token :as token])
   (:import (java.util UUID)))
 
 

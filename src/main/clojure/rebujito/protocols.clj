@@ -1,4 +1,4 @@
-(ns co.za.swarmloyalty.rebujito.protocols)
+(ns rebujito.protocols)
 
 (defprotocol Auth
   (sign [this data])

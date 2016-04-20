@@ -1,12 +1,12 @@
 ;;most of the utility fns in this ns are taken from juxt/modular
-(ns co.za.swarmloyalty.rebujito.system
+(ns rebujito.system
   "Components and their dependency reationships"
   (:refer-clojure :exclude (read))
   (:require
-    [co.za.swarmloyalty.rebujito.api :as api]
-    [co.za.swarmloyalty.rebujito.handler :as wh]
-    [co.za.swarmloyalty.rebujito.auth :as auth]
-    [co.za.swarmloyalty.rebujito.logging :as log-levels]
+    [rebujito.api :as api]
+    [rebujito.handler :as wh]
+    [rebujito.auth :as auth]
+    [rebujito.logging :as log-levels]
     [clojure.edn :as edn]
     [com.stuartsierra.component :refer [system-map system-using using] :as component]
     [environ.core :refer [env]]

@@ -1,24 +1,22 @@
 (ns rebujito.handler
-  "Generated on lein uberjar"
-  (:require [environ.core :refer [env]]
-            [co.za.swarmloyalty.rebujito.system :refer (new-production-system)]
-            [clojure.string :as str]
-            [com.stuartsierra.component :refer (start)]
-            [modular.ring :refer (request-handler)]
-            [environ.core :refer [env]]
-            [taoensso.timbre :as log ])
-  (:gen-class))
+  (:require [bidi.bidi :as bidi]
+            [com.stuartsierra.component :as component]
+            [yada.yada :as yada]))
 
+(defrecord Handler [resources signer]
+  component/Lifecycle
+  (start [this]
+    this)
+  (stop [this] this)
 
-(defn -main []
-  ;; We eval so that we don't AOT anything beyond this class
-  (log/info "Starting Rebujito!")
-  (log/info "Env:" (with-out-str
-                 (clojure.pprint/pprint
-                   (select-keys env [:rebujito-env-type]))))
-  (let [system (-> (new-production-system)
-                   start)]
-    (log/info "System starting")
-    (log/info "This is your webserver port: " (-> system :webserver :port))
-    (log/info ":) > Congrats, your system is ready to use!")
-    system))
+  bidi/RouteProvider
+  (routes [_]
+    ["/api/v1" (yada/swaggered
+               (:routes resources)
+               {:info     {:title       "Rebujito REST API"
+                           :version     "1.0"
+                           :description "Having good times with clojure and rest"}
+                :basePath "/api/v1"})]))
+
+(defn handler []
+  (map->Handler {}))

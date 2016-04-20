@@ -1,8 +1,8 @@
-(ns co.za.swarmloyalty.rebujito.resources
+(ns rebujito.resources
   (:require
    [clojure.tools.logging :refer :all]
    [clojure.java.io :as io]
-   [co.za.swarmloyalty.rebujito.mocks :as mocks]
+   [rebujito.mocks :as mocks]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.methods :as m]
@@ -83,8 +83,7 @@
   (resource
    (->
     {:description "fake"
-     :produces [{:media-type
-                 #{"application/json" "application/xml"}
+     :produces [{:media-type #{"application/json" "application/xml"}
                  :charset "UTF-8"}]
      :methods
      {:get {:parameters {:path {:id Long}}

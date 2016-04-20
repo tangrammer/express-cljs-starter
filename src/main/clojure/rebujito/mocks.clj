@@ -1,4 +1,4 @@
-(ns co.za.swarmloyalty.rebujito.mocks
+(ns rebujito.mocks
   (:require [cheshire.core :as json]))
 
 (def card (json/parse-string "{
