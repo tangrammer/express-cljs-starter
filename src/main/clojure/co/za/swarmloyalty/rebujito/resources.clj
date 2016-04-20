@@ -79,6 +79,22 @@
     :allow-headers ["Api-Key"]
     }})
 
+(defn fake []
+  (resource
+   (->
+    {:description "fake"
+     :produces [{:media-type
+                 #{"application/json" "application/xml"}
+                 :charset "UTF-8"}]
+     :methods
+     {:get {:parameters {:path {:id Long}}
+             :consumes [{:media-type #{"application/json" "application/xml"}
+                         :charset "UTF-8"}]
+             :response (fn [ctx]
+                         [:id (get-in ctx [:parameters :path :id])])}}}
+
+    (merge access-control))))
+
 (defn register-digital-card []
   (resource
    (->

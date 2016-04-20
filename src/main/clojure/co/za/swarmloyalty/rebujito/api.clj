@@ -7,11 +7,13 @@
     ))
 
 (defn api [signer]
-  ["/me/cards/register-digital"
-   [["" (-> (resources/register-digital-card)
-            (assoc :id ::index))]
-    [["/" :entry] (-> (resources/new-entry-resource)
-                      (assoc :id ::entry))]]])
+  ["/me" [[[ "/" :id "/fake"] (-> (resources/fake)
+                                  (assoc :id ::fake))]
+          ["/cards/register-digital"
+           [["" (-> (resources/register-digital-card)
+                    (assoc :id ::index))]
+            [["/" :entry] (-> (resources/new-entry-resource)
+                              (assoc :id ::entry))]]]]])
 
 (s/defrecord ApiComponent [signer]
   component/Lifecycle
