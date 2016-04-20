@@ -2,6 +2,8 @@
   (:require
    [clojure.tools.logging :refer :all]
    [clojure.java.io :as io]
+   [co.za.swarmloyalty.rebujito.mocks :as mocks]
+   [cheshire.core :as json]
    [schema.core :as s]
    [yada.methods :as m]
    [yada.protocols :as p]
@@ -77,29 +79,20 @@
     :allow-headers ["Api-Key"]
     }})
 
-(defn new-index-resource []
+(defn register-digital-card []
   (resource
    (->
-    {:description "Phonebook entries"
+    {:description "register-digital-card"
      :produces [{:media-type
-                 #{"text/html" "application/edn;q=0.9" "application/json;q=0.8"}
+                 #{"application/json" "application/xml"}
                  :charset "UTF-8"}]
      :methods
-     {:get {:parameters {:query {(s/optional-key :q) String}}
-            :swagger/tags ["default" "getters"]
-            :response (fn [ctx]
-                        (let [q (get-in ctx [:parameters :query :q])
-                              entries [:one :two]]
-                          (case (yada/content-type ctx)
-                            "text/html" "example response"
-                            entries)))}
-
-      :post {:parameters {:form {:surname String :firstname String :phone String}}
-             :consumes [{:media-type #{"application/x-www-form-urlencoded"}
+     {:post {:parameters {:query {:access_token String}}
+             :consumes [{:media-type #{"application/json" "application/xml"}
                          :charset "UTF-8"}]
              :response (fn [ctx]
-                         (let [id (rand-int 100)]
-                           (java.net.URI. (:uri (yada/uri-for ctx :phonebook.api/entry {:route-params {:entry id}})))))}}}
+                         mocks/card
+                         )}}}
 
     (merge access-control))))
 

@@ -7,8 +7,8 @@
     ))
 
 (defn api [signer]
-  ["/phonebook"
-   [["" (-> (resources/new-index-resource)
+  ["/me/cards/register-digital"
+   [["" (-> (resources/register-digital-card)
             (assoc :id ::index))]
     [["/" :entry] (-> (resources/new-entry-resource)
                       (assoc :id ::entry))]]])

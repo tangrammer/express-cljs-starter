@@ -34,8 +34,6 @@
    :auth        {:secret-key "lp0fTc2JMtx8"}
    :yada        {:port (load-env-value :rebujito-yada-port true)}})
 
-
-
 (defn swagger-ui-components [system]
   (assoc system
     :swagger-ui
