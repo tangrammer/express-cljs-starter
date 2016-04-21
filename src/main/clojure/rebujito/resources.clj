@@ -92,7 +92,9 @@
              :consumes [{:media-type #{"application/json" "application/xml"}
                          :charset "UTF-8"}]
              :response (fn [ctx]
-                         [:id (get-in ctx [:parameters :path :id])])}}}
+                         {:id (get-in ctx [:parameters :path :id])
+                          :message-for-mom "hi mom"
+                          :camelCase :sux})}}}
 
     (merge access-control))))
 
