@@ -5,20 +5,18 @@
     [schema.core :as s]
     [rebujito.resources :as resources]))
 
-(defn api [signer]
+(defn api [security]
   ["/me" [[[ "/" :id "/fake"] (-> (resources/fake)
                                   (assoc :id ::fake))]
           ["/cards/register-digital"
            [["" (-> (resources/register-digital-card)
-                    (assoc :id ::index))]
-            [["/" :entry] (-> (resources/new-entry-resource)
-                              (assoc :id ::entry))]]]]])
+                    (assoc :id ::index))]]]]])
 
-(s/defrecord ApiComponent [signer]
+(s/defrecord ApiComponent [security]
   component/Lifecycle
   (start [component]
     (assoc component
-           :routes (api signer)))
+           :routes (api security)))
   (stop [component]))
 
 (defn new-api-component []

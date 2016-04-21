@@ -3,7 +3,7 @@
             [com.stuartsierra.component :as component]
             [yada.yada :as yada]))
 
-(defrecord Handler [resources signer]
+(defrecord Handler [api]
   component/Lifecycle
   (start [this]
     this)
@@ -12,10 +12,11 @@
   bidi/RouteProvider
   (routes [_]
     ["/api/v1" (yada/swaggered
-               (:routes resources)
+               (:routes api)
                {:info     {:title       "Rebujito REST API"
                            :version     "1.0"
                            :description "Having good times with clojure and rest"}
+
                 :basePath "/api/v1"})]))
 
 (defn handler []

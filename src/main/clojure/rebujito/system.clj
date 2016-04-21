@@ -5,7 +5,7 @@
   (:require
     [rebujito.api :as api]
     [rebujito.handler :as wh]
-    [rebujito.auth :as auth]
+    [rebujito.security :as security]
     [rebujito.logging :as log-levels]
     [clojure.edn :as edn]
     [com.stuartsierra.component :refer [system-map system-using using] :as component]
@@ -59,25 +59,27 @@
                  {
                   :docsite-router (new-router)
 
-                  :signer (auth/signer config)
+                  :security (security/new-security config)
 
-
-                  :resources (api/new-api-component )
+                  :api (api/new-api-component )
 
                   :yada (wh/handler)
+
                   :webserver (webserver config)
+
                   :jquery (new-web-resources
                            :key :jquery
                            :uri-context "/jquery"
                            :resource-prefix "META-INF/resources/webjars/jquery/2.1.3")}
+
                  (swagger-ui-components)))))
 
 (defn new-dependency-map
   []
   {
    :webserver {:request-handler :docsite-router}
-   :resources [:signer]
-   :yada [:resources :signer]
+   :api [:security]
+   :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 
 (defn new-production-system

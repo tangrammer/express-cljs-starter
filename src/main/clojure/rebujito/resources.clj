@@ -83,6 +83,8 @@
   (resource
    (->
     {:description "fake"
+     :swagger/tags ["fake-calls"]
+
      :produces [{:media-type #{"application/json" "application/xml"}
                  :charset "UTF-8"}]
      :methods
@@ -101,10 +103,12 @@
      :produces [{:media-type
                  #{"application/json" "application/xml"}
                  :charset "UTF-8"}]
+     :swagger/tags ["digital-card"]
      :methods
      {:post {:parameters {:query {:access_token String}}
              :consumes [{:media-type #{"application/json" "application/xml"}
                          :charset "UTF-8"}]
+
              :response (fn [ctx]
                          (condp = (get-in ctx [:parameters :query :access_token])
                            "400" (-> ctx :response (assoc :status 400)
@@ -120,64 +124,5 @@
 
 
                          )}}}
-
-    (merge access-control))))
-
-(defn new-entry-resource []
-  (resource
-   (->
-    {:description "Phonebook entry"
-     :parameters {:path {:entry Long}}
-     :produces [{:media-type #{"text/html"
-                               "application/edn;q=0.9"
-                               "application/json;q=0.8"}
-                 :charset "UTF-8"}]
-
-     :methods
-     {:get
-      {:swagger/tags ["default" "getters"]
-       :response
-       (fn [ctx]
-
-         (let [id (get-in ctx [:parameters :path :entry])
-               {:keys [firstname surname phone] :as entry} {:firstname "example"
-                                                            :surname "example"
-                                                            :phone "example"}]
-           (when entry
-             (case (yada/content-type ctx)
-               "text/html"
-               "returning html"
-               entry))))}
-
-      :put
-      {:parameters
-       {:form {:surname String
-               :firstname String
-               :phone String}}
-
-       :consumes
-       [{:media-type #{"multipart/form-data"
-                       "application/x-www-form-urlencoded"}}]
-
-       :response
-       (fn [ctx]
-         (let [entry (get-in ctx [:parameters :path :entry])
-               form (get-in ctx [:parameters :form])]
-           (assert entry)
-           (assert form)
-           "db/updating entity"))}
-
-      :delete
-      {:produces "text/plain"
-       :response
-       (fn [ctx]
-         (let [id (get-in ctx [:parameters :path :entry])]
-           "db/removing entity"
-           (let [msg (format "Entry %s has been removed" id)]
-             (case (get-in ctx [:response :produces :media-type :name])
-               "text/plain" (str msg "\n")
-               "text/html" "more html"
-               ;; We need to support JSON for the Swagger UI
-               {:message msg}))))}}}
 
     (merge access-control))))

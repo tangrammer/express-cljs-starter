@@ -14,8 +14,8 @@
   ;; We eval so that we don't AOT anything beyond this class
   (log/info "Starting Rebujito!")
   (log/info "Env:" (with-out-str
-                 (clojure.pprint/pprint
-                   (select-keys env [:rebujito-env-type]))))
+                     (clojure.pprint/pprint
+                      (select-keys env [:rebujito-env-type]))))
   (let [system (-> (new-production-system)
                    start)]
     (log/info "System starting")

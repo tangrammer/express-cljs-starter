@@ -7,12 +7,7 @@
    [clojure.java.io :as io]
    [com.stuartsierra.component :as component :refer (using)]
    [modular.aleph :refer (new-webserver)]
-   [modular.bidi :refer (new-router new-web-resources new-redirect)])
-
-
-
-
-  )
+   [modular.bidi :refer (new-router new-web-resources new-redirect)]))
 
 
 (def mod-defs
