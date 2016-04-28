@@ -1,20 +1,16 @@
-;;most of the utility fns in this ns are taken from juxt/modular
 (ns rebujito.system
   "Components and their dependency reationships"
   (:refer-clojure :exclude (read))
   (:require
-    [rebujito.api :as api]
-    [rebujito.handler :as wh]
-    [rebujito.security :as security]
-    [rebujito.logging :as log-levels]
-    [clojure.edn :as edn]
     [com.stuartsierra.component :refer [system-map system-using using] :as component]
-
     [modular.aleph :refer [new-webserver]]
     [modular.bidi :refer [new-router new-web-resources new-redirect]]
-    [taoensso.timbre :as log]
+    [rebujito.api :as api]
     [rebujito.config :refer [config]]
-    )
+    [rebujito.handler :as wh]
+    [rebujito.logging :as log-levels]
+    [rebujito.security :as security]
+    [taoensso.timbre :as log])
   (:import [java.util Date]))
 
 (defn swagger-ui-components [system]
@@ -24,8 +20,6 @@
       :key :swagger-ui
       :uri-context "/swagger-ui"
       :resource-prefix "META-INF/resources/webjars/swagger-ui/2.1.4")))
-
-
 
 (defn webserver [config]
   (->
@@ -41,7 +35,9 @@
 
                   :security (security/new-security config)
 
-                  :api (api/new-api-component )
+                  :store (store/new-store config)
+
+                  :api (api/new-api-component)
 
                   :yada (wh/handler)
 
@@ -50,7 +46,7 @@
                   :jquery (new-web-resources
                            :key :jquery
                            :uri-context "/jquery"
-                           :resource-prefix "META-INF/resources/webjars/jquery/2.1.3")}
+                           :resource-prefix "META-INF/resources/webjars/jquery/2.1.4")}
 
                  (swagger-ui-components)))))
 
@@ -58,7 +54,7 @@
   []
   {
    :webserver {:request-handler :docsite-router}
-   :api [:security]
+   :api [:security :store]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

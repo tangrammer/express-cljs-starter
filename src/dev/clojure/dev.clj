@@ -18,11 +18,12 @@
     [schema.core :as s]
     [taoensso.timbre :as log :refer (trace debug info warn error)]
     [rebujito.config :refer [config]]
+    env
     ))
 
 ;; reloaded fns
 
-(def dev-system-options (atom #{}))
+
 (defonce
   ^{:docstring "A Var containing an object representing the application under development."}
   system
@@ -45,9 +46,10 @@
 (defn init
   "Creates and initializes the system under development in the Var
   #'system."
-  []
-;  (log/set-config! timbre-info-config)
-  (set-system! (new-dev-system @dev-system-options)))
+  ([]
+   (init env/env))
+  ([env]
+   (set-system! (new-dev-system env))))
 
 (defn start
   "Starts the system running, updates the Var #'system."
@@ -87,3 +89,6 @@
    (browse-url (format "http://%s/swagger-ui/index.html?url=/api/v1/swagger.json"
                        (condp = env
                          :dev (str "localhost:" (-> (config env) :yada :port)))))))
+
+(defn set-env! [& env]
+  (alter-var-root #'env/env (constantly (set env))))

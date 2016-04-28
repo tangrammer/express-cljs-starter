@@ -1,20 +1,17 @@
 (ns dev-system
   "Dev Components and their dependency reationships"
   (:require
-   [bidi.bidi :refer [RouteProvider]]
-   [bidi.ring :refer (make-handler)]
-   [rebujito.system :refer ( new-system-map new-dependency-map)]
-   [rebujito.config :refer (config)]
-   [clojure.java.io :as io]
    [com.stuartsierra.component :as component :refer (using)]
-   [modular.aleph :refer (new-webserver)]
-   [modular.bidi :refer (new-router new-web-resources new-redirect)]))
+   [rebujito.config :refer (config)]
+   [rebujito.system :refer (new-system-map new-dependency-map)]
+   ))
 
 
 (def mod-defs
   {:system-mods
    {:dev
     (fn [config]
+      (println "connfgigg dev")
       (fn [system-map]
         (-> system-map
 ;            (assoc :schema (database-schema ))
@@ -22,10 +19,11 @@
    :dependency-mods
    {:dev (fn [config]
            (fn [dependency-map]
-             (merge dependency-map
-                    {:webserver {:request-handler :docsite-router}
-                     })
-;             #_(dissoc dependency-map :x :y :z)
+             (println "map-connfgigg dev")
+             #_(merge dependency-map
+                    {:webserver {:request-handler :docsite-router}})
+                                        ;             #_(dissoc dependency-map :x :y :z)
+             dependency-map
              ))}}
 
   )
@@ -35,7 +33,7 @@
 
   ([] (new-dev-system #{:dev}))
   ([env]
-   (let [config (config nil)]
+   (let [config (config :dev)]
      (component/system-using
       ((apply comp
               (map #(% config) (remove nil? (for [mod env] (get-in mod-defs [:system-mods mod])))))

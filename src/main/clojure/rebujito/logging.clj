@@ -36,9 +36,7 @@ output-fn <opts-map>)`."
 
    :appenders
    {:println (timbre/println-appender {:stream :auto})
-
-     :spit (appenders/spit-appender {:fname "./timbre-rebujito-spit.log"})
-    }})
+    :spit (appenders/spit-appender {:fname "./timbre-rebujito-spit.log"})}})
 
 
 (def timbre-info-config
