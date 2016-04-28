@@ -5,4 +5,4 @@
   (unsign [this data]))
 
 (defprotocol Store
-  (card [this]))
+  (get-card [this]))

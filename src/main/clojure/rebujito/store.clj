@@ -14,7 +14,7 @@
     this)
   (stop [this] this)
   protocols/Store
-  (card [this]
+  (get-card [this]
     (assoc mocks/card :id :prod)))
 
 (defrecord MockStore []
@@ -23,7 +23,7 @@
     this)
   (stop [this] this)
   protocols/Store
-  (card [this]
+  (get-card [this]
     (assoc mocks/card :id :dev))
 )
 

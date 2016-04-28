@@ -119,7 +119,7 @@
                            "500" (-> ctx :response (assoc :status 500)
                                      (assoc :body ["Internal Server Error :( "]))
                             (-> ctx :response (assoc :status 201)
-                                   (assoc :body (p/card store)))
+                                   (assoc :body (p/get-card store)))
                            ))}}}
 
     (merge access-control))))
