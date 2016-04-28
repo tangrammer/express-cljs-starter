@@ -8,6 +8,9 @@
 (defn api [store security]
   ["/me" [[[ "/" :id "/fake"] (-> (resources/fake store)
                                   (assoc :id ::fake))]
+          [["/paymentmethods/" :payment-mehod-id]
+           (-> (resources/get-payment-method store)
+               (assoc :id ::index))]
           ["/cards/register-digital"
            [["" (-> (resources/register-digital-card store)
                     (assoc :id ::index))]]]]])

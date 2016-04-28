@@ -123,3 +123,31 @@
                            ))}}}
 
     (merge access-control))))
+
+
+
+(defn get-payment-method [store]
+  (resource
+   (->
+    {:description "get-payment-method"
+     :produces [{:media-type
+                 #{"application/json" "application/xml"}
+                 :charset "UTF-8"}]
+     :swagger/tags ["payment-method"]
+     :methods
+     {:get {:parameters {:path {:payment-mehod-id String}}
+             :consumes [{:media-type #{"application/json" "application/xml"}
+                         :charset "UTF-8"}]
+
+             :response (fn [ctx]
+                         (condp = (get-in ctx [:parameters :path :payment-mehod-id])
+                           "404" (-> ctx :response (assoc :status 400)
+                                     (assoc :body ["Resource was not found"])
+                                     )
+                           "500" (-> ctx :response (assoc :status 500)
+                                     (assoc :body ["An unexpected error occurred processing the request."]))
+                            (-> ctx :response (assoc :status 201)
+                                   (assoc :body (p/get-payment-method store)))
+                           ))}}}
+
+    (merge access-control))))

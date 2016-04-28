@@ -56,3 +56,24 @@
    ]
   }"
                              true))
+
+
+
+
+(def payment-method (json/parse-string "{
+   \"isTemporary\":false,
+   \"routingNumber\":null,
+   \"bankName\":null,
+   \"paymentMethodId\":\"866F71F993D6\",
+   \"billingAddressId\":null,
+   \"paymentType\":\"Paypal\",
+   \"accountNumberLastFour\":null,
+   \"accountNumber\":\"F67A77FC92D518AC9BF69B1028BCF7A711B1\",
+   \"expirationMonth\":0,
+   \"expirationYear\":0,
+   \"cvn\":null,
+   \"fullName\":\"API Test User1\",
+   \"default\":false,
+   \"nickname\":\"SODOOO\"
+}"
+                             true))

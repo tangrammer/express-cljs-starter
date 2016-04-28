@@ -15,7 +15,10 @@
   (stop [this] this)
   protocols/Store
   (get-card [this]
-    (assoc mocks/card :id :prod)))
+    (assoc mocks/card :id :prod))
+  (get-payment-method [this]
+    (assoc mocks/payment-method :id :prod))
+  )
 
 (defrecord MockStore []
   component/Lifecycle
@@ -25,6 +28,9 @@
   protocols/Store
   (get-card [this]
     (assoc mocks/card :id :dev))
+  (get-payment-method [this]
+    (assoc mocks/payment-method :id :dev))
+
 )
 
 
