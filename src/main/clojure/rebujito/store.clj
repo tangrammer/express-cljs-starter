@@ -2,7 +2,10 @@
   (:require
    [rebujito.protocols :as protocols]
    [com.stuartsierra.component :refer [system-map system-using using] :as component]
-   [plumbing.core :refer [defnk]]))
+   [plumbing.core :refer [defnk]]
+   [rebujito.mocks :as mocks]
+
+   ))
 
 
 (defrecord ProdStore []
@@ -10,14 +13,20 @@
   (start [this]
     this)
   (stop [this] this)
-  protocols/Auth
-  (sign [this data expire-in]
-    (let [token-id (.toString (UUID/randomUUID))]
-     (-> (token/claims data token-id expire-in)
-         (token/sign secret-key))))
+  protocols/Store
+  (card [this]
+    (assoc mocks/card :id :prod)))
 
-  (unsign [this jwt]
-    (token/unsign jwt secret-key)))
+(defrecord MockStore []
+  component/Lifecycle
+  (start [this]
+    this)
+  (stop [this] this)
+  protocols/Store
+  (card [this]
+    (assoc mocks/card :id :dev))
+)
+
 
 (defn new-prod-store []
   (map->ProdStore {}))

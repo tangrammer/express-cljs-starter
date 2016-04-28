@@ -9,6 +9,7 @@
     [rebujito.config :refer [config]]
     [rebujito.handler :as wh]
     [rebujito.logging :as log-levels]
+    [rebujito.store :as store]
     [rebujito.security :as security]
     [taoensso.timbre :as log])
   (:import [java.util Date]))
@@ -35,7 +36,7 @@
 
                   :security (security/new-security config)
 
-                  :store (store/new-store config)
+                  :store (store/new-prod-store)
 
                   :api (api/new-api-component)
 

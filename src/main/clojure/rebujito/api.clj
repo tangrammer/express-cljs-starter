@@ -6,10 +6,10 @@
     [rebujito.resources :as resources]))
 
 (defn api [store security]
-  ["/me" [[[ "/" :id "/fake"] (-> (resources/fake)
+  ["/me" [[[ "/" :id "/fake"] (-> (resources/fake store)
                                   (assoc :id ::fake))]
           ["/cards/register-digital"
-           [["" (-> (resources/register-digital-card)
+           [["" (-> (resources/register-digital-card store)
                     (assoc :id ::index))]]]]])
 
 (s/defrecord ApiComponent [store security]

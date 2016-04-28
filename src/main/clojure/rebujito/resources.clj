@@ -3,10 +3,10 @@
    [clojure.tools.logging :refer :all]
    [clojure.java.io :as io]
    [rebujito.mocks :as mocks]
+   [rebujito.protocols :as p]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.methods :as m]
-   [yada.protocols :as p]
    [yada.resource :refer [resource]]
    [yada.yada :as yada])
   (:import [manifold.stream.core IEventSource]))
@@ -79,7 +79,7 @@
     :allow-headers ["Api-Key"]
     }})
 
-(defn fake []
+(defn fake [store]
   (resource
    (->
     {:description "fake"
@@ -98,7 +98,7 @@
 
     (merge access-control))))
 
-(defn register-digital-card []
+(defn register-digital-card [store]
   (resource
    (->
     {:description "register-digital-card"
@@ -119,12 +119,7 @@
                            "500" (-> ctx :response (assoc :status 500)
                                      (assoc :body ["Internal Server Error :( "]))
                             (-> ctx :response (assoc :status 201)
-                                   (assoc :body mocks/card))
-                           )
-
-
-
-
-                         )}}}
+                                   (assoc :body (p/card store)))
+                           ))}}}
 
     (merge access-control))))
