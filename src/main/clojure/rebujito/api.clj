@@ -1,7 +1,6 @@
 (ns rebujito.api
   (:require
     [com.stuartsierra.component :as component]
-    [plumbing.core :refer [fnk defnk]]
     [schema.core :as s]
     [rebujito.api.resources :as resources]))
 
