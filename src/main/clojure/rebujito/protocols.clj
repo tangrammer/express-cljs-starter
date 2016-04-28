@@ -5,4 +5,5 @@
   (unsign [this data]))
 
 (defprotocol Store
-  (get-card [this]))
+  (get-card [this])
+  (get-payment-method [this]))
