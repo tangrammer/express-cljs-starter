@@ -1,6 +1,10 @@
 # rebujito
 A clojure starbucks api ([wiki](https://github.com/naartjie/rebujito/wiki)).
 
+# config files
++ `src/main/resources/config.edn`
++ `~/.secrets.edn`
+
 # development flow
 
 
