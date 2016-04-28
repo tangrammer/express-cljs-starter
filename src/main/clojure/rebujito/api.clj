@@ -15,8 +15,7 @@
 (s/defrecord ApiComponent [security]
   component/Lifecycle
   (start [component]
-    (assoc component
-           :routes (api security)))
+    (assoc component :routes (api security)))
   (stop [component]))
 
 (defn new-api-component []

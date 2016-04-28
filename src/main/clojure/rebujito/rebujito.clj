@@ -1,11 +1,12 @@
 (ns rebujito.rebujito
   "Generated on lein uberjar"
-  (:require [environ.core :refer [env]]
-            [rebujito.system :refer (new-production-system)]
+  (:require
+   [rebujito.system :refer (new-production-system)]
+   [rebujito.config :refer (config)]
             [clojure.string :as str]
             [com.stuartsierra.component :refer (start)]
             [modular.ring :refer (request-handler)]
-            [environ.core :refer [env]]
+
             [taoensso.timbre :as log ])
   (:gen-class))
 
@@ -15,7 +16,7 @@
   (log/info "Starting Rebujito!")
   (log/info "Env:" (with-out-str
                      (clojure.pprint/pprint
-                      (select-keys env [:rebujito-env-type]))))
+                      (select-keys (config :prod) [:env-type]))))
   (let [system (-> (new-production-system)
                    start)]
     (log/info "System starting")

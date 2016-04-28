@@ -9,30 +9,13 @@
     [rebujito.logging :as log-levels]
     [clojure.edn :as edn]
     [com.stuartsierra.component :refer [system-map system-using using] :as component]
-    [environ.core :refer [env]]
+
     [modular.aleph :refer [new-webserver]]
     [modular.bidi :refer [new-router new-web-resources new-redirect]]
     [taoensso.timbre :as log]
-    [yada.security :refer [verify]]
+    [rebujito.config :refer [config]]
     )
   (:import [java.util Date]))
-
-(defn- load-env-value
-  ([y]
-   (load-env-value y false))
-  ([y convert?]
-   (let [x (env y)]
-     (if convert?
-       (edn/read-string x)
-       x))))
-
-(defn config
-  "Return a map of the static configuration used in the component
-  constructors."
-  []
-  {:cookie-name (load-env-value :rebujito-cookie-name)
-   :auth        {:secret-key "lp0fTc2JMtx8"}
-   :yada        {:port (load-env-value :rebujito-yada-port true)}})
 
 (defn swagger-ui-components [system]
   (assoc system
@@ -42,10 +25,7 @@
       :uri-context "/swagger-ui"
       :resource-prefix "META-INF/resources/webjars/swagger-ui/2.1.4")))
 
-(defmethod verify :cookie
-  [ctx {:keys [verify]}]
-  (let [the-cookie (get-in ctx [:cookies (load-env-value :rebujito-cookie-name)])]
-    (verify the-cookie)))
+
 
 (defn webserver [config]
   (->
@@ -85,7 +65,7 @@
 (defn new-production-system
   "Create the production system"
   ([opts]
-   (-> (new-system-map (merge (config) opts))
+   (-> (new-system-map (merge (config :prod) opts))
        (system-using (new-dependency-map))))
   ([] (new-production-system {})))
 

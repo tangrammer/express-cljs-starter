@@ -35,7 +35,11 @@
                  [org.clojure/data.xml "0.0.8"]
 
 
-                 [environ "1.0.2"]
+
+                 ;; config loader
+                 [aero "1.0.0-beta2"]
+
+
                  [potemkin "0.4.3" :exclusions [riddley]]
                  [prismatic/plumbing "0.5.3" :exclusions [prismatic/schema]]
                  [prismatic/schema "1.1.0" :exclusions [potemkin]]
@@ -62,12 +66,12 @@
                  [org.clojure/tools.reader "1.0.0-beta1"]]
 
   :uberjar-name "rebujito.jar"
-  :plugins [[lein-ring "0.9.7"]
-            [lein-environ "1.0.1"]]
+  :plugins [[lein-ring "0.9.7"]]
 
 
   :profiles {:uberjar {:main       rebujito.rebujito
                        :aot        :all}
+
              :dev     {:dependencies   [[org.clojure/tools.nrepl "0.2.11"]
                                         [org.clojure/tools.namespace "0.2.11"]]
 
@@ -75,6 +79,4 @@
 
                        :source-paths   ["src/dev/clojure"]
 
-                       :env            {:rebujito-cookie-name "rebujito-cookie"
-                                        :rebujito-env-type ":local"
-                                        :rebujito-yada-port "3000"}}})
+                      }})

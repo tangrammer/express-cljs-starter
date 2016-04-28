@@ -13,10 +13,11 @@
     [clojure.test :refer [run-tests run-all-tests]]
     [clojure.tools.namespace.repl :refer [refresh refresh-all]]
     [dev-system :refer (new-dev-system)]
-    [environ.core :as environ]
+
     [plumbing.core :refer (fnk defnk)]
     [schema.core :as s]
     [taoensso.timbre :as log :refer (trace debug info warn error)]
+    [rebujito.config :refer [config]]
     ))
 
 ;; reloaded fns
@@ -80,9 +81,9 @@
 ;; open swagger in browser
 (defn open-app
   ([]
-   (open-app :local))
+   (open-app :dev))
   ([env]
-   (assert (contains? #{:local :test :sam} env))
+   (assert (contains? #{:dev :test :prod} env))
    (browse-url (format "http://%s/swagger-ui/index.html?url=/api/v1/swagger.json"
                        (condp = env
-                         :local (str "localhost:" (environ/env :rebujito-yada-port)))))))
+                         :dev (str "localhost:" (-> (config env) :yada :port)))))))

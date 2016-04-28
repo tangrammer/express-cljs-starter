@@ -1,0 +1,14 @@
+{
+ :cookie-name "rebujito-cookie"
+
+ :env-type  #profile {:dev :dev
+                      :test :test
+                      :prod :prod}
+ :yada {:port 3000}
+
+ :secrets #include #join [#env HOME "/.secrets.edn"]
+ :greeting "World!"
+
+ :aws-secret-access-key
+ #profile {:test ^:ref [:secrets :aws-secret-access-key]
+           :prod ^:ref [:secrets :aws-secret-access-key]}}

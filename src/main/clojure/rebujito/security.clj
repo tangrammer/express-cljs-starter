@@ -3,8 +3,6 @@
             [rebujito.auth.auth-token :as token]
             [rebujito.protocols :as protocols]
             [com.stuartsierra.component :refer [system-map system-using using] :as component]
-
-            [environ.core :refer [env]]
             [plumbing.core :refer [defnk]]
             [buddy.core.mac :as mac])
   (:import (java.util UUID)))

@@ -3,7 +3,8 @@
   (:require
    [bidi.bidi :refer [RouteProvider]]
    [bidi.ring :refer (make-handler)]
-   [rebujito.system :refer (config new-system-map new-dependency-map)]
+   [rebujito.system :refer ( new-system-map new-dependency-map)]
+   [rebujito.config :refer (config)]
    [clojure.java.io :as io]
    [com.stuartsierra.component :as component :refer (using)]
    [modular.aleph :refer (new-webserver)]
@@ -34,7 +35,7 @@
 
   ([] (new-dev-system #{:dev}))
   ([env]
-   (let [config (config)]
+   (let [config (config nil)]
      (component/system-using
       ((apply comp
               (map #(% config) (remove nil? (for [mod env] (get-in mod-defs [:system-mods mod])))))
