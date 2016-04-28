@@ -3,7 +3,7 @@
     [com.stuartsierra.component :as component]
     [plumbing.core :refer [fnk defnk]]
     [schema.core :as s]
-    [rebujito.resources :as resources]))
+    [rebujito.api.resources :as resources]))
 
 (defn api [store]
   ["/me" [[[ "/" :id "/fake"] (-> (resources/fake store)

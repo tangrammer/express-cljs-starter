@@ -1,4 +1,4 @@
-(ns rebujito.mocks
+(ns rebujito.store.mocks
   (:require [cheshire.core :as json]))
 
 (def card (json/parse-string "{

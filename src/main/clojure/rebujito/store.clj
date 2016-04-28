@@ -3,7 +3,7 @@
    [rebujito.protocols :as protocols]
    [com.stuartsierra.component :refer [system-map system-using using] :as component]
    [plumbing.core :refer [defnk]]
-   [rebujito.mocks :as mocks]
+   [rebujito.store.mocks :as mocks]
 
    ))
 

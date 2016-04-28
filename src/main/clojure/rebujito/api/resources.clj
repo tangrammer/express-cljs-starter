@@ -1,8 +1,8 @@
-(ns rebujito.resources
+(ns rebujito.api.resources
   (:require
    [clojure.tools.logging :refer :all]
    [clojure.java.io :as io]
-   [rebujito.mocks :as mocks]
+
    [rebujito.protocols :as p]
    [cheshire.core :as json]
    [schema.core :as s]
