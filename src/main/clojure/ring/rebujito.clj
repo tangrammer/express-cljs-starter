@@ -1,4 +1,4 @@
-(ns rebujito.rebujito
+(ns ring.rebujito
   "Generated on lein uberjar"
   (:require
    [com.stuartsierra.component :as component]

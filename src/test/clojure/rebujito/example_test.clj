@@ -32,7 +32,7 @@
  (def d (component/start (new-production-system
                           (update-in (config :test) [:yada :port] inc))))
 
- (:docsite-router :security :api :yada :webserver :jquery :swagger-ui)
+ (:docsite-router :api :yada :webserver :jquery :swagger-ui)
 
   (:handler :port :raw-stream? :request-handler :server)
   (-> d :webserver :port)

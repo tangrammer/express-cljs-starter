@@ -25,9 +25,6 @@
                  [juxt.modular/ring "0.5.3"]
 
 
-                 ;; security libs
-                 [buddy "0.10.0" :exclusions [com.stuartsierra/component metosin/ring-swagger-ui org.clojure/clojure metosin/ring-swagger buddy bidi prismatic/schema]]
-                 [crypto-random "1.2.0" :exclusions [commons-codec]]
 
                  ;; data / data manipulation
                  [cheshire "5.5.0"]
@@ -69,7 +66,7 @@
   :plugins [[lein-ring "0.9.7"]]
 
 
-  :profiles {:uberjar {:main       rebujito.rebujito
+  :profiles {:uberjar {:main       ring.rebujito
                        :aot        :all}
 
              :dev     {:dependencies   [[org.clojure/tools.nrepl "0.2.11"]

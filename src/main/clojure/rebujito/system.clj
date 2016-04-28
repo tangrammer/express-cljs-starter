@@ -10,7 +10,6 @@
     [rebujito.handler :as wh]
     [rebujito.logging :as log-levels]
     [rebujito.store :as store]
-    [rebujito.security :as security]
     [taoensso.timbre :as log])
   (:import [java.util Date]))
 
@@ -34,8 +33,6 @@
                  {
                   :docsite-router (new-router)
 
-                  :security (security/new-security config)
-
                   :store (store/new-prod-store)
 
                   :api (api/new-api-component)
@@ -55,7 +52,7 @@
   []
   {
    :webserver {:request-handler :docsite-router}
-   :api [:security :store]
+   :api [:store]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

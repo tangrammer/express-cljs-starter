@@ -5,7 +5,7 @@
     [schema.core :as s]
     [rebujito.resources :as resources]))
 
-(defn api [store security]
+(defn api [store]
   ["/me" [[[ "/" :id "/fake"] (-> (resources/fake store)
                                   (assoc :id ::fake))]
           [["/paymentmethods/" :payment-mehod-id]
@@ -15,10 +15,10 @@
            [["" (-> (resources/register-digital-card store)
                     (assoc :id ::index))]]]]])
 
-(s/defrecord ApiComponent [store security]
+(s/defrecord ApiComponent [store]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (api store security)))
+    (assoc component :routes (api store)))
   (stop [component]
         component))
 
