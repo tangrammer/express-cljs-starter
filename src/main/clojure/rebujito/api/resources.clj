@@ -38,7 +38,7 @@
                            "500" (>500 ctx ["Internal Server Error :( "])
                            (>201 ctx (p/get-card store))
                            ))}}}
-    (merge (common-resource :register-digital-card))
+    (merge (common-resource :me/register-digital-card))
     (merge access-control))))
 
 (defn payment-method-detail [store]
@@ -54,8 +54,19 @@
                           "404" (>400 ctx ["Resource was not found"])
                           "500" (>500 ctx ["An unexpected error occurred processing the request."])
                           (>201 ctx (p/get-payment-method-detail store))
-                          ))}}}
-    (merge (common-resource :payment-methods-detail))
+                          ))}
+      :delete {:parameters {:path {:payment-mehod-id String}}
+               :consumes [{:media-type #{"application/json" "application/xml"}
+                           :charset "UTF-8"}]
+
+               :response (fn [ctx]
+                           (condp = (get-in ctx [:parameters :path :payment-mehod-id])
+                             "404" (>400 ctx ["Not Found" "Resource was not found"])
+                             "500" (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."])
+                             (>200 ctx ["OK" "Success"])
+                             ))}
+      }}
+    (merge (common-resource "me/payment-methodspayment/{payment-method-id}"))
     (merge access-control))))
 
 (defn payment-methods [store]
@@ -106,5 +117,5 @@
                               (>201 ctx (p/post-payment-method store))
 
                               ))}}}
-       (merge (common-resource :payment-methods))
+       (merge (common-resource :me/payment-methods))
        (merge access-control))))

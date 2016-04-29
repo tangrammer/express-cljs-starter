@@ -18,7 +18,12 @@
 
 (defn common-resource
   ([desc]
-   (common-resource (name desc) (name desc)))
+   (let [n (if (keyword? desc)
+             (if (namespace desc)
+               (clojure.string/join "/" [(namespace desc) (name desc)])
+               (name desc))
+             desc)]
+    (common-resource n n)))
   ([desc swagger-tag]
    {:description desc
     :produces [{:media-type
