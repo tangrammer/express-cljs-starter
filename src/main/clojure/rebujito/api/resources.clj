@@ -82,6 +82,10 @@
 
     (merge access-control))))
 
+(defn >400 [ctx body]
+  (-> ctx :response (assoc :status 400)
+      (assoc :body body)))
+
 (defn post-payment-method [store]
   (resource
    (->
@@ -106,9 +110,24 @@
 
              :response (fn [ctx]
                          (condp = (get-in ctx [:parameters :query :access_token])
-                           "404" (-> ctx :response (assoc :status 400)
-                                     (assoc :body ["Resource was not found"])
-                                     )
+                           "141000" (>400 ctx ["No Request Supplied" "Request was malformed."])
+                           "141001" (>400 ctx ["PaymentType cannot be null or empty."
+                                               "Missing or Invalid type attribute"])
+                           "141002" (>400 ctx ["FullName cannot be null or empty."
+                                               "Missing or Invalid fullName attribute."])
+                           "141003" (>400 ctx ["AccountNumber cannot be null or empty."
+                                               "Missing or Invalid accountNumber attribute."])
+                           "141004" (>400 ctx ["Cvn cannot be null or empty."
+                                               "Missing or Invalid accountCVN attribute."])
+                           "141005" (>400 ctx ["Invalid ExpirationMonth."
+                                               "Invalid expirationMonth attribute."])
+                           "141006" (>400 ctx ["Invalid ExpirationYear."
+                                               "Invalid expirationYear attribute."])
+                           "141007" (>400 ctx ["AddressId cannot be null or empty."
+                                               "Missing or Invalid billingAddressId attribute."])
+                           "141008" (>400 ctx ["Invalid PaymentMethod"	"Missing payment method object"])
+                           "141025" (>400 ctx ["User cannot be null or empty"])
+                           "141039" (>400 ctx ["Payment method already exists."])
                            "500" (-> ctx :response (assoc :status 500)
                                      (assoc :body ["An unexpected error occurred processing the request."]))
                             (-> ctx :response (assoc :status 201)
