@@ -16,7 +16,9 @@
   (get-card [this]
     (assoc mocks/card :id :prod))
   (get-payment-method [this]
-    (assoc mocks/payment-method :id :prod))
+    (assoc mocks/get-payment-method :id :prod))
+  (post-payment-method [this]
+    (assoc mocks/post-payment-method :id :prod))
   )
 
 (defrecord MockStore []
@@ -28,8 +30,9 @@
   (get-card [this]
     (assoc mocks/card :id :dev))
   (get-payment-method [this]
-    (assoc mocks/payment-method :id :dev))
-
+    (assoc mocks/get-payment-method :id :dev))
+  (post-payment-method [this]
+    (assoc mocks/post-payment-method :id :dev))
 )
 
 

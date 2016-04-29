@@ -1,18 +1,18 @@
 (ns rebujito.api
   (:require
     [com.stuartsierra.component :as component]
+
     [schema.core :as s]
     [rebujito.api.resources :as resources]))
 
 (defn api [store]
-  ["/me" [[[ "/" :id "/fake"] (-> (resources/fake store)
-                                  (assoc :id ::fake))]
-          [["/paymentmethods/" :payment-mehod-id]
-           (-> (resources/get-payment-method store)
-               (assoc :id ::index))]
+  ["/me" [[[ "/" :id "/fake"]  (resources/fake store)]
+          ["/paymentmethods" [["" (resources/post-payment-method store)]
+                              [["/" :payment-mehod-id] (resources/get-payment-method store)]]
+
+           ]
           ["/cards/register-digital"
-           [["" (-> (resources/register-digital-card store)
-                    (assoc :id ::index))]]]]])
+           [["" (resources/register-digital-card store)]]]]])
 
 (s/defrecord ApiComponent [store]
   component/Lifecycle
