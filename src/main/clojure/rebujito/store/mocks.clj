@@ -57,7 +57,7 @@
   }"
                              true))
 
-(def get-payment-method (json/parse-string "{
+(def get-payment-method-detail (json/parse-string "{
    \"isTemporary\":false,
    \"routingNumber\":null,
    \"bankName\":null,
@@ -92,3 +92,32 @@
    \"nickname\":\"SODOOO\"
 }"
                              true))
+
+
+(def get-payment-method (vec (json/parse-string  "[
+   {
+      \"paymentMethodId\": \"86617AFB92D8\",
+      \"billingAddressId\": \"b45d049b-78e0-44f4-bcb0-32d9aecd69b8\",
+      \"type\": \"amex\",
+      \"accountNumberLastFour\": \"0005\",
+      \"accountNumber\": \"\",
+      \"expirationMonth\": 2,
+      \"expirationYear\": 2016,
+      \"fullName\": \"test amex\",
+      \"default\": true,
+      \"nickname\": \"my amex\"
+   },
+   {
+      \"paymentMethodId\": \"86617AFB92D8\",
+      \"billingAddressId\": \"b45d049b-78e0-44f4-bcb0-32d9aecd69b8\",
+      \"type\": \"VISA\",
+      \"accountNumberLastFour\": \"1111\",
+      \"accountNumber\": \"\",
+      \"expirationMonth\": 3,
+      \"expirationYear\": 2013,
+      \"fullName\": \"First Last\",
+      \"default\": false,
+      \"nickname\": \"my Visa\"
+   }
+]"
+                                                 true)))
