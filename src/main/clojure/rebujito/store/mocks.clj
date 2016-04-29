@@ -121,3 +121,19 @@
    }
 ]"
                                                  true)))
+
+
+
+(json/parse-string "{
+   \"paymentMethodId\": \"806E77\",
+   \"nickname\": \"My Updated Nickname\",
+   \"type\": \"amex\",
+   \"fullName\": \"John Smith\",
+   \"default\": true,
+   \"accountNumberLastFour\": \"0005\",
+   \"accountNumber\": \"1234567891230005\",
+   \"cvn\": \"987\",
+   \"expirationMonth\": 2,
+   \"expirationYear\": 2016,
+   \"billingAddressId\": \"{E912B1F2-39CB-4286-AEA4-7650AB63FB8B}\"
+}" true)
