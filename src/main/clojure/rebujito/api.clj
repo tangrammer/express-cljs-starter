@@ -7,9 +7,7 @@
 
 (defn api [store]
   ["/me" [["/paymentmethods" [["" (resources/payment-methods store)]
-                              [["/" :payment-mehod-id] (resources/payment-method-detail store)]]
-
-           ]
+                              [["/" :payment-mehod-id] (resources/payment-method-detail store)]]]
           ["/cards/register-digital"
            [["" (resources/register-digital-card store)]]]]])
 
