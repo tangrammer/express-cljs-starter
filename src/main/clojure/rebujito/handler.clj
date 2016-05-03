@@ -12,12 +12,12 @@
 
   bidi/RouteProvider
   (routes [_]
-    ["/api/v1" (yada/swaggered
+    ["/starbucks/v1" (yada/swaggered
                 (:routes api)
                 {:info     {:title       "Rebujito REST API"
                             :version     "1.0"
                             :description "Having good times with clojure and rest"}
-                 :basePath "/api/v1"})]))
+                 :basePath "/starbucks/v1"})]))
 
 (defn handler []
   (map->Handler {}))
