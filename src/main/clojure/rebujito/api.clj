@@ -6,8 +6,7 @@
     [rebujito.api.resources :as resources]))
 
 (defn api [store]
-  ["/me" [[[ "/" :id "/fake"]  (resources/fake-call store)]
-          ["/paymentmethods" [["" (resources/payment-methods store)]
+  ["/me" [["/paymentmethods" [["" (resources/payment-methods store)]
                               [["/" :payment-mehod-id] (resources/payment-method-detail store)]]
 
            ]
