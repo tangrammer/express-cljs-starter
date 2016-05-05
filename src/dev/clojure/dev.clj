@@ -18,8 +18,8 @@
     [schema.core :as s]
     [taoensso.timbre :as log :refer (trace debug info warn error)]
     [rebujito.config :refer [config]]
-    env
-    ))
+    env))
+
 
 ;; reloaded fns
 
@@ -54,8 +54,8 @@
 (defn start
   "Starts the system running, updates the Var #'system."
   []
-  (start-system!)
-  )
+  (start-system!))
+
 
 (defn stop
   "Stops the system if it is currently running, updates the Var
