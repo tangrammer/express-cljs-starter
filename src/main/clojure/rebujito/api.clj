@@ -7,6 +7,7 @@
     [rebujito.api.resources.payment :as payment]
     [rebujito.api.resources.oauth :as oauth]
     [rebujito.api.resources.account :as account]
+    [rebujito.api.resources.card :as card]
     ))
 
 (defn api [store]
@@ -14,8 +15,10 @@
         ["oauth/token" (oauth/token-resource-owner store)]
         ["me" [["/paymentmethods" [["" (payment/methods store)]
                                    [["/" :payment-mehod-id] (payment/method-detail store)]]]
+               ["/cards"
+                [["" (card/get-cards store)]]]
                ["/cards/register-digital"
-                [["" (resources/register-digital-card store)]]]]]]])
+                [["" (card/register-digital-cards store)]]]]]]])
 
 (s/defrecord ApiComponent [store]
   component/Lifecycle
