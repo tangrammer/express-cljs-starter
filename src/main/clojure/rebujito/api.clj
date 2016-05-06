@@ -6,10 +6,12 @@
     [rebujito.api.resources :as resources]
     [rebujito.api.resources.payment :as payment]
     [rebujito.api.resources.oauth :as oauth]
+    [rebujito.api.resources.account :as account]
     ))
 
 (defn api [store]
-  ["/" [["oauth/token" (oauth/token-resource-owner store)]
+  ["/" [["account/create" (account/create store)]
+        ["oauth/token" (oauth/token-resource-owner store)]
         ["me" [["/paymentmethods" [["" (payment/methods store)]
                                    [["/" :payment-mehod-id] (payment/method-detail store)]]]
                ["/cards/register-digital"

@@ -139,6 +139,24 @@
 (json/generate-string oauth-refresh-token-body)
 
 
+(-> "{
+   \"emailAddress\": \"json2@coffee.com\",
+   \"password\": \"jsonPa$$w0rd2\",
+   \"birthDay\": \"31\",
+   \"birthMonth\": \"9\",
+   \"firstName\": \"Jessica\",
+   \"lastName\": \"Sons\",
+   \"addressLine1\": \"757 Richards Street\",
+   \"city\": \"Vancouver\",
+   \"countrySubdivision\": \"BC\",
+   \"country\": \"CA\",
+   \"postalCode\": \"V6B 3A6\",
+   \"receiveStarbucksEmailCommunications\": \"\",
+   \"registrationSource\": \"myMobileApp\"
+}"
+    (json/parse-string true)
+    )
+
 (def post-token-resource-owner  (-> "{
    \"return_type\": \"json\",
    \"access_token\": \"chrrndqxyj7ctqqwbszfed4x\",
