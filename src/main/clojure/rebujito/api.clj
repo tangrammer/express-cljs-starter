@@ -3,11 +3,13 @@
     [com.stuartsierra.component :as component]
 
     [schema.core :as s]
-    [rebujito.api.resources :as resources]))
+    [rebujito.api.resources :as resources]
+    [rebujito.api.resources.payment :as payment]
+    ))
 
 (defn api [store]
-  ["/me" [["/paymentmethods" [["" (resources/payment-methods store)]
-                              [["/" :payment-mehod-id] (resources/payment-method-detail store)]]]
+  ["/me" [["/paymentmethods" [["" (payment/methods store)]
+                              [["/" :payment-mehod-id] (payment/method-detail store)]]]
           ["/cards/register-digital"
            [["" (resources/register-digital-card store)]]]]])
 
