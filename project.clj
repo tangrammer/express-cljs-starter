@@ -74,6 +74,4 @@
 
                        :resource-paths ["src/main/resources" "src/test/resources"]
 
-                       :source-paths   ["src/dev/clojure"]
-
-                      }})
+                       :source-paths   ["src/dev/clojure"]}})
