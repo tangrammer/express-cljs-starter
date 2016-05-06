@@ -54,7 +54,7 @@
                            "122000" (>403 ctx ["Card is already registered.." "Card number and pin are already registered to user."])
 
                            "500" (>500 ctx ["Internal Server Error :( "])
-                           (>201 ctx (p/get-card store))
+                           (>200 ctx (p/get-card store))
                            ))}}}
     (merge (common-resource :me/cards))
     (merge access-control))))

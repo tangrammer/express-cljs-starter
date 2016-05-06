@@ -8,18 +8,22 @@
     [rebujito.api.resources.oauth :as oauth]
     [rebujito.api.resources.account :as account]
     [rebujito.api.resources.card :as card]
+    [rebujito.api.resources.social-profile :as social-profile]
     ))
 
 (defn api [store]
   ["/" [["account/create" (account/create store)]
         ["oauth/token" (oauth/token-resource-owner store)]
-        ["me" [["/paymentmethods" [["" (payment/methods store)]
-                                   [["/" :payment-mehod-id] (payment/method-detail store)]]]
-               ["/cards"
+        ["me" [["/cards"
                 [["" (card/get-cards store)]
                  ["/register" (card/register-physical store)]]]
                ["/cards/register-digital"
-                [["" (card/register-digital-cards store)]]]]]]])
+                [["" (card/register-digital-cards store)]]]
+               ["/paymentmethods" [["" (payment/methods store)]
+                                   [["/" :payment-mehod-id] (payment/method-detail store)]]]
+               ["/socialprofile/account"
+                [["" (social-profile/account store)]]]
+               ]]]])
 
 (s/defrecord ApiComponent [store]
   component/Lifecycle
