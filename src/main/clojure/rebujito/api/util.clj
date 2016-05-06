@@ -7,6 +7,9 @@
 (defn >400 [ctx body]
   (>base ctx 400 body))
 
+(defn >403 [ctx body]
+  (>base ctx 403 body))
+
 (defn >500 [ctx body]
   (>base ctx 500 body))
 

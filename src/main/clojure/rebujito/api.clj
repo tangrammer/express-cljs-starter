@@ -16,7 +16,8 @@
         ["me" [["/paymentmethods" [["" (payment/methods store)]
                                    [["/" :payment-mehod-id] (payment/method-detail store)]]]
                ["/cards"
-                [["" (card/get-cards store)]]]
+                [["" (card/get-cards store)]
+                 ["/register" (card/register-physical store)]]]
                ["/cards/register-digital"
                 [["" (card/register-digital-cards store)]]]]]]])
 
