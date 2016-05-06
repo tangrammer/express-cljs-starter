@@ -12,12 +12,21 @@
   (resource
    (-> {:methods
         {:post {:parameters {:query {:sig String}
-                             :body {:grant_type String
-                                    :client_id String
-                                    :client_secret String
-                                    :username String
-                                    :password String
-                                    :scope String}}
+                             :body (s/conditional
+                                    #(some? (-> % :refresh_token))
+                                    (s/schema-with-name {:grant_type String
+                                                         :refresh_token String
+                                                         :client_id String
+                                                         :client_secret String}
+                                                        "token-refresh-token")
+                                    #(nil? (-> % :refresh_token))
+                                    (s/schema-with-name {:grant_type String
+                                                         :client_id String
+                                                         :client_secret String
+                                                         :username String
+                                                         :password String
+                                                         :scope String}
+                                                        "token-resource-owner"))}
                 :consumes [{:media-type #{"application/json" "application/xml" #_"application/x-www-form-urlencoded"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
@@ -29,8 +38,10 @@
                               "400_5" (>400 ctx ["unsupported_grant_type" "The authorization grant type is not supported by the authorization server."])
                               "400_6" (>400 ctx ["invalid_scope" "The requested scope is invalid, unknown, malformed, or exceeds the scope granted by the resource owner."])
                               "500" (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."])
-                              (>200 ctx (p/post-token-resource-owner store))
+                              (>200 ctx (when (get-in ctx [:parameters :body :refresh_token])
+                                          (p/post-refresh-token store)
+                                          (p/post-token-resource-owner store)))
 
                               ))}}}
-       (merge (common-resource :oauth/token-resource-owner))
+       (merge (common-resource :oauth))
        (merge access-control))))

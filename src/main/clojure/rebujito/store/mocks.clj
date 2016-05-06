@@ -124,10 +124,19 @@
                                                  true)))
 
 
-(def oauth (let [data (split "grant_type=password&client_id=kcpttbyxc7rt4kzvyvmgxqvg&client_secret=APIPassword&username=XTest&password=aaaaaa&scope=test_scope" #"&")]
-             (apply array-map
-                    (mapcat #(let [[k v] (split % #"=")]
-                               [(keyword k) v]) data))))
+(defn extract-body-form
+  ([s] (extract-body-form s keyword))
+  ([s fkw] (let [data (split s #"&")]
+                               (apply array-map
+                                      (mapcat #(let [[k v] (split % #"=")]
+                                                 [(fkw k) v]) data)))))
+
+(def oauth-token-body (extract-body-form "grant_type=password&client_id=kcpttbyxc7rt4kzvyvmgxqvg&client_secret=APIPassword&username=XTest&password=aaaaaa&scope=test_scope"))
+
+(def oauth-refresh-token-body (extract-body-form "grant_type=refresh_token&refresh_token=chmeua4zhprntu8hyvp68yk9&client_id=kcpttbyxc7rt4kzvyvmgxqvg&client_secret=jonsPassword"))
+
+
+(json/generate-string oauth-refresh-token-body)
 
 
 (def post-token-resource-owner  (-> "{
@@ -145,6 +154,20 @@
                                     (json/parse-string true)
 
                                     ))
+
+(def post-refresh-token (->
+"{
+   \"return_type\": \"json\",
+   \"access_token\": \"fuam55n4eudrre6uuqwjk7ca\",
+   \"token_type\": \"bearer\",
+   \"expires_in\": 3600,
+   \"refresh_token\": \"cqj2tg24ekjtapncahtkpav4\",
+   \"scope\": \"test_scope\",
+   \"state\": null,
+   \"uri\": null,
+   \"extended\": null
+}"
+(json/parse-string true)))
 
 
 (json/parse-string "{

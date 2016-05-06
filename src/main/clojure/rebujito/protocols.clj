@@ -6,4 +6,5 @@
   (post-payment-method [this])
   (get-payment-method [this])
   (post-token-resource-owner [this])
+  (post-refresh-token [this])
   )
