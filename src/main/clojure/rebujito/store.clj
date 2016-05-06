@@ -21,6 +21,8 @@
     (assoc mocks/post-payment-method :target-environment :prod))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method ))
+  (post-token-resource-owner [this]
+    (assoc mocks/post-token-resource-owner :target-environment :prod)  )
   )
 
 (defrecord MockStore []
@@ -37,6 +39,8 @@
     (assoc mocks/post-payment-method :target-environment :dev))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :dev) mocks/get-payment-method ))
+  (post-token-resource-owner [this]
+    (assoc mocks/post-token-resource-owner  :target-environment :dev) )
 )
 
 

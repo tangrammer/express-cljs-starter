@@ -5,13 +5,15 @@
     [schema.core :as s]
     [rebujito.api.resources :as resources]
     [rebujito.api.resources.payment :as payment]
+    [rebujito.api.resources.oauth :as oauth]
     ))
 
 (defn api [store]
-  ["/me" [["/paymentmethods" [["" (payment/methods store)]
-                              [["/" :payment-mehod-id] (payment/method-detail store)]]]
-          ["/cards/register-digital"
-           [["" (resources/register-digital-card store)]]]]])
+  ["/" [["oauth/token" (oauth/token-resource-owner store)]
+        ["me" [["/paymentmethods" [["" (payment/methods store)]
+                                   [["/" :payment-mehod-id] (payment/method-detail store)]]]
+               ["/cards/register-digital"
+                [["" (resources/register-digital-card store)]]]]]]])
 
 (s/defrecord ApiComponent [store]
   component/Lifecycle

@@ -1,5 +1,6 @@
 (ns rebujito.store.mocks
-  (:require [cheshire.core :as json]))
+  (:require [cheshire.core :as json]
+            [clojure.string :refer (split)]))
 
 (def card (json/parse-string "{
    \"cardCurrency\":\"USD\",
@@ -122,6 +123,28 @@
 ]"
                                                  true)))
 
+
+(def oauth (let [data (split "grant_type=password&client_id=kcpttbyxc7rt4kzvyvmgxqvg&client_secret=APIPassword&username=XTest&password=aaaaaa&scope=test_scope" #"&")]
+             (apply array-map
+                    (mapcat #(let [[k v] (split % #"=")]
+                               [(keyword k) v]) data))))
+
+
+(def post-token-resource-owner  (-> "{
+   \"return_type\": \"json\",
+   \"access_token\": \"chrrndqxyj7ctqqwbszfed4x\",
+   \"token_type\": \"bearer\",
+   \"expires_in\": 3600,
+   \"refresh_token\": \"chmeua4zhprntu8hyvp68yk9\",
+   \"scope\": \"test_scope\",
+   \"state\": null,
+   \"uri\": null,
+   \"extended\": null
+}"
+
+                                    (json/parse-string true)
+
+                                    ))
 
 
 (json/parse-string "{
