@@ -4,8 +4,13 @@
             [byte-streams :as bs]
             [rebujito.system :refer (new-production-system)]
             [rebujito.config :refer (config)]
+            [clojure.pprint :refer (pprint)]
             [com.stuartsierra.component :as component]
+            [rebujito.api.resources.account :as account]
             [clojure.test :refer :all]
+            [cheshire.core :as json]
+            [bidi.bidi :as bidi]
+            [schema-generators.generators :as g]
             ))
 
 (def ^:dynamic *system* nil)
@@ -17,37 +22,26 @@
        (finally
          (component/stop s#)))))
 
-#_(-> @(http/get "https://google.com/")
-  :body
-  bs/to-string
-  prn)
-
 (defn system-fixture [f]
-  (with-system (-> (new-production-system
-                    {:yada {:port 3001}}))
-    (s/with-fn-validation
-      (f))))
-
-(comment
- (def d (component/start (new-production-system
-                          (update-in (config :test) [:yada :port] inc))))
-
- (:docsite-router :api :yada :webserver :jquery :swagger-ui)
-
-  (:handler :port :raw-stream? :request-handler :server)
-  (-> d :webserver :port)
-  (-> d :webserver :request-handler :routes)
- (component/stop d))
-
-
+  (with-system (-> (new-production-system (update-in (config :test) [:yada :port] inc)))
+    (try
+      (s/with-fn-validation
+        (f))
+      (catch Exception e (do (println (str "caught exception: " (.getMessage e)))
+                             (throw e))))))
 
 (use-fixtures :each system-fixture)
 
+(deftest test-20*
+  (let [r (-> *system* :docsite-router :routes)]
 
-
-
-(deftest test-welcome
-  (testing "hola"
-    (println (keys *system*)
-             (:yada *system*))
-    (is (= 1 1))))
+    (testing ::account/create
+      (let [api-id ::account/create
+            path (bidi/path-for r api-id)]
+        (is (= 201 (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  (-> *system*  :webserver :port) path 123 1234)
+                                   {:throw-exceptions false
+                                    :body (json/generate-string
+                                           (g/generate (:post account/schema)))
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
+                       :status)))))))

@@ -40,6 +40,7 @@
                  [potemkin "0.4.3" :exclusions [riddley]]
                  [prismatic/plumbing "0.5.3" :exclusions [prismatic/schema]]
                  [prismatic/schema "1.1.0" :exclusions [potemkin]]
+                 [prismatic/schema-generators "0.1.0"]
 
                  ;; swagger-ui
                  [metosin/ring-swagger "0.22.6" :exclusions [potemkin]]

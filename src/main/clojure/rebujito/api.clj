@@ -12,8 +12,10 @@
     ))
 
 (defn api [store]
-  ["/" [["account/create" (account/create store)]
-        ["oauth/token" (oauth/token-resource-owner store)]
+  ["/" [["account/create" (-> (account/create store)
+                              (assoc :id ::account/create))]
+        ["oauth/token" (-> (oauth/token-resource-owner store)
+                           (assoc :id ::oauth/token-resource-owner))]
         ["me" [["/cards"
                 [["" (card/get-cards store)]
                  ["/" [[["" :card-id] (card/unregister store)]

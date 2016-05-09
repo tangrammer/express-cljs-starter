@@ -7,25 +7,27 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
+(def schema {:post {:countrySubdivision String
+                    :registrationSource String
+                    :addressLine1 String
+                    :password String
+                    :emailAddress String
+                    :city String
+                    :firstName String
+                    :birthDay String
+                    :birthMonth String
+                    :lastName String
+                    :receiveStarbucksEmailCommunications String
+                    :postalCode String
+                    :country String}})
+
 (defn create [store]
   (resource
    (-> {:methods
         {:post {:parameters {:query {:access_token String
                                      :market String
                                      (s/optional-key :locale) String}
-                             :body {:countrySubdivision String
-                                    :registrationSource String
-                                    :addressLine1 String
-                                    :password String
-                                    :emailAddress String
-                                    :city String
-                                    :firstName String
-                                    :birthDay String
-                                    :birthMonth String
-                                    :lastName String
-                                    :receiveStarbucksEmailCommunications String
-                                    :postalCode String
-                                    :country String}}
+                             :body (:post schema)}
                 :consumes [{:media-type #{"application/json" "application/xml"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]

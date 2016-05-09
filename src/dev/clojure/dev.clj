@@ -15,6 +15,7 @@
     [dev-system :refer (new-dev-system)]
 
     [plumbing.core :refer (fnk defnk)]
+    [bidi.bidi :as bidi]
     [schema.core :as s]
     [taoensso.timbre :as log :refer (trace debug info warn error)]
     [rebujito.config :refer [config]]
