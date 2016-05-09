@@ -7,6 +7,19 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
+(def schema {:token-refresh-token {:post (s/schema-with-name {:grant_type String
+                                                              :refresh_token String
+                                                              :client_id String
+                                                              :client_secret String}
+                                                             "token-refresh-token")}
+             :token-resource-owner {:post (s/schema-with-name {:grant_type String
+                                                         :client_id String
+                                                         :client_secret String
+                                                         :username String
+                                                         :password String
+                                                         :scope String}
+                                                        "token-resource-owner")}
+             })
 
 (defn token-resource-owner [store]
   (resource
@@ -14,19 +27,10 @@
         {:post {:parameters {:query {:sig String}
                              :body (s/conditional
                                     #(some? (-> % :refresh_token))
-                                    (s/schema-with-name {:grant_type String
-                                                         :refresh_token String
-                                                         :client_id String
-                                                         :client_secret String}
-                                                        "token-refresh-token")
+                                    (-> schema :token-refresh-token :post)
                                     #(nil? (-> % :refresh_token))
-                                    (s/schema-with-name {:grant_type String
-                                                         :client_id String
-                                                         :client_secret String
-                                                         :username String
-                                                         :password String
-                                                         :scope String}
-                                                        "token-resource-owner"))}
+                                    (-> schema :token-resource-owner :post)
+                                    )}
                 :consumes [{:media-type #{"application/json" "application/xml" #_"application/x-www-form-urlencoded"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]

@@ -52,13 +52,15 @@
     (merge (common-resource :me/cards))
     (merge access-control))))
 
+(def schema {:post {:register-physical {:cardNumber String
+                                        :pin String}}})
+
 (defn register-physical [store]
   (resource
    (->
     {:methods
      {:post {:parameters {:query {:access_token String}
-                          :body {:cardNumber String
-                                 :pin String}}
+                          :body (-> schema :post :register-physical)}
              :consumes [{:media-type #{"application/json" "application/xml"}
                          :charset "UTF-8"}]
 

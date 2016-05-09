@@ -17,15 +17,26 @@
         ["oauth/token" (-> (oauth/token-resource-owner store)
                            (assoc :id ::oauth/token-resource-owner))]
         ["me" [["/cards"
-                [["" (card/get-cards store)]
-                 ["/" [[["" :card-id] (card/unregister store)]
-                       ["register" (card/register-physical store)]]]]]
-               ["/cards/register-digital"
-                [["" (card/register-digital-cards store)]]]
-               ["/paymentmethods" [["" (payment/methods store)]
-                                   [["/" :payment-mehod-id] (payment/method-detail store)]]]
-               ["/socialprofile/account"
-                [["" (social-profile/account store)]]]
+                [["" (-> (card/get-cards store)
+                         (assoc :id ::card/get-cards))]
+
+                 ["/register"
+                 (-> (card/register-physical store)
+                     (assoc :id ::card/register-physical))]
+
+                 ["/register-digital" (-> (card/register-digital-cards store)
+                                                (assoc :id ::card/register-digital-cards))]
+
+                 ["/" [[["" :card-id] (-> (card/unregister store)(assoc :id ::card/unregister))]]]]]
+
+
+
+               ["/paymentmethods" [["" (-> (payment/methods store)
+                                           (assoc :id ::payment/methods))]
+                                   [["/" :payment-mehod-id] (-> (payment/method-detail store)
+                                                                (assoc :id ::payment/method-detail))]]]
+               ["/socialprofile/account" (-> (social-profile/account store)
+                                             (assoc :id ::social-profile/account))]
                ]]]])
 
 (s/defrecord ApiComponent [store]

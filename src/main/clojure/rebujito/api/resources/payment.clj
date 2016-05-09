@@ -73,6 +73,16 @@
     (merge (common-resource "me/payment-methods/payment/{payment-method-id}"))
     (merge access-control))))
 
+(def schema {:methods {:post {:expirationYear Long
+                              :billingAddressId String
+                              :accountNumber String
+                              :default String
+                              :nickname String
+                              :paymentType String
+                              :cvn String
+                              :fullName String
+                              :expirationMonth Long}}})
+
 (defn methods [store]
   (resource
    (-> {:methods
@@ -86,15 +96,7 @@
 
                              ))}
          :post {:parameters {:query {:access_token String}
-                             :body {:expirationYear Long
-                                    :billingAddressId String
-                                    :accountNumber String
-                                    :default String
-                                    :nickname String
-                                    :paymentType String
-                                    :cvn String
-                                    :fullName String
-                                    :expirationMonth Long}}
+                             :body (-> schema :methods :post)}
                 :consumes [{:media-type #{"application/json" "application/xml"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
@@ -118,8 +120,6 @@
                               "141025" (>400 ctx ["User cannot be null or empty"])
                               "141039" (>400 ctx ["Payment method already exists."])
                               "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                              (>201 ctx (p/post-payment-method store))
-
-                              ))}}}
+                              (>201 ctx (p/post-payment-method store))))}}}
        (merge (common-resource :me/payment-methods))
        (merge access-control))))
