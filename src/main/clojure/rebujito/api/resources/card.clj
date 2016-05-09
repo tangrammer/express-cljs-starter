@@ -26,6 +26,32 @@
     (merge (common-resource :me/cards))
     (merge access-control))))
 
+
+(defn unregister [store]
+  (resource
+   (->
+    {:methods
+     {:delete {:parameters {:path {:card-id String}
+                            :query {:access_token String}}
+             :consumes [{:media-type #{"application/json" "application/xml"}
+                         :charset "UTF-8"}]
+
+             :response (fn [ctx]
+                         (condp = (get-in ctx [:parameters :query :access_token])
+
+                           "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
+                           "403" (>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object.
+"])
+                           "121032" (>403 ctx ["Card is reported lost or stolen" "
+"])
+                           "121037" (>403 ctx ["Card is closed." ""])
+                           "404" (>404 ctx ["Not Found" "Resource was not found"])
+                           "121018" (>400 ctx ["Cannot unregister a digital card that has a balance greater than zero." "Only zero balance digital cards can be unregistered"])
+                           (>200 ctx ["OK" "Success"])
+                           ))}}}
+    (merge (common-resource :me/cards))
+    (merge access-control))))
+
 (defn register-physical [store]
   (resource
    (->

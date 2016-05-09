@@ -16,7 +16,8 @@
         ["oauth/token" (oauth/token-resource-owner store)]
         ["me" [["/cards"
                 [["" (card/get-cards store)]
-                 ["/register" (card/register-physical store)]]]
+                 ["/" [[["" :card-id] (card/unregister store)]
+                       ["register" (card/register-physical store)]]]]]
                ["/cards/register-digital"
                 [["" (card/register-digital-cards store)]]]
                ["/paymentmethods" [["" (payment/methods store)]
