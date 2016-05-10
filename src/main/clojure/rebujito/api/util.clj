@@ -33,7 +33,7 @@
   ([desc swagger-tag]
    {:description desc
     :produces [{:media-type
-                #{"application/json" "application/xml"}
+                #{"application/json"}
                 :charset "UTF-8"}]
     :swagger/tags (if (vector? swagger-tag)
                     swagger-tag [swagger-tag])}))

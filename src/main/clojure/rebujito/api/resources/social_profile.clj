@@ -17,7 +17,7 @@
     {:methods
      {:put {:parameters {:query {:access_token String}
                          :body (-> schema :put)}
-            :consumes [{:media-type #{"application/json" "application/xml"}
+            :consumes [{:media-type #{"application/json"}
                         :charset "UTF-8"}]
 
             :response (fn [ctx]

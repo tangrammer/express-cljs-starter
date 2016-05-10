@@ -13,7 +13,7 @@
    (->
     {:methods
      {:get {:parameters {:query {:access_token String}}
-             :consumes [{:media-type #{"application/json" "application/xml"}
+             :consumes [{:media-type #{"application/json"}
                          :charset "UTF-8"}]
 
              :response (fn [ctx]
@@ -33,7 +33,7 @@
     {:methods
      {:delete {:parameters {:path {:card-id String}
                             :query {:access_token String}}
-               :consumes [{:media-type #{"application/json" "application/xml"}
+               :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
 
                :response (fn [ctx]
@@ -61,7 +61,7 @@
     {:methods
      {:post {:parameters {:query {:access_token String}
                           :body (-> schema :post :register-physical)}
-             :consumes [{:media-type #{"application/json" "application/xml"}
+             :consumes [{:media-type #{"application/json"}
                          :charset "UTF-8"}]
 
              :response (fn [ctx]
@@ -92,7 +92,7 @@
    (->
     {:methods
      {:post {:parameters {:query {:access_token String}}
-             :consumes [{:media-type #{"application/json" "application/xml"}
+             :consumes [{:media-type #{"application/json"}
                          :charset "UTF-8"}]
 
              :response (fn [ctx]

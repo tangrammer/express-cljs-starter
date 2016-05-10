@@ -13,7 +13,7 @@
     {:methods
      {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}
                          :path {:payment-mehod-id String}}
-            :consumes [{:media-type #{"application/json" "application/xml"}
+            :consumes [{:media-type #{"application/json"}
                         :charset "UTF-8"}]
 
             :response (fn [ctx]
@@ -24,7 +24,7 @@
 
       :delete {:parameters {:query {:access_token String}
                             :path {:payment-mehod-id String}}
-               :consumes [{:media-type #{"application/json" "application/xml"}
+               :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
 
                :response (fn [ctx]
@@ -47,7 +47,7 @@
                                 :fullName String
                                 :expirationMonth Long}}
 
-            :consumes [{:media-type #{"application/json" "application/xml"}
+            :consumes [{:media-type #{"application/json"}
                         :charset "UTF-8"}]
 
             :response (fn [ctx]
@@ -87,7 +87,7 @@
   (resource
    (-> {:methods
         {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
-               :consumes [{:media-type #{"application/json" "application/xml"}
+               :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
                :response (fn [ctx]
                            (condp = (get-in ctx [:parameters :query :access_token])
@@ -97,7 +97,7 @@
 
          :post {:parameters {:query {:access_token String}
                              :body (-> schema :methods :post)}
-                :consumes [{:media-type #{"application/json" "application/xml"}
+                :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
                             (condp = (get-in ctx [:parameters :query :access_token])

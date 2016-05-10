@@ -28,7 +28,7 @@
                                      :market String
                                      (s/optional-key :locale) String}
                              :body (:post schema)}
-                :consumes [{:media-type #{"application/json" "application/xml"}
+                :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
                             (condp = (get-in ctx [:parameters :query :access_token])

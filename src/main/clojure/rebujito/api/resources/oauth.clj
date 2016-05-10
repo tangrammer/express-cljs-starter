@@ -31,7 +31,7 @@
                                     #(nil? (-> % :refresh_token))
                                     (-> schema :token-resource-owner :post))}
 
-                :consumes [{:media-type #{"application/json" "application/xml" #_"application/x-www-form-urlencoded"}
+                :consumes [{:media-type #{"application/json" #_"application/x-www-form-urlencoded"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
                             (condp = (get-in ctx [:parameters :query :sig])
