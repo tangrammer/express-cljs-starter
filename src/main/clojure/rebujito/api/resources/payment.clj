@@ -20,8 +20,8 @@
                         (condp = (get-in ctx [:parameters :query :access_token])
                           "404" (>400 ctx ["Resource was not found"])
                           "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                          (>201 ctx (p/get-payment-method-detail store))
-                          ))}
+                          (>201 ctx (p/get-payment-method-detail store))))}
+
       :delete {:parameters {:query {:access_token String}
                             :path {:payment-mehod-id String}}
                :consumes [{:media-type #{"application/json" "application/xml"}
@@ -31,8 +31,8 @@
                            (condp = (get-in ctx [:parameters :query :access_token])
                              "404" (>400 ctx ["Not Found" "Resource was not found"])
                              "500" (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."])
-                             (>200 ctx ["OK" "Success"])
-                             ))}
+                             (>200 ctx ["OK" "Success"])))}
+
       :put {:parameters {:query {:access_token String}
                          :path {:payment-mehod-id String}
                          :body {:expirationYear Long
@@ -45,8 +45,8 @@
                                 :accountNumberLastFour String
                                 :cvn String
                                 :fullName String
-                                :expirationMonth Long}
-                         }
+                                :expirationMonth Long}}
+
             :consumes [{:media-type #{"application/json" "application/xml"}
                         :charset "UTF-8"}]
 
@@ -61,15 +61,15 @@
                           "141004" (>400 ctx ["Cvn cannot be null or empty." "Missing or Invalid accountCVN attribute."])
                           "141005" (>400 ctx ["Invalid ExpirationMonth." "Invalid expirationMonth attribute."])
                           "141006" (>400 ctx ["Invalid ExpirationYear." "Invalid expirationYear attribute."])
-                          "141007" (>400 ctx ["AddressId cannot be null or empty.	" "Missing or Invalid billingAddressId attribute."])
+                          "141007" (>400 ctx ["AddressId cannot be null or empty." "Missing or Invalid billingAddressId attribute."])
                           "141008" (>400 ctx ["Invalid PaymentMethod" "Missing payment method object"])
                           "141010" (>400 ctx ["PaymentMethodId cannot be null or empty." "Invalid paymentMethodId attribute."])
                           "141011" (>400 ctx ["Updating PayPal payment method is not allowed." "Can't Update PayPal"])
                           "141025" (>400 ctx ["UserId cannot be null or empty."])
 
-                          (>200 ctx ["OK" "Success"])
-                          ))}
-      }}
+                          (>200 ctx ["OK" "Success"])))}}}
+
+
     (merge (common-resource "me/payment-methods/payment/{payment-method-id}"))
     (merge access-control))))
 
@@ -92,9 +92,9 @@
                :response (fn [ctx]
                            (condp = (get-in ctx [:parameters :query :access_token])
                              "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                             (>200 ctx (p/get-payment-method store))
+                             (>200 ctx (p/get-payment-method store))))}
 
-                             ))}
+
          :post {:parameters {:query {:access_token String}
                              :body (-> schema :methods :post)}
                 :consumes [{:media-type #{"application/json" "application/xml"}
@@ -116,7 +116,7 @@
                                                   "Invalid expirationYear attribute."])
                               "141007" (>400 ctx ["AddressId cannot be null or empty."
                                                   "Missing or Invalid billingAddressId attribute."])
-                              "141008" (>400 ctx ["Invalid PaymentMethod"	"Missing payment method object"])
+                              "141008" (>400 ctx ["Invalid PaymentMethod"  "Missing payment method object"])
                               "141025" (>400 ctx ["User cannot be null or empty"])
                               "141039" (>400 ctx ["Payment method already exists."])
                               "500" (>500 ctx ["An unexpected error occurred processing the request."])
