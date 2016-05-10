@@ -19,9 +19,9 @@
    {:+mock-store (fn [config]
                    (fn [dependency-map]
                      (println "using :mock-store profile in dependency dev-system")
-                     dependency-map))}}
+                     dependency-map))}})
 
-  )
+
 
 (defn new-dev-system
   "Create a development system"
@@ -34,5 +34,4 @@
        (new-system-map config))
       ((apply comp
               (map #(% config) (remove nil? (for [mod opts] (get-in mod-defs [:dependency-mods mod])))))
-       (new-dependency-map))
-      ))))
+       (new-dependency-map))))))

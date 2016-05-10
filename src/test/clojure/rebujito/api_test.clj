@@ -15,8 +15,8 @@
    [rebujito.config :refer (config)]
    [rebujito.system :refer (new-production-system)]
    [schema-generators.generators :as g]
-   [schema.core :as s]
-   ))
+   [schema.core :as s]))
+
 
 (def ^:dynamic *system* nil)
 
@@ -73,9 +73,9 @@
                                             (g/generate (-> oauth/schema :token-resource-owner :post)))
                                      :body-encoding "UTF-8"
                                      :content-type :json})
-                        :status)))
+                        :status)))))
 
-         ))
+
 
      (testing ::card/get-cards
        (let [api-id ::card/get-cards
@@ -91,11 +91,11 @@
              path (bidi/path-for r api-id)]
          (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
          (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                      {:throw-exceptions false
-                                       :body-encoding "UTF-8"
-                                       :body (json/generate-string
+                                    {:throw-exceptions false
+                                     :body-encoding "UTF-8"
+                                     :body (json/generate-string
                                             (g/generate (-> card/schema :post :register-physical)))
-                                       :content-type :json})
+                                     :content-type :json})
                         :status)))))
 
      (testing ::card/register-digital-cards
@@ -121,9 +121,9 @@
        (let [api-id ::payment/methods
              path (bidi/path-for r api-id)]
          (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                      {:throw-exceptions false
-                                       :body-encoding "UTF-8"
-                                       :content-type :json})
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
                         :status)))
          (is (= 201 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
                                    {:throw-exceptions false
@@ -135,15 +135,15 @@
 
      (testing ::social-profile/account
        (let [api-id ::social-profile/account
-             path (bidi/path-for r api-id )]
+             path (bidi/path-for r api-id)]
          (is (= 200 (-> @(http/put (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                      {:throw-exceptions false
-                                       :body-encoding "UTF-8"
-                                       :body (json/generate-string
-                                              (g/generate (-> social-profile/schema :put)))
-                                       :content-type :json})
-                        :status))))
-       )))
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :body (json/generate-string
+                                           (g/generate (-> social-profile/schema :put)))
+                                    :content-type :json})
+                        :status)))))))
+
 
 
 

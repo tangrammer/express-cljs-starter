@@ -56,8 +56,8 @@ output-fn <opts-map>)`."
    :appenders
    {:println (timbre/println-appender {:stream :auto})
 
-     :spit (appenders/spit-appender {:fname "./timbre-rebujito-spit.log"})
-    }})
+     :spit (appenders/spit-appender {:fname "./timbre-rebujito-spit.log"})}})
+
 
 
 (def timbre-debug-config
@@ -66,7 +66,7 @@ output-fn <opts-map>)`."
    ;; Control log filtering by namespaces/patterns. Useful for turning off
    ;; logging in noisy libraries, etc.:
 
-   :ns-blacklist  [] #_["taoensso.*" "org.apache.cxf.binding.*" ]
+   :ns-blacklist  [] #_["taoensso.*" "org.apache.cxf.binding.*"]
 
    :middleware []           ; (fns [data]) -> ?data, applied left->right
 
@@ -77,8 +77,8 @@ output-fn <opts-map>)`."
    :appenders
    {:println (timbre/println-appender {:stream :auto})
 
-     :spit (appenders/spit-appender {:fname "./timbre-rebujito-spit.log"})
-    }})
+     :spit (appenders/spit-appender {:fname "./timbre-rebujito-spit.log"})}})
+
 
 
 (def timbre-error-config
@@ -87,7 +87,7 @@ output-fn <opts-map>)`."
    ;; Control log filtering by namespaces/patterns. Useful for turning off
    ;; logging in noisy libraries, etc.:
 
-   :ns-blacklist  ["o.a.c.c.*" "o.*" "taoensso.*" "org.apache.cxf.binding.*" ] #_["taoensso.*" "org.apache.cxf.*" ]
+   :ns-blacklist  ["o.a.c.c.*" "o.*" "taoensso.*" "org.apache.cxf.binding.*" ] #_["taoensso.*" "org.apache.cxf.*"]
 
    :middleware []           ; (fns [data]) -> ?data, applied left->right
 
@@ -98,8 +98,8 @@ output-fn <opts-map>)`."
    :appenders
    {:println (timbre/println-appender {:stream :auto})
 
-     :spit (appenders/spit-appender {:fname "./timbre-rebujito-spit.log"})
-    }})
+     :spit (appenders/spit-appender {:fname "./timbre-rebujito-spit.log"})}})
+
 
 
 ;(timbre/set-config! timbre-info-config)

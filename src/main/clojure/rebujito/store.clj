@@ -2,9 +2,9 @@
   (:require
    [rebujito.protocols :as protocols]
    [com.stuartsierra.component  :as component]
-   [rebujito.store.mocks :as mocks]
+   [rebujito.store.mocks :as mocks]))
 
-   ))
+
 
 
 (defrecord ProdStore []
@@ -20,12 +20,12 @@
   (post-payment-method [this]
     (assoc mocks/post-payment-method :target-environment :prod))
   (get-payment-method [this]
-    (mapv #(assoc % :target-environment :prod) mocks/get-payment-method ))
+    (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
   (post-token-resource-owner [this]
-    (assoc mocks/post-token-resource-owner :target-environment :prod)  )
+    (assoc mocks/post-token-resource-owner :target-environment :prod))
   (post-refresh-token [this]
-    (assoc mocks/post-refresh-token :target-environment :prod)  )
-  )
+    (assoc mocks/post-refresh-token :target-environment :prod)))
+
 
 (defrecord MockStore []
   component/Lifecycle
@@ -40,13 +40,13 @@
   (post-payment-method [this]
     (assoc mocks/post-payment-method :target-environment :dev))
   (get-payment-method [this]
-    (mapv #(assoc % :target-environment :dev) mocks/get-payment-method ))
+    (mapv #(assoc % :target-environment :dev) mocks/get-payment-method))
   (post-token-resource-owner [this]
     (assoc mocks/post-token-resource-owner  :target-environment :dev))
   (post-refresh-token [this]
-    (assoc mocks/post-refresh-token :target-environment :dev))
+    (assoc mocks/post-refresh-token :target-environment :dev)))
 
-)
+
 
 
 (defn new-prod-store []

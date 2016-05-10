@@ -32,8 +32,7 @@
     (common-resource n n)))
   ([desc swagger-tag]
    {:description desc
-    :produces [{:media-type
-                #{"application/json"}
+    :produces [{:media-type #{"application/json"}
                 :charset "UTF-8"}]
     :swagger/tags (if (vector? swagger-tag)
                     swagger-tag [swagger-tag])}))

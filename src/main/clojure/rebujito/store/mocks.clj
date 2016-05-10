@@ -74,7 +74,7 @@
    \"default\":false,
    \"nickname\":\"SODOOO\"
 }"
-                             true))
+                                true))
 
 (def post-payment-method (json/parse-string "{
    \"isTemporary\":false,
@@ -127,9 +127,9 @@
 (defn extract-body-form
   ([s] (extract-body-form s keyword))
   ([s fkw] (let [data (split s #"&")]
-                               (apply array-map
-                                      (mapcat #(let [[k v] (split % #"=")]
-                                                 [(fkw k) v]) data)))))
+                (apply array-map
+                       (mapcat #(let [[k v] (split % #"=")]
+                                  [(fkw k) v]) data)))))
 
 (def oauth-token-body (extract-body-form "grant_type=password&client_id=kcpttbyxc7rt4kzvyvmgxqvg&client_secret=APIPassword&username=XTest&password=aaaaaa&scope=test_scope"))
 
@@ -154,8 +154,8 @@
    \"receiveStarbucksEmailCommunications\": \"\",
    \"registrationSource\": \"myMobileApp\"
 }"
-    (json/parse-string true)
-    )
+    (json/parse-string true))
+
 
 (def post-token-resource-owner  (-> "{
    \"return_type\": \"json\",
@@ -169,12 +169,12 @@
    \"extended\": null
 }"
 
-                                    (json/parse-string true)
+                                    (json/parse-string true)))
 
-                                    ))
+
 
 (def post-refresh-token (->
-"{
+                         "{
    \"return_type\": \"json\",
    \"access_token\": \"fuam55n4eudrre6uuqwjk7ca\",
    \"token_type\": \"bearer\",
@@ -185,7 +185,7 @@
    \"uri\": null,
    \"extended\": null
 }"
-(json/parse-string true)))
+                         (json/parse-string true)))
 
 
 (json/parse-string "{
