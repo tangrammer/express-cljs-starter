@@ -3,8 +3,8 @@
    [clojure.tools.logging :refer :all]
    [schema.core :as s]
    [starbucks.schema :refer [Starbucks StarbucksEntry]]
-   [clojure.test :refer :all]
-   ))
+   [clojure.test :refer :all]))
+
 
 (def
   ^{:doc "only for tests"}
@@ -32,8 +32,8 @@
   (testing "2 entries db"
     (let [db_test2 (create-db test_full_seed)]
       (is (= test_full_seed @(:starbucks db_test2)))
-      (is (= 3 @(:next-entry db_test2)))))
-  )
+      (is (= 3 @(:next-entry db_test2))))))
+
 
 (s/defn get-entries :- Starbucks
   [db]
@@ -76,7 +76,7 @@
 (deftest add-entry-test
   (let [db (create-db {})
         test_entry  {:username "Jon Pither" :userid "jpit" :password "1235"}]
-    (add-entry db test_entry )
+    (add-entry db test_entry)
     (is (= 1 (count (get-entries db))))
     (is (= test_entry (get-entry db 1)))))
 

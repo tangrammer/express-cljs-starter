@@ -9,16 +9,16 @@
    [yada.yada :refer [handler server]]
    [starbucks.db :as db]
    [starbucks.api :refer [new-api-component]]
-   [starbucks.schema :refer [Config]]
-   ))
+   [starbucks.schema :refer [Config]]))
+
 
 (defn create-vhosts-model [vhosts api]
   (vhosts-model
    [vhosts
     ["/" (fn [req] {:body (html [:p [:a {:href "/starbucks"} "Starbucks"]])})]
     (:routes api)
-    [true (handler nil)]
-    ]))
+    [true (handler nil)]]))
+
 
 (defrecord ServerComponent [vhosts api port]
   Lifecycle

@@ -12,12 +12,10 @@
                            :client_secret String
                            :code String
                            :redirect_url String
-                           :scope String
-                           })
+                           :scope String})
+
 
 (s/defschema Config
   {:vhosts [s/Str]
    :port UserPort
    :entries Starbucks})
-
-

@@ -12,8 +12,8 @@
    [starbucks.db :as db]
    [starbucks.schema :as sch]
    [starbucks.html :as html]
-   [clojure.test :refer :all]
-   ))
+   [clojure.test :refer :all]))
+
 
 
 (defn make-sig
@@ -41,23 +41,23 @@
   (= sig (make-sig apikey secret timestamp)))
 
 (def
-^{:doc "The token response map fixed values."}
+ ^{:doc "The token response map fixed values."}
   token_response_map
   {:return_type "json",
    :token_type "bearer",
-   :expires_in 3600 ; in seconds
-   })
+   :expires_in 3600}) ; in seconds
+
 
 (defn make-access-token
   "TODO generate the token using a key-pair."
   [client_params]
-  "2tz9ebpzqmkyk2rdtg3q7tw9"
-  )
+  "2tz9ebpzqmkyk2rdtg3q7tw9")
+
 
 (defn make-refresh-token
   [client_params]
-  "s482jymwgm9z4a973h7h5qbq"
-  )
+  "s482jymwgm9z4a973h7h5qbq")
+
 
 
 
@@ -76,11 +76,9 @@
                     apikey
                     (:client_secret clientparams)
                     (quot (tcc/to-long (tcor/now)) 1000))
-    (assoc response :body (json/generate-string
-                          (assoc token_response_map  
-                                 :access_token (make-access-token clientparams)
-                                 :refresh_token 
-                                 )))
-    (assoc response :status 400))))
+     (assoc response :body (json/generate-string
+                            (assoc token_response_map
+                                   :access_token (make-access-token clientparams)
+                                   :refresh_token)))
 
- 
+     (assoc response :status 400))))

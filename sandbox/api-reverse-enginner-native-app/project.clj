@@ -11,22 +11,21 @@
   :clean-targets ["target"]
 
   :cljsbuild {
-    :builds [{:id "dev"
-              :source-paths ["sandbox"]
-              :figwheel true
-              :compiler {:main "commie.core"
-                         :output-to "target/index.js"
-                         :output-dir "target/dev"
-                         :target :nodejs
-                         :optimizations :none
-                         :source-map true}}
-             {:id "prod"
-              :source-paths ["sandbox"]
-              :figwheel false
-              :compiler {:main "commie.core"
-                         :output-to "target/index.js"
-                         :output-dir "target/prod"
-                         :target :nodejs
-                         :optimizations :none
-                         :source-map true}}]}
-  )
+              :builds [{:id "dev"
+                        :source-paths ["sandbox"]
+                        :figwheel true
+                        :compiler {:main "commie.core"
+                                   :output-to "target/index.js"
+                                   :output-dir "target/dev"
+                                   :target :nodejs
+                                   :optimizations :none
+                                   :source-map true}}
+                       {:id "prod"
+                        :source-paths ["sandbox"]
+                        :figwheel false
+                        :compiler {:main "commie.core"
+                                   :output-to "target/index.js"
+                                   :output-dir "target/prod"
+                                   :target :nodejs
+                                   :optimizations :none
+                                   :source-map true}}]})

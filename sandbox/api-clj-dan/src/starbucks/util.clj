@@ -3,8 +3,8 @@
   (:require
    [byte-streams :as bs]
    [clojure.data.codec.base64 :as base64]
-   [clojure.test :refer :all]
-   ))
+   [clojure.test :refer :all]))
+
 
 (defn to-string [s]
   (bs/convert s String))

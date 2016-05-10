@@ -43,11 +43,11 @@
      {:get true
       :post :starbucks/write
       :put :starbucks/write
-      :delete :starbucks/delete
+      :delete :starbucks/delete}}
       ;; TODO: Write a thing where we can have multiple keys
       ;; TODO: Maybe coerce it!
       ;; #{:post :put :delete} :starbucks/write
-      }}
+
 
     ;; We want to allow read-access to our starbucks generally
     ;; available to foreign applications (those originating from
@@ -70,8 +70,8 @@
     :allow-credentials false
 
     ;; Required for the Swagger key
-    :allow-headers ["Api-Key"]
-    }})
+    :allow-headers ["Api-Key"]}})
+
 
 (defn new-index-resource [db]
   (resource
@@ -167,5 +167,4 @@
                           :query {:sig String}}
              :consumes [{:media-type #{"application/json"}
                          :charset "UTF-8"}]
-             :response auth/get-token-response}}}
-    ))
+             :response auth/get-token-response}}}))

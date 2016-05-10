@@ -23,29 +23,28 @@
    ;; Misc
    [cheshire "5.6.1"]
    [clj-time "0.11.0"]
-   [buddy/buddy-core "0.12.1"]
+   [buddy/buddy-core "0.12.1"]]
 
-   ]
-  
+
+
   :pedantic? :abort
 
   :plugins [
             [lein-checkall "0.1.1" :exclusions [org.clojure/tools.namespace org.clojure/clojure]]
-            [lein-ancient "0.6.7" :exclusions [org.clojure/clojure]]
-            ]
- 
+            [lein-ancient "0.6.7" :exclusions [org.clojure/clojure]]]
+
+
   :main starbucks.main
 
   :repl-options {:init-ns user
                  :welcome (println "Type (dev) to start")}
 
   :profiles {:dev {:dependencies [[pjstadig/humane-test-output "0.8.0"]
-                                  [ring-mock "0.1.5" :exclusions [commons-codec]]
-                                  ]
+                                  [ring-mock "0.1.5" :exclusions [commons-codec]]]
+
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
                    :test-paths ["src" "test"]
-                   :source-paths ["dev"]
-                   }
-             :check {:global-vars {*warn-on-reflection* true}}
-             })
+                   :source-paths ["dev"]}
+
+             :check {:global-vars {*warn-on-reflection* true}}})

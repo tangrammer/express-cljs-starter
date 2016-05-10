@@ -16,8 +16,8 @@
             (assoc :id ::index))]
     [["/" :entry] (-> (res/new-entry-resource db)
                       (assoc :id ::entry))]
-    ["/oauth/token" (res/new-oauth-resource db)]
-    ]])
+    ["/oauth/token" (res/new-oauth-resource db)]]])
+
 
 (s/defrecord ApiComponent [db routes]
   Lifecycle

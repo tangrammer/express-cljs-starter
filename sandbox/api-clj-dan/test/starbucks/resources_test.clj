@@ -13,8 +13,8 @@
    [cheshire.core :as json]
    [starbucks.util :as utl]
    [starbucks.db :as db]
-   [starbucks.api :refer [api]]
-   ))
+   [starbucks.api :refer [api]]))
+
 
 (def
   ^{:doc "only for tests"}
@@ -93,30 +93,29 @@
                    :client_secret "abcd"
                    :code "1234"
                    :redirect_url "https://www.starbucks.com/"
-                   :scope "test"
-                   }
-  )
+                   :scope "test"})
+
+
 
 (deftest oauth-token
   (let [db (db/create-db test_full_seed)
         h (make-handler (create-api db))
         apikey "2fvmer3qbk7f3jnqneg58bu2"
         td1 (assoc test_token_data :grant_type "authorization_code")
-        req (-> (mock/request :post "/starbucks/oauth/token" )
+        req (-> (mock/request :post "/starbucks/oauth/token")
                 (update :headers assoc
                         "X-Api-Key" apikey
                         "Content-Type" "application/x-www-form-urlencoded"
-                        "Accept" "application/json"
-                        )
+                        "Accept" "application/json")
+
                 (mock/query-string {"sig" "1234567"})
                 (assoc :body (json/generate-string td1)))
         response @(h req)
-        {:keys [status body error]} response
-        ]
+        {:keys [status body error]} response]
+
     ;; (log/debugf "oauth-token: response = %s" response)
     ;; (log/debugf "oauth-token: body = %s" (json/parse-string (b/to-string body) true))
     (log/debugf "oauth-token: error = %s" error)
-    (log/debugf "oauth-token: status = %d" status)
+    (log/debugf "oauth-token: status = %d" status)))
     ;; (is (= 204 (:status response)))
     ;; (is (nil? (:body response)))
-    ))
