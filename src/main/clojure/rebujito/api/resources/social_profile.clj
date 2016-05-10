@@ -16,7 +16,7 @@
    (->
     {:methods
      {:put {:parameters {:query {:access_token String}
-                         :body (-> schema :put )}
+                         :body (-> schema :put)}
             :consumes [{:media-type #{"application/json" "application/xml"}
                         :charset "UTF-8"}]
 
@@ -25,7 +25,7 @@
                           "111023" (>400 ctx ["No Request supplied" "Request was malformed. Must contain a body."])
                           "111033" (>400 ctx ["User does not exist" "User could not be found"])
                           "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request"])
-                          (>200 ctx ["OK"])
-                          ))}}}
+                          (>200 ctx ["OK"])))}}}
+
     (merge (common-resource :me/social-profile))
     (merge access-control))))

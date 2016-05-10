@@ -51,8 +51,8 @@
                               "111041" (>400 ctx ["Invalid email address" "Email address was malformed"])
                               "111046" (>400 ctx ["firstName failed profanity check." ""])
                               "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                              (>201 ctx ["Created" "Resource Created"])
+                              (>201 ctx ["Created" "Resource Created"])))}}}
 
-                              ))}}}
+
        (merge (common-resource :account))
        (merge access-control))))

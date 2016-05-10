@@ -13,13 +13,13 @@
                                                               :client_secret String}
                                                              "token-refresh-token")}
              :token-resource-owner {:post (s/schema-with-name {:grant_type String
-                                                         :client_id String
-                                                         :client_secret String
-                                                         :username String
-                                                         :password String
-                                                         :scope String}
-                                                        "token-resource-owner")}
-             })
+                                                               :client_id String
+                                                               :client_secret String
+                                                               :username String
+                                                               :password String
+                                                               :scope String}
+                                                        "token-resource-owner")}})
+
 
 (defn token-resource-owner [store]
   (resource
@@ -29,8 +29,8 @@
                                     #(some? (-> % :refresh_token))
                                     (-> schema :token-refresh-token :post)
                                     #(nil? (-> % :refresh_token))
-                                    (-> schema :token-resource-owner :post)
-                                    )}
+                                    (-> schema :token-resource-owner :post))}
+
                 :consumes [{:media-type #{"application/json" "application/xml" #_"application/x-www-form-urlencoded"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
@@ -44,8 +44,8 @@
                               "500" (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."])
                               (>200 ctx (when (get-in ctx [:parameters :body :refresh_token])
                                           (p/post-refresh-token store)
-                                          (p/post-token-resource-owner store)))
+                                          (p/post-token-resource-owner store)))))}}}
 
-                              ))}}}
+
        (merge (common-resource :oauth))
        (merge access-control))))

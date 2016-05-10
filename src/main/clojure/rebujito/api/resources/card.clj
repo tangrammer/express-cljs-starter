@@ -21,8 +21,8 @@
 
                            "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request.
 "])
-                           (>201 ctx [(p/get-card store)])
-                           ))}}}
+                           (>201 ctx [(p/get-card store)])))}}}
+
     (merge (common-resource :me/cards))
     (merge access-control))))
 
@@ -33,22 +33,22 @@
     {:methods
      {:delete {:parameters {:path {:card-id String}
                             :query {:access_token String}}
-             :consumes [{:media-type #{"application/json" "application/xml"}
-                         :charset "UTF-8"}]
+               :consumes [{:media-type #{"application/json" "application/xml"}
+                           :charset "UTF-8"}]
 
-             :response (fn [ctx]
-                         (condp = (get-in ctx [:parameters :query :access_token])
+               :response (fn [ctx]
+                           (condp = (get-in ctx [:parameters :query :access_token])
 
-                           "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
-                           "403" (>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object.
+                             "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
+                             "403" (>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object.
 "])
-                           "121032" (>403 ctx ["Card is reported lost or stolen" "
+                             "121032" (>403 ctx ["Card is reported lost or stolen" "
 "])
-                           "121037" (>403 ctx ["Card is closed." ""])
-                           "404" (>404 ctx ["Not Found" "Resource was not found"])
-                           "121018" (>400 ctx ["Cannot unregister a digital card that has a balance greater than zero." "Only zero balance digital cards can be unregistered"])
-                           (>200 ctx ["OK" "Success"])
-                           ))}}}
+                             "121037" (>403 ctx ["Card is closed." ""])
+                             "404" (>404 ctx ["Not Found" "Resource was not found"])
+                             "121018" (>400 ctx ["Cannot unregister a digital card that has a balance greater than zero." "Only zero balance digital cards can be unregistered"])
+                             (>200 ctx ["OK" "Success"])))}}}
+
     (merge (common-resource :me/cards))
     (merge access-control))))
 
@@ -82,8 +82,8 @@
                            "122000" (>403 ctx ["Card is already registered.." "Card number and pin are already registered to user."])
 
                            "500" (>500 ctx ["Internal Server Error :( "])
-                           (>200 ctx (p/get-card store))
-                           ))}}}
+                           (>200 ctx (p/get-card store))))}}}
+
     (merge (common-resource :me/cards))
     (merge access-control))))
 
@@ -99,7 +99,7 @@
                          (condp = (get-in ctx [:parameters :query :access_token])
                            "400" (>400 ctx ["No registration address on file. Registration address must already exist for user."])
                            "500" (>500 ctx ["Internal Server Error :( "])
-                           (>201 ctx (p/get-card store))
-                           ))}}}
+                           (>201 ctx (p/get-card store))))}}}
+
     (merge (common-resource :me/cards))
     (merge access-control))))

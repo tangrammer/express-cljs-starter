@@ -38,5 +38,4 @@
     :swagger/tags (if (vector? swagger-tag)
                     swagger-tag [swagger-tag])}))
 (def access-control
-  {:access-control {}
-   })
+  {:access-control {}})
