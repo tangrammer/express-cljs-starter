@@ -71,9 +71,8 @@
                        :aot        :all}
 
              :dev     {:dependencies   [[org.clojure/tools.nrepl "0.2.11"]
-                                        [org.clojure/tools.namespace "0.2.11"]
-                                        [proto-repl "0.1.2"]]
-
+                                        [org.clojure/tools.namespace "0.2.11"]]
+                       :main user
                        :resource-paths ["src/main/resources" "src/test/resources"]
 
                        :source-paths   ["src/dev/clojure"]}})
