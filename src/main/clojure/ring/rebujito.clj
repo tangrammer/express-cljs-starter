@@ -7,10 +7,11 @@
    [taoensso.timbre :as log])
   (:gen-class))
 
+(def p (promise))
 
 (defn -main []
   ;; We eval so that we don't AOT anything beyond this class
-  (log/info "Starting Rebujito!")
+
   (log/info "Env:" (with-out-str
                      (clojure.pprint/pprint
                       (select-keys (config :prod) [:env-type]))))
@@ -18,4 +19,6 @@
     (log/info "System starting")
     (log/info "This is your webserver port: " (-> system :webserver :port))
     (log/info ":) > Congrats, your system is ready to use!")
-    system))
+    system
+    @p
+    ))
