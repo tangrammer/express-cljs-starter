@@ -1,0 +1,19 @@
+{:account {:postalcode String
+           :address String
+
+           :city String
+           :region String
+           :country String
+
+           :mobile String
+
+           :email String
+           :password String
+
+           :firstname String
+           :lastname String
+
+           ;; TODO: we need to check in micros
+           ;; :birthDay String
+           ;; :birthMonth String
+           }}
