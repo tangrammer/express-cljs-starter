@@ -5,4 +5,7 @@
   ([]
    (config nil))
   ([profile]
-   (aero/read-config "src/main/resources/config.edn" {:profile profile})))
+   ;;(aero/read-config "src/main/resources/config.edn" {:profile profile})
+    (aero/read-config (clojure.java.io/resource "config.edn") {:profile profile})
+
+   ))

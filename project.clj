@@ -34,7 +34,7 @@
 
 
                  ;; config loader
-                 [aero "1.0.0-beta2"]
+                 [tangrammer/aero "0.2.3"]
 
 
                  [potemkin "0.4.3" :exclusions [riddley]]
