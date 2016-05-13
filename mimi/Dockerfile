@@ -4,8 +4,6 @@ WORKDIR /src
 
 RUN apk add --no-cache openssh git
 
-WORKDIR /src
-
 # add deploy key for npm 'private' modules on github
 COPY deploy.ssh /root/.ssh/
 RUN chmod 600 /root/.ssh/*
@@ -19,13 +17,6 @@ COPY . .
 
 # remove deploy key from image
 RUN rm -rf /root/.ssh/
-
-# version info
-RUN \
-  VERSION=$(git rev-parse --short HEAD) && \
-  DATE=$(date +%Y-%m-%dT%H:%M:%S) && \
-  if ! [[ -z "`git status -s`" ]]; then VERSION="!! DIRTY ${VERSION}"; fi && \
-  sed -i "s/@@__VERSION__@@/${VERSION}/g;s/@@__BUILT__@@/${DATE}/g" package.json
 
 EXPOSE 3000
 CMD ["npm", "start"]

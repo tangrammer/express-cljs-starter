@@ -8,9 +8,6 @@
 (def morgan (nodejs/require "morgan"))
 (def body-parser (nodejs/require "body-parser"))
 (def jwt (nodejs/require "express-jwt"))
-(def package (nodejs/require "../../package.json"))
-
-(def meta (->> package .-meta))
 
 (def app (express))
 
@@ -18,7 +15,7 @@
 (.use app (.json body-parser))
 (.use app (.unless (jwt #js {:secret config/jwt-secret}) #js {:path #js ["/mimi/health"]}))
 
-(.get app "/mimi/health" #(.json %2 meta))
+(.get app "/mimi/health" #(.send %2 "ok"))
 
 (defn init []
   "bhauman's secret sauce http://bit.ly/1MZE1zx"
