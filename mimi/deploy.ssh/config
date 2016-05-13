@@ -1,0 +1,5 @@
+HOST *
+    User git
+    HostName github.com
+    IdentityFile ~/.ssh/deploy_key
+    StrictHostKeyChecking no
