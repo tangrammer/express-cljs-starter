@@ -6,6 +6,8 @@
                       :prod :prod}
  :yada {:port 3000}
 
+ :mimi {:base-url "https://api.swarmloyalty.co.za"}
+
  :secrets #include #join [#env HOME "/.secrets.edn"]
  :greeting "World!"
 

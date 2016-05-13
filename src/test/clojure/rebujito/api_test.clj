@@ -1,6 +1,7 @@
 (ns rebujito.api-test
   (:require
    [aleph.http :as http]
+   [org.httpkit.client :as http-k]
    [bidi.bidi :as bidi]
    [byte-streams :as bs]
    [cheshire.core :as json]
@@ -150,7 +151,15 @@
 
   (comment
     "here the way to parse the byte-stream body response"
-    (-> @(http/get "https://google.com/")
+
+    (let [{:keys [status body]}
+          (-> @(http-k/get "https://api.swarmloyalty.co.za/" )
+
+
+              )]
+      status
+      )
+
+    (-> @(http/get "https://api.swarmloyalty.co.za" {:insecure? true})
         :body
-        bs/to-string
-        prn)))
+        )))
