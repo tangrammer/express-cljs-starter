@@ -7,3 +7,7 @@
   (get-payment-method [this])
   (post-token-resource-owner [this])
   (post-refresh-token [this]))
+
+
+(defprotocol Mimi
+  (create-account [this data]))

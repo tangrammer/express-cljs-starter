@@ -4,21 +4,33 @@
    [com.stuartsierra.component :as component :refer (using)]
    [rebujito.config :refer (config)]
    [rebujito.store :refer (new-mock-store)]
+   [rebujito.mimi :refer (new-mock-mimi)]
    [rebujito.system :refer (new-system-map new-dependency-map)]))
 
 
 (def mod-defs
   {:system-mods
-   {:+mock-store
+   {
+    :+mock-store
     (fn [config]
       (println "using :+mock-store profile in dev-system")
       (fn [system-map]
         (-> system-map
-            (assoc :store (new-mock-store)))))}
+            (assoc :store (new-mock-store)))))
+    :+mock-mimi
+    (fn [config]
+      (println "using :+mock-store profile in dev-system")
+      (fn [system-map]
+        (-> system-map
+            (assoc :mimi (new-mock-mimi (:mimi config))))))}
    :dependency-mods
    {:+mock-store (fn [config]
                    (fn [dependency-map]
-                     (println "using :mock-store profile in dependency dev-system")
+                     (println "using :mock-store  in dependency dev-system")
+                     dependency-map))
+    :+mock-mimi (fn [config]
+                   (fn [dependency-map]
+                     (println "using :mock-mimi  in dependency dev-system")
                      dependency-map))}})
 
 
