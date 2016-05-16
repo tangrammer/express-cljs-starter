@@ -4,6 +4,15 @@
             [mimi.log :as log]))
 
 (def jwt (nodejs/require "express-jwt"))
+(def micros (nodejs/require "micros"))
+(def moment (nodejs/require "moment"))
+
+(. micros (setBrand "starbucks"))
+
+(def createCustomer (.-createCustomer micros))
+
+(defn now-iso []
+  (.format (moment) "YYYY-MM-DD HH:mm:ss.S"))
 
 ; (.use app (.unless (jwt #js {:secret config/jwt-secret}) #js {:path #js ["/mimi/health"]}))
 
@@ -19,7 +28,9 @@
         city (get req-body "city")
         region (get req-body "region")
         country (get req-body "country")
-        postalcode (get req-body "postalcode")]
+        postalcode (get req-body "postalcode")
+        gender (get req-body "gender")
+        birthday (get req-body "birthday")]
     {:firstname firstname
      :lastname lastname
      :password password
@@ -29,13 +40,31 @@
      :city city
      :region region
      :country country
-     :postalcode postalcode}))
+     :postalcode postalcode
+     :gender gender
+     :birthday birthday}))
+
+(defn customer-details-from-payload [payload]
+  {:firstname (get payload :firstname)
+   :lastname (get payload :lastname)
+   :mobilephonenumber (get payload :mobile)
+   :emailaddress (get payload :email)
+   :state (get payload :region)
+   :city (get payload :city)
+   :gender (first (get payload :gender))
+   :birthday (str (get payload :birthday) " 00:00:00.0")
+   :signupdate (now-iso)
+   :createddate (now-iso)})
 
 (.post app "/mimi/starbucks/account"
   (fn
     [req res]
     "create a starbucks customer in micros"
-    (let [payload (parse-customer-fields (->> req .-body js->clj))]
-      ; (log/debug "got" payload)
+    (let [payload (parse-customer-fields (->> req .-body js->clj))
+          details (customer-details-from-payload payload)]
       (prn payload)
-      (.send res "ok"))))
+      (prn details)
+      (createCustomer (clj->js details)
+        (fn [err result]
+          (prn err result)
+          (.send res result))))))
