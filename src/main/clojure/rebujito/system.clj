@@ -4,6 +4,7 @@
   (:require
     [com.stuartsierra.component :refer [system-map system-using using] :as component]
     [modular.aleph :refer [new-webserver]]
+    [modular.mongo :refer [new-mongo-database new-mongo-connection]]
     [modular.bidi :refer [new-router new-web-resources new-redirect]]
     [rebujito.api :as api]
     [rebujito.config :refer [config]]
@@ -34,6 +35,10 @@
                  {
                   :docsite-router (new-router)
 
+                  :db (new-mongo-database (-> config :mongo))
+
+                  :db-conn (new-mongo-connection)
+
                   :store (store/new-prod-store)
 
                   :mimi (mimi/new-prod-mimi (:mimi config))
@@ -55,7 +60,8 @@
   []
   {
    :webserver {:request-handler :docsite-router}
-   :api [:store :mimi]
+   :db-conn {:database :db}
+   :api [:store :mimi :db-conn]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 
