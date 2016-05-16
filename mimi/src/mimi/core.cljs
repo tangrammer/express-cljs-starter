@@ -13,6 +13,6 @@
 (def -main
   (fn []
     (doto (.createServer http #(app %1 %2))
-      (.listen port #(log/info "mimi started on " port)))))
+      (.listen port #(log/info "mimi started on" port)))))
 
 (set! *main-cli-fn* -main)
