@@ -9,7 +9,7 @@
 
 (. micros (setBrand "starbucks"))
 
-(def createCustomer (.-createCustomer micros))
+(def createMicrosCustomer (.-createCustomer micros))
 
 (defn now-iso []
   (.format (moment) "YYYY-MM-DD HH:mm:ss.S"))
@@ -64,7 +64,7 @@
           details (customer-details-from-payload payload)]
       (prn payload)
       (prn details)
-      (createCustomer (clj->js details)
+      (createMicrosCustomer (clj->js details)
         (fn [err result]
           (prn err result)
           (.send res result))))))
