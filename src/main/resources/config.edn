@@ -8,6 +8,14 @@
 
  :mimi {:base-url "https://api.swarmloyalty.co.za"}
 
+ #_:mongo #_{
+         :host "localhost"
+         :port 27017
+         :database "documents"
+
+         :user {:username "juan"
+                :password "juan"}}
+
  :secrets #include #join [#env HOME "/.secrets.edn"]
  :greeting "World!"
 

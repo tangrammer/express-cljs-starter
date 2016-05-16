@@ -12,7 +12,7 @@
 
 
                  ;; http server
-                 [aleph "0.4.2-alpha3" :exclusions [org.clojure/clojure]]
+                 [aleph "0.4.2-alpha4" :exclusions [org.clojure/clojure]]
                  [bidi "2.0.6" :exclusions [ring/ring-core]]
                  [ring/ring-core "1.4.0"]
                  [yada "1.1.6" :exclusions [bidi org.clojure/clojurescript]]
@@ -28,6 +28,9 @@
                  [juxt.modular/aleph "0.1.4"]
                  [juxt.modular/bidi "0.9.5"]
                  [juxt.modular/ring "0.5.3"]
+
+                 [com.novemberain/monger "3.0.1"]
+
 
 
 
