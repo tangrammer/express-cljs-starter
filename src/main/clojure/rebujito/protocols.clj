@@ -1,4 +1,5 @@
-(ns rebujito.protocols)
+(ns rebujito.protocols
+    (:refer-clojure :exclude (find)))
 
 (defprotocol Store
   (get-card [this])
@@ -11,3 +12,17 @@
 
 (defprotocol Mimi
   (create-account [this data]))
+
+
+(defprotocol MutableStorage
+  (find
+    [this]
+    [this data])
+  (insert! [this data]
+    "return true/false")
+  (update! [this data]
+    "return true/false")
+  (get-and-update! [this data]
+    "the result is the updated document")
+  (get-and-insert! [this data]
+    "the result is the udpated document"))

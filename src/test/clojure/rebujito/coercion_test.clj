@@ -1,6 +1,6 @@
 (ns rebujito.coercion-test
   (:require [clojure.test :refer :all]
-            [rebujito.mongo :refer (query-by-example-coercer)]
+            [rebujito.mongo.schemas :refer (query-by-example-coercer)]
             [rebujito.coercion :refer :all]))
 
 
