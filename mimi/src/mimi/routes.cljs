@@ -67,4 +67,20 @@
       (createMicrosCustomer (clj->js details)
         (fn [err result]
           (prn err result)
+          ;; TODO send {:status "ok" :customerid "123"})
           (.send res result))))))
+
+(defn parse-link-card [req-body]
+  (let [customer-id (get req-body "customerId")
+        card-number (get req-body "cardNumber")]
+    {:customer-id customer-id
+     :card-number card-number}))
+
+(.post app "/mimi/starbucks/account/card"
+  (fn
+    [req res]
+    "link card to account"
+    (let [fields (parse-link-card (->> req .-body js->clj))]
+      (log/debug "got fields")
+      (prn fields)
+      (.send res "ok"))))
