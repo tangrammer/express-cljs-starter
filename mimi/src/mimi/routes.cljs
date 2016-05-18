@@ -10,6 +10,7 @@
 (. micros (setBrand "starbucks"))
 
 (def createMicrosCustomer (.-createCustomer micros))
+(def linkCard (.-setCustomerPosRef micros))
 
 (defn now-iso []
   (.format (moment) "YYYY-MM-DD HH:mm:ss.S"))
@@ -80,7 +81,12 @@
   (fn
     [req res]
     "link card to account"
-    (let [fields (parse-link-card (->> req .-body js->clj))]
+    (let [fields (parse-link-card (->> req .-body js->clj))
+          customer-id (:customer-id fields)
+          card-number (:card-number fields)]
       (log/debug "got fields")
       (prn fields)
-      (.send res "ok"))))
+      (linkCard customer-id card-number
+        (fn [err result]
+          (prn err result)
+          (.send res result))))))
