@@ -1,11 +1,8 @@
 node_modules
 target
 *.log
-notes.md
 .nrepl-port
 .lein-repl-history
-todo.md
 .lein-env
 .lein-failures
 .#*
-/notes.org
