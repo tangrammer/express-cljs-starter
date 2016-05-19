@@ -70,7 +70,11 @@
         (fn [err result]
           (prn err result)
           ;; TODO send {:status "ok" :customerid "123"})
-          (.send res result))))))
+          (if err
+            (do
+              (. res (code 500))
+              (. res (send err)))
+            (.send res result)))))))
 
 (defn parse-link-card [req-body]
   (let [customer-id (get req-body "customerId")
@@ -90,4 +94,8 @@
       (linkCard customer-id card-number
         (fn [err result]
           (prn err result)
-          (.send res result))))))
+          (if err
+            (do
+              (. res (status 500))
+              (. res (send err)))
+            (.send res result)))))))
