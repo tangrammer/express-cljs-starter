@@ -70,6 +70,9 @@
                  [org.slf4j/log4j-over-slf4j "1.7.21"]
                  [org.slf4j/slf4j-nop "1.7.21"]
 
+                 ;; external web services
+                 [ring.velocity "0.1.2"]
+                 
                  ;; explicit deps to avoid conflicts
                  [clj-time "0.11.0"]
                  [org.clojure/tools.reader "1.0.0-beta1"]]

@@ -34,7 +34,7 @@
 
                ["/paymentmethods" [["" (-> (payment/methods store)
                                            (assoc :id ::payment/methods))]
-                                   [["/" :payment-mehod-id] (-> (payment/method-detail store)
+                                   [["/" :payment-method-id] (-> (payment/method-detail store)
                                                                 (assoc :id ::payment/method-detail))]]]
                ["/socialprofile/account" (-> (social-profile/account store)
                                              (assoc :id ::social-profile/account))]]]]])

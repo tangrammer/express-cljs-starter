@@ -16,7 +16,8 @@
    [rebujito.config :refer (config)]
    [rebujito.system :refer (new-production-system)]
    [schema-generators.generators :as g]
-   [schema.core :as s]))
+   [schema.core :as s]
+   [ring.velocity.core :as x]))
 
 
 (def ^:dynamic *system* nil)
@@ -163,3 +164,53 @@
     (-> @(http/get "https://api.swarmloyalty.co.za" {:insecure? true})
         :body
         )))
+
+(deftest aTest
+  (is (= 4 (+ 2 2)))
+  (is (= 7 (+ 3 4))))
+
+(deftest velocityRenderingTest
+  (is (= "hello,dennis,your age is 29." (x/render "test.vm" :name "dennis" :age 29)))
+  (let [{:keys [status body]}
+        (-> @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
+                          {:body (x/render "paygate/ping.vm"
+                                           :paygateId (config [:paygate-account :paygateId])
+                                           :paygatePassword (config [:paygate-account :paygatePassword]) 
+                                           :identifier "test")}))]
+    (is (= 200 status))
+    (is (.contains body "PingResponse"))
+    (is (not (.contains body "SOAP-ENV:Fault|payhost:error")))))
+
+(deftest paygateVaultTest
+  (let [{:keys [status body]}
+        (-> @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
+                          {:body (x/render "paygate/vault.vm"
+                                           :paygateId (config [:paygate-account :paygateId])
+                                           :paygatePassword (config [:paygate-account :paygatePassword])
+                                           :cardNumber "4000000000000002" 
+                                           :expirationMonth 11 
+                                           :expirationYear 2018
+                                           )}))]
+    (is (= 200 status))
+    (is (.contains body "CardVaultResponse"))
+    (is (not (.contains body "SOAP-ENV:Fault|payhost:error")))))
+
+(deftest paygatePaymentTest
+  (let [{:keys [status body]}
+        (-> @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
+                          {:body (x/render "paygate/payment.vm"
+                                           :paygateId (config [:paygate-account :paygateId])
+                                           :paygatePassword (config [:paygate-account :paygatePassword])
+                                           :firstName "Stefan" 
+                                           :lastName "Tester" 
+                                           :emailAddress "stefan.tester@example.com"
+                                           :addresslines ["1 Main Street" "Building"]
+                                           :cardToken "7a17ba06-deab-4e53-b7d9-ca4cfc3d94ec"
+                                           :cvn "123"
+                                           :transactionId "12345"
+                                           :currency "ZAR"
+                                           :amount 100
+                                           )}))]
+    (is (= 200 status))
+    (is (.contains body "CardPaymentResponse"))
+    (is (not (.contains body "SOAP-ENV:Fault|payhost:error")))))

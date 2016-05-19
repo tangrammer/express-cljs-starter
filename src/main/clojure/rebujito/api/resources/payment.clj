@@ -12,7 +12,7 @@
    (->
     {:methods
      {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}
-                         :path {:payment-mehod-id String}}
+                         :path {:payment-method-id String}}
             :consumes [{:media-type #{"application/json"}
                         :charset "UTF-8"}]
 
@@ -23,7 +23,7 @@
                           (>201 ctx (p/get-payment-method-detail store))))}
 
       :delete {:parameters {:query {:access_token String}
-                            :path {:payment-mehod-id String}}
+                            :path {:payment-method-id String}}
                :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
 
@@ -34,7 +34,7 @@
                              (>200 ctx ["OK" "Success"])))}
 
       :put {:parameters {:query {:access_token String}
-                         :path {:payment-mehod-id String}
+                         :path {:payment-method-id String}
                          :body {:expirationYear Long
                                 :billingAddressId String
                                 :accountNumber String
@@ -70,7 +70,7 @@
                           (>200 ctx ["OK" "Success"])))}}}
 
 
-    (merge (common-resource "me/payment-methods/payment/{payment-method-id}"))
+    (merge (common-resource "me/payment-methods/{payment-method-id}"))
     (merge access-control))))
 
 (def schema {:methods {:post {:expirationYear Long
