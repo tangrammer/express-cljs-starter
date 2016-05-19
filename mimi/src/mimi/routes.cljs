@@ -1,7 +1,8 @@
 (ns mimi.routes
   (:require [cljs.nodejs :as nodejs]
             [mimi.express :refer [app]]
-            [mimi.log :as log]))
+            [mimi.log :as log]
+            [mimi.config :as config]))
 
 (def jwt (nodejs/require "express-jwt"))
 (def micros (nodejs/require "micros"))
@@ -15,7 +16,7 @@
 (defn now-iso []
   (.format (moment) "YYYY-MM-DD HH:mm:ss.S"))
 
-; (.use app (.unless (jwt #js {:secret config/jwt-secret}) #js {:path #js ["/mimi/health"]}))
+(.use app (.unless (jwt #js {:secret config/jwt-secret}) #js {:path #js ["/mimi/health"]}))
 
 (.get app "/mimi/health" #(.send %2 "ok"))
 
