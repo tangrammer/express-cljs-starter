@@ -10,8 +10,8 @@
 
 (. micros (setBrand "starbucks"))
 
-(def createMicrosCustomer (.-createCustomer micros))
-(def linkCard (.-setCustomerPosRef micros))
+(def create-micros-customer (.-createCustomer micros))
+(def link-card (.-setCustomerPosRef micros))
 
 (defn now-iso []
   (.format (moment) "YYYY-MM-DD HH:mm:ss.S"))
@@ -66,7 +66,7 @@
           details (customer-details-from-payload payload)]
       (prn payload)
       (prn details)
-      (createMicrosCustomer (clj->js details)
+      (create-micros-customer (clj->js details)
         (fn [err result]
           (prn err result)
           ;; TODO send {:status "ok" :customerid "123"})
@@ -91,7 +91,7 @@
           card-number (:card-number fields)]
       (log/debug "got fields")
       (prn fields)
-      (linkCard customer-id card-number
+      (link-card customer-id card-number
         (fn [err result]
           (prn err result)
           (if err
