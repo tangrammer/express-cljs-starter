@@ -69,7 +69,7 @@
                             :charset "UTF-8"}]
                :response (fn [ctx]
                            (try
-                             (if-let [res (p/db-find user-store (get-in ctx [:parameters :query :access_token]))]
+                             (if-let [res (p/find user-store (get-in ctx [:parameters :query :access_token]))]
                                (>201 ctx res)
                                (>404 ctx ["Not Found" "Account Profile with given userId was not found."]))
                              (catch Exception e
