@@ -73,8 +73,8 @@
           (if err
             (do
               (. res (code 500))
-              (. res (send err)))
-            (.send res result)))))))
+              (. res (json err)))
+            (.json res result)))))))
 
 (defn parse-link-card [req-body]
   (let [customer-id (get req-body "customerId")
@@ -97,5 +97,5 @@
           (if err
             (do
               (. res (status 500))
-              (. res (send err)))
-            (.send res result)))))))
+              (. res (json err)))
+            (.json res result)))))))
