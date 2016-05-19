@@ -11,6 +11,15 @@
    [taoensso.timbre :as log])
   (:import [org.bson.types ObjectId]))
 
+
+(defmulti db-find "dispatch on data meaning"
+  (fn [mutable-storage data] (type data)))
+
+(defmethod db-find :default [_ data]
+  (throw (IllegalArgumentException.
+          (str "Not ready to db-find using: " (type data)))))
+
+
 (defrecord UserStorage [db-conn collection]
   component/Lifecycle
   (start [this]
@@ -24,16 +33,26 @@
   protocols/MutableStorage
   (find [this]
     (mc/find (:db this) (:collection this)))
-
   (find [this data]
-    (let [data (query-by-example-coercer data)]
-      (if (:_id data)
-        (mc/find-map-by-id (:db this) (:collection this) (:_id data))
-        (mc/find (:db this) (:collection this) data))))
+    (db-find this data))
 
   (get-and-insert! [this data]
     (mc/insert-and-return (:db this) (:collection this) data)))
 
-
 (defn new-user-store []
   (map->UserStorage {:collection :users}))
+
+(defn- find-map-by-id [mutable-storage id]
+  (mc/find-map-by-id (:db mutable-storage) (:collection mutable-storage) id))
+
+(defmethod db-find String
+  [mutable-storage data]
+  (find-map-by-id mutable-storage (org.bson.types.ObjectId. data)))
+
+(defmethod db-find org.bson.types.ObjectId
+  [mutable-storage data]
+  (find-map-by-id mutable-storage data))
+
+(defmethod db-find clojure.lang.PersistentArrayMap
+  [mutable-storage data]
+  (mc/find (:db mutable-storage) (:collection mutable-storage) data))

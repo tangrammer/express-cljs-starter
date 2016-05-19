@@ -3,7 +3,6 @@
     [com.stuartsierra.component :as component]
 
     [schema.core :as s]
-    [rebujito.api.resources :as resources]
     [rebujito.api.resources.payment :as payment]
     [rebujito.api.resources.oauth :as oauth]
     [rebujito.api.resources.account :as account]

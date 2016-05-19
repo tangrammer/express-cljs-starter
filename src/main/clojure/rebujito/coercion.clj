@@ -10,6 +10,6 @@ By default p/schema catch all errors "
     (let [coercion-result (c schema)]
       (if (= schema.utils.ErrorContainer (type coercion-result))
         (->
-         (str "PARSE_ID_ERROR: " (schema.utils/validation-error-explain (->  coercion-result :error)))
+         (str "COERCER_ERROR: " (schema.utils/validation-error-explain (->  coercion-result :error)))
          schema.macros/error!)
         coercion-result))))
