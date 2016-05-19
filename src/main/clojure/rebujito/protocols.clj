@@ -22,6 +22,8 @@
     ;; else data means the query, and then it returns a list of
     ;; documents that match the query
     )
+  (generate-id [this data]
+    "generate id for this storage")
   (insert! [this data]
     "aysnc, return true/false")
   (update! [this data]

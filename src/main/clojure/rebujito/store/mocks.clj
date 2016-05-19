@@ -133,22 +133,22 @@
 (json/generate-string oauth-refresh-token-body)
 
 
-(-> "{
-   \"emailAddress\": \"json2@coffee.com\",
-   \"password\": \"jsonPa$$w0rd2\",
+(def account (-> "{
+   \"addressLine1\": \"757 Richards Street\",
    \"birthDay\": \"31\",
    \"birthMonth\": \"9\",
-   \"firstName\": \"Jessica\",
-   \"lastName\": \"Sons\",
-   \"addressLine1\": \"757 Richards Street\",
    \"city\": \"Vancouver\",
    \"countrySubdivision\": \"BC\",
    \"country\": \"CA\",
+   \"emailAddress\": \"json2@coffee.com\",
+   \"firstName\": \"Jessica\",
+   \"lastName\": \"Sons\",
+   \"password\": \"jsonPa$$w0rd2\",
    \"postalCode\": \"V6B 3A6\",
    \"receiveStarbucksEmailCommunications\": \"\",
    \"registrationSource\": \"myMobileApp\"
 }"
-    (json/parse-string true))
+     (json/parse-string true)))
 
 
 (def post-token-resource-owner  (-> "{

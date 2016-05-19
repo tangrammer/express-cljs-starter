@@ -1,25 +1,45 @@
 (ns rebujito.api.resources.account
-  (:refer-clojure :exclude [methods])
   (:require
-   [rebujito.protocols :as p]
    [rebujito.api.util :refer :all]
-   [cheshire.core :as json]
+   [rebujito.mimi :as mim]
+   [rebujito.protocols :as p]
    [schema.core :as s]
-   [yada.resource :refer [resource]]))
+   [yada.resource :refer [resource]]
+   ))
 
-(def schema {:post {:countrySubdivision String
-                    :registrationSource String
+(def schema {:post {
                     :addressLine1 String
-                    :password String
-                    :emailAddress String
-                    :city String
-                    :firstName String
                     :birthDay String
                     :birthMonth String
+                    :city String
+                    :country String
+                    :countrySubdivision String
+                    :emailAddress String
+                    :firstName String
                     :lastName String
-                    :receiveStarbucksEmailCommunications String
+                    :password String
                     :postalCode String
-                    :country String}})
+                    :receiveStarbucksEmailCommunications String
+                    :registrationSource String
+                    }})
+
+(def CreateAccountMimiMapping
+  {mim/CreateAccountSchema
+   (fn [x]
+     {
+      :address (:addressLine1 x)
+      :birthday (:birthDay x) ;; 'YYYY-MM-DD'
+      :city (:city x)
+      :country (:country x)
+      :email (:emailAddress x)
+      :firstname "String"
+      :gender "String" ;; (male|female)
+      :lastname "String"
+      :mobile "String"
+      :password "String"
+      :postalcode "String"
+      :region "String"
+      })})
 
 (defn create [store mimi user-store]
   (resource
@@ -53,7 +73,7 @@
                                       "111046" (>400 ctx ["firstName failed profanity check." ""])
                                       "500" (>500 ctx ["An unexpected error occurred processing the request."])
                                       (>201 ctx (p/get-and-insert! user-store (assoc (get-in ctx [:parameters :body])
-                                                                                     :_id (first res)))
+                                                                                     :_id (p/generate-id user-store (first res))))
                                             ))))}}}
 
 
