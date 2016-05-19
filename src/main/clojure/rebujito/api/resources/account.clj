@@ -21,7 +21,7 @@
                     :postalCode String
                     :country String}})
 
-(defn create [store mimi]
+(defn create [store mimi user-store]
   (resource
    (-> {:methods
         {:post {:parameters {:query {:access_token String
@@ -52,7 +52,28 @@
                                       "111041" (>400 ctx ["Invalid email address" "Email address was malformed"])
                                       "111046" (>400 ctx ["firstName failed profanity check." ""])
                                       "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                                      (>201 ctx res))))}}}
+                                      (>201 ctx (p/get-and-insert! user-store (get-in ctx [:parameters :body]))))))}}}
+
+
+       (merge (common-resource :account))
+       (merge access-control))))
+
+
+(defn get-user [store mimi user-store]
+  (resource
+   (-> {:methods
+        {:get {:parameters {:query {:access_token String
+                                     (s/optional-key :select) String
+                                     (s/optional-key :ignore) String}}
+                :consumes [{:media-type #{"application/json"}
+                            :charset "UTF-8"}]
+               :response (fn [ctx]
+                           (try
+                             (if-let [res (p/find user-store {:id (get-in ctx [:parameters :query :access_token])})]
+                               (>201 ctx (p/find user-store res))
+                               (>404 ctx ["Not Found" "Account Profile with given userId was not found."]))
+                             (catch Exception e
+                               (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 
 
        (merge (common-resource :account))

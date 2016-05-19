@@ -7,7 +7,6 @@
    [monger.core :as mg])
   (:import [com.mongodb MongoOptions ServerAddress]))
 
-
 (defrecord MongoDatabase []
   component/Lifecycle
   (start [this] this)
@@ -28,18 +27,20 @@
                   (merge {:host "localhost"
                           :port 27017
                           :database "documents"}))]
-   (s/validate DatabaseSchema opts))
+    (s/validate DatabaseSchema opts))
   (map->MongoDatabase opts))
 
-(defrecord MongoConnection []
+(defrecord MongoConnection [database]
   component/Lifecycle
   (start [this]
-    (assoc this :connection (mg/connect (:database this))))
+    (let [conn (mg/connect (:database this))]
+      (assoc this
+             :connection conn
+             :db (mg/get-db conn (-> this :database :database)))))
   (stop [this]
-    (mg/disconnect (:connection this))
+    (when (:connection this)
+      (mg/disconnect (:connection this)))
     (dissoc this :connection)))
 
 (defn new-mongo-connection []
-  (component/using
-   (->MongoConnection)
-   [:database]))
+  (map->MongoConnection {}))

@@ -11,12 +11,14 @@
     [rebujito.api.resources.social-profile :as social-profile]))
 
 
-(defn api [store mimi db-conn]
-  ["/" [["account/create" (-> (account/create store mimi)
+(defn api [store mimi db-conn user-store]
+  ["/" [["account/create" (-> (account/create store mimi user-store)
                               (assoc :id ::account/create))]
         ["oauth/token" (-> (oauth/token-resource-owner store)
                            (assoc :id ::oauth/token-resource-owner))]
-        ["me" [["/cards"
+        ["me" [["" (-> (account/get-user store mimi user-store)
+                              (assoc :id ::account/get-user))]
+               ["/cards"
                 [["" (-> (card/get-cards store)
                          (assoc :id ::card/get-cards))]
 
@@ -39,10 +41,10 @@
                                              (assoc :id ::social-profile/account))]]]]])
 
 
-(s/defrecord ApiComponent [store mimi db-conn]
+(s/defrecord ApiComponent [store mimi db-conn user-store]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (api store mimi db-conn)))
+    (assoc component :routes (api store mimi db-conn user-store)))
   (stop [component]
         component))
 

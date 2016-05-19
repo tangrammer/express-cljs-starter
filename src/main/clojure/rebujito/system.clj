@@ -11,6 +11,7 @@
     [rebujito.handler :as wh]
     [rebujito.logging :as log-levels]
     [rebujito.store :as store]
+    [rebujito.mongo :refer (new-user-store)]
     [rebujito.mimi :as mimi]
     [taoensso.timbre :as log])
   (:import [java.util Date]))
@@ -41,6 +42,8 @@
 
                   :store (store/new-prod-store)
 
+                  :user-store (new-user-store)
+
                   :mimi (mimi/new-prod-mimi (:mimi config))
 
                   :api (api/new-api-component)
@@ -61,7 +64,8 @@
   {
    :webserver {:request-handler :docsite-router}
    :db-conn {:database :db}
-   :api [:store :mimi :db-conn]
+   :user-store [:db-conn]
+   :api [:store :mimi :db-conn :user-store]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 
