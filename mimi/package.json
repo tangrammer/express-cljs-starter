@@ -15,6 +15,7 @@
   },
   "scripts": {
     "start": "node target/prod/server.js",
-    "dev": "node target/dev/server.js"
+    "dev": "node target/dev/server.js",
+    "token": "node bin/generate-token"
   }
 }

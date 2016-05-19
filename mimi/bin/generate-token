@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+'use strict'
+const jwt = require('jsonwebtoken')
+
+const token = jwt.sign({player: 'rebujito'}, 'the dark horse on a whim is a sweet cellar')
+console.log(token)
