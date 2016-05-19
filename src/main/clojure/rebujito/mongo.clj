@@ -25,15 +25,23 @@
   (find [this]
     (mc/find (:db this) (:collection this)))
 
-  (find [this data]
-    (let [data (query-by-example-coercer data)]
-      (if (:_id data)
-        (mc/find-map-by-id (:db this) (:collection this) (:_id data))
-        (mc/find (:db this) (:collection this) data))))
-
   (get-and-insert! [this data]
     (mc/insert-and-return (:db this) (:collection this) data)))
 
-
 (defn new-user-store []
   (map->UserStorage {:collection :users}))
+
+(defn- find-map-by-id [mutable-storage id]
+  (mc/find-map-by-id (:db mutable-storage) (:collection mutable-storage) id))
+
+(defmethod protocols/db-find String
+  [mutable-storage data]
+  (find-map-by-id mutable-storage (org.bson.types.ObjectId. data)))
+
+(defmethod protocols/db-find org.bson.types.ObjectId
+  [mutable-storage data]
+  (find-map-by-id mutable-storage data))
+
+(defmethod protocols/db-find clojure.lang.PersistentArrayMap
+  [mutable-storage data]
+  (mc/find (:db mutable-storage) (:collection mutable-storage) data))

@@ -13,11 +13,18 @@
 (defprotocol Mimi
   (create-account [this data]))
 
+(defmulti db-find "dispatch on data meaning"
+  (fn [mutable-storage data] (type data)))
+
+(defmethod db-find :default [_ data]
+ (throw (IllegalArgumentException.
+          (str "Not ready to find using " (type data)))))
+
+
 
 (defprotocol MutableStorage
-  (find
-    [this]
-    [this data])
+  (find [this]
+    "returns collection")
   (insert! [this data]
     "return true/false")
   (update! [this data]

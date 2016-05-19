@@ -69,8 +69,8 @@
                             :charset "UTF-8"}]
                :response (fn [ctx]
                            (try
-                             (if-let [res (p/find user-store {:id (get-in ctx [:parameters :query :access_token])})]
-                               (>201 ctx (p/find user-store res))
+                             (if-let [res (p/db-find user-store (get-in ctx [:parameters :query :access_token]))]
+                               (>201 ctx res)
                                (>404 ctx ["Not Found" "Account Profile with given userId was not found."]))
                              (catch Exception e
                                (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
