@@ -11,6 +11,18 @@
    [taoensso.timbre :as log])
   (:import [org.bson.types ObjectId]))
 
+(defn- generate-account-id [s]
+  {:pre  [(try (number? (read-string s))
+               (catch Exception e (do
+                                    "should be possible to be parsed as a number!"
+                                    false)))]}
+  (let [hex-id (format "%024x"  (read-string s))]
+                                (org.bson.types.ObjectId.  hex-id)))
+
+(generate-account-id "42472395")
+
+
+
 
 (defmulti db-find "dispatch on data meaning"
   (fn [mutable-storage data] (type data)))
@@ -31,6 +43,8 @@
   (stop [this] this)
 
   protocols/MutableStorage
+  (generate-id [this data]
+    (generate-account-id data))
   (find [this]
     (mc/find (:db this) (:collection this)))
   (find [this data]

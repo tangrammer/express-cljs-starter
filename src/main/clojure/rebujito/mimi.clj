@@ -8,6 +8,22 @@
    [com.stuartsierra.component  :as component]
    [rebujito.store.mocks :as mocks]))
 
+(def CreateAccountSchema
+  {
+   :address String
+   :birthday String ;; 'YYYY-MM-DD'
+   :city String
+   :country String
+   :email String
+   :firstname String
+   :gender String ;; (male|female)
+   :lastname String
+   :mobile String
+   :password String
+   :postalcode String
+   :region String
+   })
+
 (defrecord ProdMimi [base-url token]
   component/Lifecycle
   (start [this]
@@ -23,7 +39,7 @@
                         :insecure? true
                         :content-type :json
                         :accept :json
-                        ;;                       :as :json
+                        :as :json
                         :form-params {:firstname "Juan A."
                                       :lastname "Ruz"
                                       :password "xxxxxx"
@@ -38,7 +54,6 @@
                                       :birthday "1976-06-13" ; 'YYYY-MM-DD'
                                       }})]
       [status (-> body
-                  (json/parse-string true)
                   first
                   vector
                   (conj :prod-mimi))])))
@@ -51,7 +66,7 @@
   (stop [this] this)
   protocols/Mimi
   (create-account [this data]
-    ["200" ["Created" "Resource Created" :mock-mimi]]))
+    ["200" ["1111" :mock-mimi "Resource Created"]]))
 
 (defn new-prod-mimi [mimi-config]
   (map->ProdMimi mimi-config))
