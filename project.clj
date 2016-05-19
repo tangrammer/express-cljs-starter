@@ -22,6 +22,9 @@
                  ;; https://www.lvh.io/posts/https-requests-with-client-certificates-in-clojure.html
                  [http-kit "2.1.19"]
 
+                 ;; optional http client
+                 [clj-http "3.1.0"]
+
 
                  ;; components / modular
                  [com.stuartsierra/component "0.3.1"]

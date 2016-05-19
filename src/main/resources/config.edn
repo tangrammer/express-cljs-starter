@@ -1,4 +1,7 @@
 {
+
+ :secrets #include #join [#env HOME "/.secrets.edn"]
+
  :cookie-name "rebujito-cookie"
 
  :env-type  #profile {:dev :dev
@@ -6,7 +9,10 @@
                       :prod :prod}
  :yada {:port 3000}
 
- :mimi {:base-url "https://api.swarmloyalty.co.za"}
+
+
+ :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
+        :token "the-token"}
 
  :mongo {
          :host "localhost"
@@ -16,7 +22,7 @@
          #_:user #_{:username "juan"
                 :password "juan"}}
 
- :secrets #include #join [#env HOME "/.secrets.edn"]
+
  :greeting "World!"
 
  :aws-secret-access-key

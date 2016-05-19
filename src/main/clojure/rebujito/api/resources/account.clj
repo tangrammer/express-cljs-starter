@@ -52,7 +52,9 @@
                                       "111041" (>400 ctx ["Invalid email address" "Email address was malformed"])
                                       "111046" (>400 ctx ["firstName failed profanity check." ""])
                                       "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                                      (>201 ctx (p/get-and-insert! user-store (get-in ctx [:parameters :body]))))))}}}
+                                      (>201 ctx (p/get-and-insert! user-store (assoc (get-in ctx [:parameters :body])
+                                                                                     :_id (first res)))
+                                            ))))}}}
 
 
        (merge (common-resource :account))
