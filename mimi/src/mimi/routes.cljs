@@ -49,32 +49,24 @@
           (log/info "create-micros-customer" customer-data-js)
           (create-micros-customer customer-data-js
             (fn [err result]
-              (log/debug "post create, err" err "result" result)
+              (log/debug "got result from micros: err" err "result" result)
               (if err
                 (.json (.status res 500) #js {:error (.toString err)})
                 (.json res #js {:status "ok"
                                 :customerId (aget result 0)})))))))))
 
-(defn parse-link-card [req-body]
-  (let [customer-id (get req-body "customerId")
-        card-number (get req-body "cardNumber")]
-    {:customer-id customer-id
-     :card-number card-number}))
-
 (.post app "/mimi/starbucks/account/card"
   (fn
     [req res]
     "link card to account"
-    (let [fields (parse-link-card (->> req .-body js->clj))
-          customer-id (:customer-id fields)
-          card-number (:card-number fields)]
-      (log/debug "got fields")
-      (prn fields)
+    (let [payload (parse-link-card (->> req .-body (js->clj :keywordize-keys true)))
+          customer-id (:customerId fields)
+          card-number (:cardNumber fields)]
+      (log/info "link card")
+      (prn payload)
       (link-card customer-id card-number
         (fn [err result]
-          (prn err result)
+          (log/debug "got result from micros: err" err "result" result)
           (if err
-            (do
-              (. res (status 500))
-              (. res (json err)))
-            (.json res result)))))))
+            (.json (.status res 500) #js {:error (.toString err)})
+            (.json res #js {:status "ok"})))))))
