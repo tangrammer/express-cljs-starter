@@ -2,11 +2,11 @@
   (:require [schema.core :as s :include-macros true]))
 
 (def CreateCustomerData
-  "A schema for a nested data type"
+  "schema for create account request"
   {:firstname s/Str
    :lastname s/Str
    :password s/Str
-  ;  :email s/Str
+   :email s/Str
    :mobile s/Str
    :gender (s/enum "male" "female")
    :birthday s/Str
@@ -16,7 +16,17 @@
    ;  :address s/Str
    ;  :country s/Str
 
-(def checker (s/checker CreateCustomerData))
+(def LinkCardData
+  "schema for link card request"
+  {:customerId s/Str
+   :cardNumber s/Str})
+
+(def customer-checker (s/checker CreateCustomerData))
 
 (defn validate-create-customer-data [data]
-  (checker data))
+  (customer-checker data))
+
+(def link-card-checker (s/checker LinkCardData))
+
+(defn validate-link-card-data [data]
+  (link-card-checker data))

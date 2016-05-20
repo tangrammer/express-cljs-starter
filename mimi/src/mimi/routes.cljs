@@ -3,7 +3,7 @@
             [mimi.express :refer [app]]
             [mimi.log :as log]
             [mimi.config :as config]
-            [mimi.data :refer [validate-create-customer-data]]))
+            [mimi.data :refer [validate-create-customer-data validate-link-card-data]]))
 
 (def jwt (nodejs/require "express-jwt"))
 (def micros (nodejs/require "micros"))
@@ -60,13 +60,17 @@
     [req res]
     "link card to account"
     (let [payload (parse-link-card (->> req .-body (js->clj :keywordize-keys true)))
+          validation-errors (validate-link-card-data payload)
           customer-id (:customerId fields)
           card-number (:cardNumber fields)]
       (log/info "link card")
       (prn payload)
-      (link-card customer-id card-number
-        (fn [err result]
-          (log/debug "got result from micros: err" err "result" result)
-          (if err
-            (.json (.status res 500) #js {:error (.toString err)})
-            (.json res #js {:status "ok"})))))))
+      (if validation-errors
+        (.json (.status res 400) #js {:error "invalid payload"
+                                      :details (clj->js validation-errors)})
+        (link-card customer-id card-number
+          (fn [err result]
+            (log/debug "got result from micros: err" err "result" result)
+            (if err
+              (.json (.status res 500) #js {:error (.toString err)})
+              (.json res #js {:status "ok"}))))))))
