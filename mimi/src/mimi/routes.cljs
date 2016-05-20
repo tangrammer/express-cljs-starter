@@ -32,19 +32,22 @@
      :signupdate (now-iso)
      :createddate (now-iso)}))
 
+(def invalid-payload {:error "invalid payload"
+                      :link "http://bit.ly/_mimi"})
+
 (.post app "/mimi/starbucks/account"
   (fn
     [req res]
     "create a starbucks customer in micros"
     (let [customer-data (-> req .-body (js->clj :keywordize-keys true))
-          validation-errors (validate-create-customer-data customer-data)
           valid-birthday (valid-birthday (:birthday customer-data))
+          validation-errors (validate-create-customer-data customer-data)
           customer-data (fill-in customer-data)]
       (log/info "create customer")
       (prn customer-data)
       (if (or validation-errors (not valid-birthday))
-        (.json (.status res 400) #js {:error "invalid payload"
-                                      :details (clj->js (or validation-errors "birthday format is YYYY-MM-DD"))})
+        (.json (.status res 400)
+           (clj->js (assoc invalid-payload :details (or (clj->js validation-errors) "birthday format is YYYY-MM-DD"))))
         (let [customer-data-js (clj->js customer-data)]
           (log/info "create-micros-customer" customer-data-js)
           (create-micros-customer customer-data-js
@@ -59,15 +62,14 @@
   (fn
     [req res]
     "link card to account"
-    (let [payload (parse-link-card (->> req .-body (js->clj :keywordize-keys true)))
+    (let [payload (-> req .-body (js->clj :keywordize-keys true))
           validation-errors (validate-link-card-data payload)
-          customer-id (:customerId fields)
-          card-number (:cardNumber fields)]
+          customer-id (:customerId payload)
+          card-number (:cardNumber payload)]
       (log/info "link card")
       (prn payload)
       (if validation-errors
-        (.json (.status res 400) #js {:error "invalid payload"
-                                      :details (clj->js validation-errors)})
+        (.json (.status res 400) (clj->js (assoc invalid-payload :details (clj->js validation-errors))))
         (link-card customer-id card-number
           (fn [err result]
             (log/debug "got result from micros: err" err "result" result)
