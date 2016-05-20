@@ -44,7 +44,7 @@
       (prn customer-data)
       (if (or validation-errors (not valid-birthday))
         (.json (.status res 400) #js {:error "invalid payload"
-                                      :details (clj->js (or validation-errors "invalid birthday"))})
+                                      :details (clj->js (or validation-errors "birthday format is YYYY-MM-DD"))})
         (let [customer-data-js (clj->js customer-data)]
           (log/info "create-micros-customer" customer-data-js)
           (create-micros-customer customer-data-js
