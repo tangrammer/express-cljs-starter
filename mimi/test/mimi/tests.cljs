@@ -14,8 +14,8 @@
    :region "123"
    :postalcode "123"
    :gender "male"
-   :birth {:dayOfMonth 31
-           :month 5}})
+   :birth {:month 5
+           :dayOfMonth 31}})
 
 (deftest schema-check
   (is (nil? (validate-create-customer-data valid-create-customer-data)))

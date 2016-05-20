@@ -12,8 +12,8 @@
    :city s/Str
    :region s/Str
    :gender (s/enum "male" "female")
-   :birth {:dayOfMonth s/Num
-           :month s/Num}})
+   :birth {:dayOfMonth s/Str
+           :month s/Str}})
 
 (def LinkCardData
   "schema for link card request"

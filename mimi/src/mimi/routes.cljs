@@ -18,22 +18,27 @@
 (defn now-iso []
   (.format (moment) "YYYY-MM-DD HH:mm:ss.S"))
 
-(defn valid-birthday [birthday-str]
-  (let [strict true]
-    (.isValid (moment birthday-str "YYYY-MM-DD" strict))))
+(defn valid-birthday [month day]
+  (let [strict true
+        leap-year "2004"]
+    (.isValid (moment (str leap-year "-" month "-" day) "YYYY-M-D" strict))))
 
 (.use app (.unless (jwt #js {:secret config/jwt-secret}) #js {:path #js ["/mimi/health"]}))
 
 (.get app "/mimi/health" #(.send %2 "ok"))
 
 (defn micros-transform [payload]
-  (merge (rename-keys payload {:email :emailaddress
-                               :mobile :mobilephonenumber
-                               :region :state})
+  (merge
+    (rename-keys (dissoc payload :birth)
+      {:email :emailaddress
+       :mobile :mobilephonenumber
+       :region :state})
     {:gender (first (:gender payload))
-     :birthday (str (:birthday payload) " 00:00:00.0")
+     :birthdayofmonth (get-in payload [:birth :dayOfMonth])
+     :birthmonth (get-in payload [:birth :month])
      :signupdate (now-iso)
-     :createddate (now-iso)}))
+     :createddate (now-iso)
+     :miscfield4 "test account"}))
 
 (def invalid-payload {:error "invalid payload"
                       :link "http://bit.ly/_mimi"})
@@ -43,14 +48,16 @@
     [req res]
     "create a starbucks customer in micros"
     (let [customer-data (-> req .-body (js->clj :keywordize-keys true))
-          valid-birthday (valid-birthday (:birthday customer-data))
+          birth (:birth customer-data)
           validation-errors (validate-create-customer-data customer-data)
+          valid-birthday (valid-birthday (:month birth) (:dayOfMonth birth))
+          validation-birthday (if valid-birthday nil {:birth "invalid birth day/month combo"})
           customer-data (micros-transform customer-data)]
       (log/info "create customer")
       (prn customer-data)
       (if (or validation-errors (not valid-birthday))
         (.json (.status res 400)
-           (clj->js (assoc invalid-payload :details (or validation-errors "birthday format is YYYY-MM-DD"))))
+           (clj->js (assoc invalid-payload :details (or validation-errors validation-birthday))))
         (let [customer-data-js (clj->js customer-data)]
           (log/info "create-micros-customer" customer-data-js)
           (create-micros-customer customer-data-js
