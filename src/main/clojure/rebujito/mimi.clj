@@ -40,21 +40,20 @@
                         :content-type :json
                         :accept :json
                         :as :json
+                        :throw-exceptions true
                         :form-params {:firstname "Juan A."
                                       :lastname "Ruz"
                                       :password "xxxxxx"
                                       :email "juanantonioruz@gmail.com"
                                       :mobile "0034630051897"
-                                      :address "C/Antonio Pantion"
                                       :city "Sevilla"
                                       :region "Andalucia"
-                                      :country "Spain"
                                       :postalcode "41003"
                                       :gender "male" ; (male|female)
-                                      :birthday "1976-06-13" ; 'YYYY-MM-DD'
-                                      }})]
+                                      :birth {:dayOfMonth  "01"
+                                              :month       "01"}}})]
       [status (-> body
-                  first
+                  :customerId
                   vector
                   (conj :prod-mimi))])))
 
@@ -65,8 +64,13 @@
     this)
   (stop [this] this)
   protocols/Mimi
-  (create-account [this data]
-    ["200" ["1111" :mock-mimi "Resource Created"]]))
+  (create-account [this data ]
+;;     (let [d* (d/deferred)]
+;;       (d/success! d* ["200"  ["1000" #_(str (rand-int 1000))] :mock-mimi "Resource Created"])
+;; ;      (throw (Exception. "jor"))
+;; ;      (d/success! d* ["111046" ""])
+;;       d*)
+    ["200"  [(str (rand-int 1000))] :mock-mimi "Resource Created"]))
 
 (defn new-prod-mimi [mimi-config]
   (map->ProdMimi mimi-config))
