@@ -1,5 +1,6 @@
 (ns mimi.routes
   (:require [cljs.nodejs :as nodejs]
+            [clojure.set :refer [rename-keys]]
             [mimi.express :refer [app]]
             [mimi.log :as log]
             [mimi.config :as config]
@@ -25,10 +26,12 @@
 
 (.get app "/mimi/health" #(.send %2 "ok"))
 
-(defn fill-in [payload]
-  (merge payload
-    {:gender (first (get payload :gender))
-     :birthday (str (get payload :birthday) " 00:00:00.0")
+(defn micros-transform [payload]
+  (merge (rename-keys payload {:email :emailaddress
+                               :mobile :mobilephonenumber
+                               :region :state})
+    {:gender (first (:gender payload))
+     :birthday (str (:birthday payload) " 00:00:00.0")
      :signupdate (now-iso)
      :createddate (now-iso)}))
 
@@ -42,7 +45,7 @@
     (let [customer-data (-> req .-body (js->clj :keywordize-keys true))
           valid-birthday (valid-birthday (:birthday customer-data))
           validation-errors (validate-create-customer-data customer-data)
-          customer-data (fill-in customer-data)]
+          customer-data (micros-transform customer-data)]
       (log/info "create customer")
       (prn customer-data)
       (if (or validation-errors (not valid-birthday))
@@ -68,7 +71,6 @@
           card-number (:cardNumber payload)]
       (log/info "link card")
       (prn payload)
-      (log/debug "stuff?" (clj->js (assoc invalid-payload :details validation-errors)))
       (if validation-errors
         (.json (.status res 400) (clj->js (assoc invalid-payload :details validation-errors)))
         (link-card customer-id card-number
