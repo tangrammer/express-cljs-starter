@@ -8,13 +8,12 @@
    :password s/Str
    :email s/Str
    :mobile s/Str
-   :gender (s/enum "male" "female")
-   :birthday s/Str
+   :postalcode s/Str
    :city s/Str
    :region s/Str
-   :postalcode s/Str})
-   ;  :address s/Str
-   ;  :country s/Str
+   :gender (s/enum "male" "female")
+   :birth {:dayOfMonth s/Num
+           :month s/Num}})
 
 (def LinkCardData
   "schema for link card request"
