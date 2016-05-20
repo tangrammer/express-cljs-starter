@@ -47,7 +47,7 @@
       (prn customer-data)
       (if (or validation-errors (not valid-birthday))
         (.json (.status res 400)
-           (clj->js (assoc invalid-payload :details (or (clj->js validation-errors) "birthday format is YYYY-MM-DD"))))
+           (clj->js (assoc invalid-payload :details (or validation-errors "birthday format is YYYY-MM-DD"))))
         (let [customer-data-js (clj->js customer-data)]
           (log/info "create-micros-customer" customer-data-js)
           (create-micros-customer customer-data-js
@@ -68,8 +68,9 @@
           card-number (:cardNumber payload)]
       (log/info "link card")
       (prn payload)
+      (log/debug "stuff?" (clj->js (assoc invalid-payload :details validation-errors)))
       (if validation-errors
-        (.json (.status res 400) (clj->js (assoc invalid-payload :details (clj->js validation-errors))))
+        (.json (.status res 400) (clj->js (assoc invalid-payload :details validation-errors)))
         (link-card customer-id card-number
           (fn [err result]
             (log/debug "got result from micros: err" err "result" result)
