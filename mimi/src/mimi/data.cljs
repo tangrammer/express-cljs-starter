@@ -28,5 +28,12 @@
 
 (def link-card-checker (s/checker LinkCardData))
 
+(defn in-test-card-range [card-number]
+  (if (re-matches #"96235709\d{5}" card-number)
+    nil
+    "test cardNumber must be in 96235709***** range"))
+
 (defn validate-link-card-data [data]
-  (link-card-checker data))
+  (or
+    (link-card-checker data)
+    (in-test-card-range (:cardNumber data))))
