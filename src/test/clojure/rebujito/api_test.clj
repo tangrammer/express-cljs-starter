@@ -133,7 +133,19 @@
                                     :body (json/generate-string
                                            (g/generate (-> payment/schema :methods :post)))
                                     :content-type :json})
-                        :status)))))
+                        :status)))
+         (let [{:keys [status body]}
+               (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
+                               {:throw-exceptions false
+                                :body-encoding "UTF-8"
+                                :body (json/generate-string
+                                        (g/generate (-> payment/schema :methods :post)))
+                                :content-type :json})
+                   )]
+           (is (= status 201))
+           (is (.contains (slurp body) "paymentMethodId"))
+           )
+         ))
 
      (testing ::social-profile/account
        (let [api-id ::social-profile/account
@@ -174,8 +186,8 @@
   (let [{:keys [status body]}
         (-> @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
                           {:body (x/render "paygate/ping.vm"
-                                           :paygateId (config [:paygate-account :paygateId])
-                                           :paygatePassword (config [:paygate-account :paygatePassword]) 
+                                           :paygateId (config [:payment-gateway :paygate-account :paygateId])
+                                           :paygatePassword (config [:payment-gateway :paygate-account :paygatePassword]) 
                                            :identifier "test")}))]
     (is (= 200 status))
     (is (.contains body "PingResponse"))
@@ -185,8 +197,8 @@
   (let [{:keys [status body]}
         (-> @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
                           {:body (x/render "paygate/vault.vm"
-                                           :paygateId (config [:paygate-account :paygateId])
-                                           :paygatePassword (config [:paygate-account :paygatePassword])
+                                           :paygateId (config [:payment-gateway :paygate-account :paygateId])
+                                           :paygatePassword (config [:payment-gateway :paygate-account :paygatePassword])
                                            :cardNumber "4000000000000002" 
                                            :expirationMonth 11 
                                            :expirationYear 2018
@@ -199,8 +211,8 @@
   (let [{:keys [status body]}
         (-> @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
                           {:body (x/render "paygate/payment.vm"
-                                           :paygateId (config [:paygate-account :paygateId])
-                                           :paygatePassword (config [:paygate-account :paygatePassword])
+                                           :paygateId (config [:payment-gateway :paygate-account :paygateId])
+                                           :paygatePassword (config [:payment-gateway :paygate-account :paygatePassword])
                                            :firstName "Stefan" 
                                            :lastName "Tester" 
                                            :emailAddress "stefan.tester@example.com"

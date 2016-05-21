@@ -13,6 +13,7 @@
     [rebujito.store :as store]
     [rebujito.mongo :refer (new-user-store)]
     [rebujito.mimi :as mimi]
+    [rebujito.payment-gateway :as payment-gateway]
     [taoensso.timbre :as log])
   (:import [java.util Date]))
 
@@ -46,6 +47,8 @@
 
                   :mimi (mimi/new-prod-mimi (:mimi config))
 
+                  :payment-gateway (payment-gateway/new-prod-payment-gateway (:payment-gateway config))
+
                   :api (api/new-api-component)
 
                   :yada (wh/handler)
@@ -65,7 +68,7 @@
    :webserver {:request-handler :docsite-router}
    :db-conn {:database :db}
    :user-store [:db-conn]
-   :api [:store :mimi :db-conn :user-store]
+   :api [:store :mimi :db-conn :user-store :payment-gateway]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

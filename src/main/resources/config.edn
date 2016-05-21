@@ -29,7 +29,8 @@
  #profile {:test ^:ref [:secrets :aws-secret-access-key]
            :prod ^:ref [:secrets :aws-secret-access-key]}}
 
-:paygate-account {
-                  :paygateId "10011064270"
-                  :paygatePassword "test"
-                  }
+:payment-gateway {
+                  :paygate-account {
+                                    :paygateId "10011064270"
+                                    :paygatePassword "test"
+                                    }}

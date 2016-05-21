@@ -1,11 +1,12 @@
 (ns dev-system
   "Dev Components and their dependency reationships"
-  (:require
-   [com.stuartsierra.component :as component :refer (using)]
-   [rebujito.config :refer (config)]
-   [rebujito.store :refer (new-mock-store)]
-   [rebujito.mimi :refer (new-mock-mimi)]
-   [rebujito.system :refer (new-system-map new-dependency-map)]))
+  (:require 
+    [com.stuartsierra.component :as component :refer (using)]
+    [rebujito.config :refer (config)]
+    [rebujito.store :refer (new-mock-store)]
+    [rebujito.mimi :refer (new-mock-mimi)]
+    [rebujito.payment-gateway :refer (new-mock-payment-gateway)]
+    [rebujito.system :refer (new-system-map new-dependency-map)]))
 
 
 (def mod-defs
@@ -19,10 +20,16 @@
             (assoc :store (new-mock-store)))))
     :+mock-mimi
     (fn [config]
-      (println "using :+mock-store profile in dev-system")
+      (println "using :+mock-mimi profile in dev-system")
       (fn [system-map]
         (-> system-map
-            (assoc :mimi (new-mock-mimi (:mimi config))))))}
+            (assoc :mimi (new-mock-mimi (:mimi config))))))
+    :+mock-payment-gateway
+    (fn [config]
+        (println "using :+mock-payment-gateway profile in dev-system")
+        (fn [system-map]
+            (-> system-map
+                (assoc :payment-gateway (new-mock-payment-gateway (:payment-gateway config))))))}
    :dependency-mods
    {:+mock-store (fn [config]
                    (fn [dependency-map]
@@ -31,7 +38,11 @@
     :+mock-mimi (fn [config]
                    (fn [dependency-map]
                      (println "using :mock-mimi  in dependency dev-system")
-                     dependency-map))}})
+                     dependency-map))
+    :+mock-payment-gateway (fn [config]
+                    (fn [dependency-map]
+                        (println "using :mock-payment-gateway  in dependency dev-system")
+                        dependency-map))}})
 
 
 

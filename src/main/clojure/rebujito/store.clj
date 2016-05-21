@@ -17,8 +17,8 @@
     (assoc mocks/card :target-environment :prod))
   (get-payment-method-detail [this]
     (assoc mocks/get-payment-method-detail :target-environment :prod))
-  (post-payment-method [this]
-    (assoc mocks/post-payment-method :target-environment :prod))
+  (post-payment-method [this data]
+    ["201" (assoc mocks/post-payment-method :target-environment :prod)])
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
   (post-token-resource-owner [this]
@@ -37,8 +37,8 @@
     (assoc mocks/card :target-environment :dev))
   (get-payment-method-detail [this]
     (assoc mocks/get-payment-method-detail :target-environment :dev))
-  (post-payment-method [this]
-    (assoc mocks/post-payment-method :target-environment :dev))
+  (post-payment-method [this data]
+    ["201" (assoc mocks/post-payment-method :target-environment :dev)])
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :dev) mocks/get-payment-method))
   (post-token-resource-owner [this]
