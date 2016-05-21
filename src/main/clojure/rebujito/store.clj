@@ -4,9 +4,6 @@
    [com.stuartsierra.component  :as component]
    [rebujito.store.mocks :as mocks]))
 
-
-
-
 (defrecord ProdStore []
   component/Lifecycle
   (start [this]
@@ -18,7 +15,13 @@
   (get-payment-method-detail [this]
     (assoc mocks/get-payment-method-detail :target-environment :prod))
   (post-payment-method [this data]
-    ["201" (assoc mocks/post-payment-method :target-environment :prod)])
+    (println "Validating Payment Request")
+    (let [ [status body] ["201" (assoc mocks/post-payment-method :target-environment :prod)]
+          ]
+      (println (format "Status:%s Body:%s" status body))
+      [status body]
+      )
+    )
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
   (post-token-resource-owner [this]
