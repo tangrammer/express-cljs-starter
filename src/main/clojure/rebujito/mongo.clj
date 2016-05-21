@@ -11,7 +11,7 @@
    [taoensso.timbre :as log])
   (:import [org.bson.types ObjectId]))
 
-(defn- generate-account-id [s]
+(defn ^org.bson.types.ObjectId generate-account-id [s]
   {:pre  [(try (number? (read-string s))
                (catch Exception e (do
                                     "should be possible to be parsed as a number!"
@@ -19,8 +19,8 @@
   (let [hex-id (format "%024x"  (read-string s))]
                                 (org.bson.types.ObjectId.  hex-id)))
 
-(generate-account-id "42472395")
-
+(defn ^String id>mimi-id [s]
+  (str (BigInteger. s 16)))
 
 
 
@@ -51,6 +51,7 @@
     (db-find this data))
 
   (get-and-insert! [this data]
+; test!!           (throw (Exception. "joe!!"))
     (mc/insert-and-return (:db this) (:collection this) data)))
 
 (defn new-user-store []

@@ -1,11 +1,11 @@
 (ns rebujito.api.resources.account
   (:require
+   [manifold.deferred :as d]
    [rebujito.api.util :refer :all]
    [rebujito.mimi :as mim]
    [rebujito.protocols :as p]
    [schema.core :as s]
-   [yada.resource :refer [resource]]
-   ))
+   [yada.resource :refer [resource]]))
 
 (def schema {:post {
                     :addressLine1 String
@@ -27,10 +27,9 @@
   {mim/CreateAccountSchema
    (fn [x]
      {
-      :address (:addressLine1 x)
-      :birthday (:birthDay x) ;; 'YYYY-MM-DD'
+      :birth {:dayOfMonth  "01" ;; (:birthDay x) ;; 'YYYY-MM-DD'
+              :month       "01"}
       :city (:city x)
-      :country (:country x)
       :email (:emailAddress x)
       :firstname "String"
       :gender "String" ;; (male|female)
@@ -51,8 +50,14 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
-                            (let [[code res] (p/create-account mimi (get-in ctx [:parameters :body]))]
-                              (condp =  code
+                            (-> (d/future)
+                                (d/chain
+                                 (fn [_] (p/create-account mimi (get-in ctx [:parameters :body])))
+                                 #(do
+                                    (println "TEST CHAIN ...." %)
+                                    %)
+                                 #(let [[code res] %]
+                                    (condp =  code
                                       "111000" (>400 ctx ["Username is already taken" "Account Management Service returns error that user name is already taken"])
                                       "111001" (>400 ctx ["Unknown error occured" "Account Management Service returns error
 "])
@@ -70,11 +75,17 @@
                                       "111036" (>400 ctx ["Invalid characters (Ø, ø, Ë, ë) specified for first and/or last name." ""])
                                       "111039" (>400 ctx ["Invalid market code or country code." ""])
                                       "111041" (>400 ctx ["Invalid email address" "Email address was malformed"])
-                                      "111046" (>400 ctx ["firstName failed profanity check." ""])
-                                      "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                                      (>201 ctx (p/get-and-insert! user-store (assoc (get-in ctx [:parameters :body])
-                                                                                     :_id (p/generate-id user-store (first res))))
-                                            ))))}}}
+                                      "111046" (>400* ctx "firstName failed profanity check.")
+                                      "500"  (>500 ctx ["An unexpected error occurred processing the request."])
+
+                                      [code res]))
+                                 #(let [[code res] %]
+                                    (>201 ctx (p/get-and-insert! user-store (assoc (get-in ctx [:parameters :body])
+                                                                                   :_id (p/generate-id user-store (first res)))))))
+                                (d/catch Exception  #(do
+                                                       (println "exception :::...... " %)
+                                                       ;; not deferred (>400 ctx ["No Request supplied" "Create Account Request was malformed." (.getMessage %)])
+                                                       (>400* ctx (str "ERROR CATCHED!" (.getMessage %)))))))}}}
 
 
        (merge (common-resource :account))

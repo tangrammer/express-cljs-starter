@@ -1,6 +1,4 @@
-* [ ] destructuring
-* [ ] schema validation on requests  
-* [ ] + check account is in test number range
-* [ ] 400/500 errors
-* [ ] JSON responses with correct format
-* [ ] tag micros account with some 'test' flag
+* [ ] docker image
+   * [ ] move to root
+   * [ ] auto build (lein + npm baseimage)
+   * [ ] tag with git SHA

@@ -1,4 +1,5 @@
-(ns rebujito.api.util)
+(ns rebujito.api.util
+  (:require [manifold.deferred :as d]))
 
 (defn >base [ctx status body]
   (-> ctx :response (assoc :status status)
@@ -6,6 +7,9 @@
 
 (defn >400 [ctx body]
   (>base ctx 400 body))
+
+(defn >400* [ctx body]
+  (d/error-deferred (ex-info body {:status 400})))
 
 (defn >404 [ctx body]
   (>base ctx 404 body))

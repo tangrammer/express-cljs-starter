@@ -1,8 +1,10 @@
 (ns mimi.routes
   (:require [cljs.nodejs :as nodejs]
+            [clojure.set :refer [rename-keys]]
             [mimi.express :refer [app]]
             [mimi.log :as log]
-            [mimi.config :as config]))
+            [mimi.config :as config]
+            [mimi.data :refer [validate-create-customer-data validate-link-card-data]]))
 
 (def jwt (nodejs/require "express-jwt"))
 (def micros (nodejs/require "micros"))
@@ -10,92 +12,77 @@
 
 (. micros (setBrand "starbucks"))
 
-(def createMicrosCustomer (.-createCustomer micros))
-(def linkCard (.-setCustomerPosRef micros))
+(def create-micros-customer (.-createCustomer micros))
+(def link-card (.-setCustomerPosRef micros))
 
 (defn now-iso []
   (.format (moment) "YYYY-MM-DD HH:mm:ss.S"))
+
+(defn valid-birthday [month day]
+  (let [strict true
+        leap-year "2004"]
+    (.isValid (moment (str leap-year "-" month "-" day) "YYYY-M-D" strict))))
 
 (.use app (.unless (jwt #js {:secret config/jwt-secret}) #js {:path #js ["/mimi/health"]}))
 
 (.get app "/mimi/health" #(.send %2 "ok"))
 
-(defn parse-customer-fields [req-body]
-  (let [firstname (get req-body "firstname")
-        lastname (get req-body "lastname")
-        password (get req-body "password")
-        email (get req-body "email")
-        mobile (get req-body "mobile")
-        address (get req-body "address")
-        city (get req-body "city")
-        region (get req-body "region")
-        country (get req-body "country")
-        postalcode (get req-body "postalcode")
-        gender (get req-body "gender")
-        birthday (get req-body "birthday")]
-    {:firstname firstname
-     :lastname lastname
-     :password password
-     :email email
-     :mobile mobile
-     :address address
-     :city city
-     :region region
-     :country country
-     :postalcode postalcode
-     :gender gender
-     :birthday birthday}))
+(defn micros-transform [payload]
+  (merge
+    (rename-keys (dissoc payload :birth)
+      {:email :emailaddress
+       :mobile :mobilephonenumber
+       :region :state})
+    {:gender (first (:gender payload))
+     :birthdayofmonth (get-in payload [:birth :dayOfMonth])
+     :birthmonth (get-in payload [:birth :month])
+     :signupdate (now-iso)
+     :createddate (now-iso)
+     :miscfield4 "test account"}))
 
-(defn customer-details-from-payload [payload]
-  {:firstname (get payload :firstname)
-   :lastname (get payload :lastname)
-   :mobilephonenumber (get payload :mobile)
-   :emailaddress (get payload :email)
-   :state (get payload :region)
-   :city (get payload :city)
-   :gender (first (get payload :gender))
-   :birthday (str (get payload :birthday) " 00:00:00.0")
-   :signupdate (now-iso)
-   :createddate (now-iso)})
+(def invalid-payload {:error "invalid payload"
+                      :link "http://bit.ly/_mimi"})
 
 (.post app "/mimi/starbucks/account"
   (fn
     [req res]
     "create a starbucks customer in micros"
-    (let [payload (parse-customer-fields (->> req .-body js->clj))
-          details (customer-details-from-payload payload)]
-      (prn payload)
-      (prn details)
-      (createMicrosCustomer (clj->js details)
-        (fn [err result]
-          (prn err result)
-          ;; TODO send {:status "ok" :customerid "123"})
-          (if err
-            (do
-              (. res (code 500))
-              (. res (json err)))
-            (.json res result)))))))
-
-(defn parse-link-card [req-body]
-  (let [customer-id (get req-body "customerId")
-        card-number (get req-body "cardNumber")]
-    {:customer-id customer-id
-     :card-number card-number}))
+    (let [customer-data (-> req .-body (js->clj :keywordize-keys true))
+          birth (:birth customer-data)
+          validation-errors (validate-create-customer-data customer-data)
+          valid-birthday (valid-birthday (:month birth) (:dayOfMonth birth))
+          validation-birthday (if valid-birthday nil {:birth "invalid birth day/month combo"})
+          customer-data (micros-transform customer-data)]
+      (log/info "create customer")
+      (prn customer-data)
+      (if (or validation-errors (not valid-birthday))
+        (.json (.status res 400)
+           (clj->js (assoc invalid-payload :details (or validation-errors validation-birthday))))
+        (let [customer-data-js (clj->js customer-data)]
+          (log/info "create-micros-customer" customer-data-js)
+          (create-micros-customer customer-data-js
+            (fn [err result]
+              (log/debug "got result from micros: err" err "result" result)
+              (if err
+                (.json (.status res 500) #js {:error (.toString err)})
+                (.json res #js {:status "ok"
+                                :customerId (aget result 0)})))))))))
 
 (.post app "/mimi/starbucks/account/card"
   (fn
     [req res]
     "link card to account"
-    (let [fields (parse-link-card (->> req .-body js->clj))
-          customer-id (:customer-id fields)
-          card-number (:card-number fields)]
-      (log/debug "got fields")
-      (prn fields)
-      (linkCard customer-id card-number
-        (fn [err result]
-          (prn err result)
-          (if err
-            (do
-              (. res (status 500))
-              (. res (json err)))
-            (.json res result)))))))
+    (let [payload (-> req .-body (js->clj :keywordize-keys true))
+          validation-errors (validate-link-card-data payload)
+          customer-id (:customerId payload)
+          card-number (:cardNumber payload)]
+      (log/info "link card")
+      (prn payload)
+      (if validation-errors
+        (.json (.status res 400) (clj->js (assoc invalid-payload :details validation-errors)))
+        (link-card customer-id card-number
+          (fn [err result]
+            (log/debug "got result from micros: err" err "result" result)
+            (if err
+              (.json (.status res 500) #js {:error (.toString err)})
+              (.json res #js {:status "ok"}))))))))
