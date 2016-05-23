@@ -2,6 +2,7 @@
   "name": "export",
   "private": true,
   "scripts": {
+    "start": "npm run export",
     "export": "node --harmony_destructuring export.js"
   },
   "dependencies": {
