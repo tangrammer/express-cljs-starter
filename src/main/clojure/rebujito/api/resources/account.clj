@@ -34,12 +34,12 @@
       :city (:city x)
       :email (:emailAddress x)
       :firstname (:firstName x)
-      :gender "male"
+      ;;     :gender "male"
       :lastname (:lastName x)
-      :mobile "String"
-      :password (:password x)
+      ;;     :mobile "String"
+      ;;     :password (:password x)
       :postalcode (:postalCode x)
-      :region "String"
+      :region (:countrySubdivision x)
       })})
 
 (def create-account-coercer (sc/coercer mim/CreateAccountSchema
@@ -77,7 +77,7 @@
                                     (fn [exception-info]
                                       (domain-exception ctx (ex-data  exception-info))))
                                 (d/catch Exception
-                                    #(>500* ctx (str "ERROR CATCHED!" (.getMessage %))))))}}}
+                                    #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))}}}
 
 
        (merge (common-resource :account))

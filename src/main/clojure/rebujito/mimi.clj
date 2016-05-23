@@ -85,7 +85,32 @@
                                                                       {:type :mimi
                                                                        :status (:status ex)
                                                                        :body (:body ex)}))))))
-      d*)))
+      d*))
+  (register-physical-card [this data]
+    (log/info (format "%s/account/card" base-url))
+    (log/debug data)
+                                        ;    (println {"Authorization" (format "Bearer %s" token)})
+    (let [d* (d/deferred)]
+      (d/future
+        (try
+          (let [{:keys [status body]} (http-c/post (format "%s/account/card" base-url)
+                                                   {:headers {"Authorization" (format "Bearer %s" token)}
+                                                    :insecure? true
+                                                    :content-type :json
+                                                    :accept :json
+                                                    :as :json
+                                                    :throw-exceptions true
+                                                    :form-params data})]
+            (log/debug status body)
+            (d/success! d* (-> body
+                               (conj :prod-mimi))))
+          (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
+                                                (d/error! d* (ex-info (str "error!!!" (:status ex))
+                                                                      {:type :mimi
+                                                                       :status (:status ex)
+                                                                       :body (:body ex)}))))))
+      d*))
+  )
 
 (defrecord MockMimi [base-url token]
   component/Lifecycle

@@ -22,7 +22,7 @@
                          (assoc :id ::card/get-cards))]
 
                  ["/register"
-                  (-> (card/register-physical store)
+                  (-> (card/register-physical store mimi user-store)
                       (assoc :id ::card/register-physical))]
 
                  ["/register-digital" (-> (card/register-digital-cards store)

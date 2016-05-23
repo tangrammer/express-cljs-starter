@@ -10,7 +10,9 @@
   (post-refresh-token [this]))
 
 (defprotocol Mimi
-  (create-account [this data]))
+  (create-account [this data])
+  (register-physical-card [this data])
+  )
 
 (defprotocol MutableStorage
   (find
