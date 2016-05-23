@@ -86,6 +86,7 @@ function exportTransactions(customer, txs) {
 
   console.log('customer', customer.id)
 
+  table.columns.add('id', sql.Int, {nullable: false})
   table.columns.add('customer_id', sql.Int, {nullable: false})
   table.columns.add('check_number', sql.Int, {nullable: false})
   table.columns.add('amount', sql.Decimal(19, 2), {nullable: false})
@@ -93,8 +94,7 @@ function exportTransactions(customer, txs) {
   table.columns.add('description', sql.VarChar(128), {nullable: false})
 
   txs.forEach((tx) => {
-    // console.log('inserting', tx)
-    table.rows.add(customer.id, tx.check, tx.amount, tx.balance, tx.description)
+    table.rows.add(tx.id, customer.id, tx.check, tx.amount, tx.balance, tx.description)
     exportCheckItems(tx, tx.items)
   })
 
