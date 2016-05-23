@@ -6,6 +6,7 @@
    [rebujito.protocols :as p]
    [rebujito.api.resources :refer (domain-exception)]
    [schema.core :as s]
+   [schema.coerce :as sc]
    [yada.resource :refer [resource]]))
 
 (def schema {:post {
@@ -28,18 +29,21 @@
   {mim/CreateAccountSchema
    (fn [x]
      {
-      :birth {:dayOfMonth  "01" ;; (:birthDay x) ;; 'YYYY-MM-DD'
-              :month       "01"}
+      :birth {:dayOfMonth  (:birthDay x) ;; (:birthDay x) ;; 'YYYY-MM-DD'
+              :month       (:birthMonth x)}
       :city (:city x)
       :email (:emailAddress x)
-      :firstname "String"
-      :gender "String" ;; (male|female)
-      :lastname "String"
+      :firstname (:firstName x)
+      :gender "male"
+      :lastname (:lastName x)
       :mobile "String"
-      :password "String"
-      :postalcode "String"
+      :password (:password x)
+      :postalcode (:postalCode x)
       :region "String"
       })})
+
+(def create-account-coercer (sc/coercer mim/CreateAccountSchema
+                                        CreateAccountMimiMapping))
 
 (defmethod domain-exception :mimi [ctx {:keys [status body]}]
   (condp = status
@@ -63,17 +67,17 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
-                            (-> (p/create-account mimi (get-in ctx [:parameters :body]))
+                            (-> (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))
                                 (d/chain
-                                 #(let [data-account (get-in ctx [:parameters :body])
-                                        res (create-account-mongo! data-account % user-store)]
-                                    (>201 ctx res)))
+                                 (fn [mimi-res]
+                                   (let [data-account  (get-in ctx [:parameters :body])
+                                         res (create-account-mongo! data-account mimi-res user-store)]
+                                     (>201 ctx res))))
                                 (d/catch clojure.lang.ExceptionInfo
-                                    #(domain-exception ctx (ex-data  %)))
-                                (d/catch Exception  #(do
-                                                       (println "exception :::...... " %)
-                                                       ;; not deferred (>400 ctx ["No Request supplied" "Create Account Request was malformed." (.getMessage %)])
-                                                       (>400* ctx (str "ERROR CATCHED!" (.getMessage %)))))))}}}
+                                    (fn [exception-info]
+                                      (domain-exception ctx (ex-data  exception-info))))
+                                (d/catch Exception
+                                    #(>500* ctx (str "ERROR CATCHED!" (.getMessage %))))))}}}
 
 
        (merge (common-resource :account))

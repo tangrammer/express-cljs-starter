@@ -7,8 +7,9 @@
    [cheshire.core :as json]
    [byte-streams :as bs]
    [com.stuartsierra.component  :as component]
-   [rebujito.store.mocks :as mocks]))
-
+   [schema.core :as s]
+   [rebujito.store.mocks :as mocks]
+   [taoensso.timbre :as log]))
 
 (def errors {:create-account {"111000" [400 "Username is already taken" "Account Management Service returns error that user name is already taken"]
                               "111001" [400"Unknown error occured" "Account Management Service returns error
@@ -36,16 +37,16 @@
                      :status status
                      :body args}))
 
+(def GenderSchema (s/enum "male" "female"))
 
 (def CreateAccountSchema
   {
-   :address String
-   :birthday String ;; 'YYYY-MM-DD'
+   :birth {:dayOfMonth  String
+           :month       String}
    :city String
-   :country String
    :email String
    :firstname String
-   :gender String ;; (male|female)
+   :gender GenderSchema
    :lastname String
    :mobile String
    :password String
@@ -60,37 +61,30 @@
   (stop [this] this)
   protocols/Mimi
   (create-account [this data]
-    (println (format "%s/account" base-url))
-    (println {"Authorization" (format "Bearer %s" token)})
+    (log/info (format "%s/account" base-url))
+    (log/debug data)
+;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
-      (d/future (when-let [[status body] (let [{:keys [status body]}
-                                               (http-c/post (format "%s/account" base-url)
-                                                            {:headers {"Authorization" (format "Bearer %s" token)}
-                                                             :insecure? true
-                                                             :content-type :json
-                                                             :accept :json
-                                                             :as :json
-                                                             :throw-exceptions true
-                                                             :form-params {:firstname "Juan A."
-                                                                           :lastname "Ruz"
-                                                                           :password "xxxxxx"
-                                                                           :email "juanantonioruz@gmail.com"
-                                                                           :mobile "0034630051897"
-                                                                           :city "Sevilla"
-                                                                           :region "Andalucia"
-                                                                           :postalcode "41003"
-                                                                           :gender "male" ; (male|female)
-                                                                           :birth {:dayOfMonth  "01"
-                                                                                   :month       "01"}}})]
-                                           [status (-> body
-                                                       :customerId
-                                                       vector
-                                                       (conj :prod-mimi))])]
-                  (condp = status
-                    200 (d/success! d* body)
-                    (d/error! d* (ex-info (str "error!" status) {:type :mimi
-                                                                 :status status
-                                                                 :body body})))))
+      (d/future
+        (try
+          (let [{:keys [status body]} (http-c/post (format "%s/account" base-url)
+                                                   {:headers {"Authorization" (format "Bearer %s" token)}
+                                                    :insecure? true
+                                                    :content-type :json
+                                                    :accept :json
+                                                    :as :json
+                                                    :throw-exceptions true
+                                                    :form-params data})]
+               (log/debug status body)
+               (d/success! d* (-> body
+                                  :customerId
+                                  vector
+                                  (conj :prod-mimi))))
+          (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
+                                                (d/error! d* (ex-info (str "error!!!" (:status ex))
+                                                                      {:type :mimi
+                                                                       :status (:status ex)
+                                                                       :body (:body ex)}))))))
       d*)))
 
 (defrecord MockMimi [base-url token]
