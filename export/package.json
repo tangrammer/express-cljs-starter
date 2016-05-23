@@ -1,0 +1,12 @@
+{
+  "name": "export",
+  "private": true,
+  "scripts": {
+    "export": "node --harmony_destructuring export.js"
+  },
+  "dependencies": {
+    "bluebird": "3.4.0",
+    "mssql": "3.3.0",
+    "micros": "git+ssh://git@github.com:naartjie/micros-api.git#v1.2.1"
+  }
+}
