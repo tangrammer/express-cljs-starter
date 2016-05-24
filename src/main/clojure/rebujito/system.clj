@@ -2,6 +2,7 @@
   "Components and their dependency reationships"
   (:refer-clojure :exclude (read))
   (:require
+    [rebujito.payment-gateway :as payment-gateway]
     [com.stuartsierra.component :refer [system-map system-using using] :as component]
     [modular.aleph :refer [new-webserver]]
     [modular.mongo :refer [new-mongo-database new-mongo-connection]]
