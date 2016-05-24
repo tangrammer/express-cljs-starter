@@ -88,21 +88,26 @@
       d*))
   (register-physical-card [this data]
     (log/info (format "%s/account/card" base-url))
-    (log/debug data)
+    (log/info data)
                                         ;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
       (d/future
         (try
-          (let [{:keys [status body]} (http-c/post (format "%s/account/card" base-url)
-                                                   {:headers {"Authorization" (format "Bearer %s" token)}
-                                                    :insecure? true
-                                                    :content-type :json
-                                                    :accept :json
-                                                    :as :json
-                                                    :throw-exceptions true
-                                                    :form-params data})]
-            (log/debug status body)
-            (d/success! d* (-> body
+          (let [{:keys [status body]}
+                (http-c/post (format "%s/account/card" base-url) {
+;                                 :method :post
+                                 :insecure? true
+                                 :headers {"Authorization" (format "Bearer %s" token)}
+                                 :form-params  data
+                                 :content-type :json
+                                 :accept :json
+                                 :as :json
+                                 }
+                    )
+
+]
+            (log/info status body)
+            (d/success! d* (-> [:success]
                                (conj :prod-mimi))))
           (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
                                                 (d/error! d* (ex-info (str "error!!!" (:status ex))
