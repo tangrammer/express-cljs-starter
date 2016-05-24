@@ -5,13 +5,10 @@
   "schema for create account request"
   {:firstname s/Str
    :lastname s/Str
-   :password s/Str
    :email s/Str
-   :mobile s/Str
    :postalcode s/Str
    :city s/Str
    :region s/Str
-   :gender (s/enum "male" "female")
    :birth {:dayOfMonth s/Str
            :month s/Str}})
 

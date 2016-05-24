@@ -3,19 +3,19 @@
   (:refer-clojure :exclude (read))
   (:require
     [rebujito.payment-gateway :as payment-gateway]
-    [com.stuartsierra.component :refer [system-map system-using using] :as component]
-    [modular.aleph :refer [new-webserver]]
-    [modular.mongo :refer [new-mongo-database new-mongo-connection]]
-    [modular.bidi :refer [new-router new-web-resources new-redirect]]
-    [rebujito.api :as api]
-    [rebujito.config :refer [config]]
-    [rebujito.handler :as wh]
-    [rebujito.logging :as log-levels]
-    [rebujito.store :as store]
-    [rebujito.mongo :refer (new-user-store)]
-    [rebujito.mimi :as mimi]
-    [rebujito.payment-gateway :as payment-gateway]
-    [taoensso.timbre :as log])
+   [byte-streams :as bs]
+   [com.stuartsierra.component :refer [system-map system-using using] :as component]
+   [modular.aleph :refer [new-webserver]]
+   [modular.mongo :refer [new-mongo-database new-mongo-connection]]
+   [modular.bidi :refer [new-router new-web-resources new-redirect]]
+   [rebujito.api :as api]
+   [rebujito.config :refer [config]]
+   [rebujito.handler :as wh]
+   [rebujito.logging :as log-levels]
+   [rebujito.store :as store]
+   [rebujito.mongo :refer (new-user-store)]
+   [rebujito.mimi :as mimi]
+   [taoensso.timbre :as log])
   (:import [java.util Date]))
 
 (defn swagger-ui-components [system]
@@ -36,7 +36,15 @@
          (apply concat
                 (->
                  {
-                  :docsite-router (new-router)
+                  :docsite-router (new-router :not-found-handler (fn [ctx]
+                                                                   (println ">>>>>>NOT_FOUND")
+                                                                   (clojure.pprint/pprint ctx)
+                                                                   (when (= manifold.stream.BufferedStream (type (:body ctx)))
+                                                                     (print "BODY: ")
+                                                                     (clojure.pprint/pprint (-> ctx :body bs/to-string))
+                                                                     )
+                                                                   (println ">>>" )
+                                                                   {:status 404 :body "Not found"}))
 
                   :db (new-mongo-database (-> config :mongo))
 
