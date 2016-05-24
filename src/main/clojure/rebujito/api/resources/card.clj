@@ -68,8 +68,8 @@
                          :charset "UTF-8"}]
 
              :response (fn [ctx]
-                         (let [cardNumber (str (+ (rand-int 1000) (read-string (format "96235709%05d" 0))))
-                               #_(get-in ctx [:parameters :body])]
+                         (let [cardNumber #_(str (+ (rand-int 1000) (read-string (format "96235709%05d" 0))))
+                               (get-in ctx [:parameters :body :cardNumber])]
                            (-> (p/register-physical-card mimi {:cardNumber cardNumber
                                                                :customerId  (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
 
