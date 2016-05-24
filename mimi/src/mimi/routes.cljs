@@ -10,6 +10,10 @@
 (def micros (nodejs/require "micros"))
 (def moment (nodejs/require "moment"))
 
+(def app-version (nodejs/require "../../VERSION.json"))
+(def version (.-version app-version))
+(def built (.-built app-version))
+
 (. micros (setBrand "starbucks"))
 
 (def create-micros-customer (.-createCustomer micros))
@@ -25,7 +29,7 @@
 
 (.use app (.unless (jwt #js {:secret config/jwt-secret}) #js {:path #js ["/mimi/health"]}))
 
-(.get app "/mimi/health" #(.send %2 "ok"))
+(.get app "/mimi/health" #(.send %2 (str "ok, version: " version " " built)))
 
 (defn micros-transform [payload]
   (merge
