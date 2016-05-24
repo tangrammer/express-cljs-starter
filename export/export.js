@@ -1,18 +1,15 @@
 'use strict'
 
-Promise = require('bluebird')
-const sql = require('mssql')
-const micros = require('micros')
-
-micros.setBrand('starbucks')
+const
+  Promise = require('bluebird'),
+  sql = require('mssql'),
+  micros = require('micros'),
+  accounts = require('./accounts')
 
 const
   database = 'SCV_HUB',
   username = 'SCV_SWARM',
   password = '$35L$3a9w'
-
-const accountNumber = '9623570800021'
-// const accountNumber = '9623570800136'
 
 const cols = [
   'firstname',
@@ -23,28 +20,35 @@ const cols = [
   'state',
 ]
 
-Promise.all([
-  micros.getCustomerDetails(accountNumber, cols),
-  micros.transactions({accountNumber}),
-  sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`),
-])
-
-.then(([[customer], txs]) => {
-  console.log(customer.id)
-  return exportCustomer(customer)
-  .then(() => {
-    return exportTransactions(customer, txs)
-  })
-
-}).catch(err => {
-  console.error(err)
+micros.setBrand('starbucks')
+sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
+.then(() => {
+  return Promise.map(accounts, (account) => {
+    const accountNumber = account.primaryposref
+    console.log(`starting ${accountNumber}`)
+    return exportCustomer(accountNumber)
+  }, {concurrency: 1})
 })
+.catch(err => console.error(err.stack))
 
-function exportCustomer(customer) {
+function exportCustomer(accountNumber) {
+
+  return Promise.all([
+    micros.getCustomerDetails(accountNumber, cols),
+    micros.transactions({accountNumber}),
+  ])
+  .then(([[customer], txs]) => {
+    return exportCustomerProfile(customer)
+    .then(() => {
+      return exportTransactions(customer, txs)
+    })
+  })
+}
+
+
+function exportCustomerProfile(customer) {
 
   console.log(`exporting ${customer.primaryposref}`)
-
-  console.log(customer.id)
 
   return sql.query`delete from customers where id = ${customer.id}`
   .then(() => {
