@@ -41,13 +41,11 @@
 
                   :db-conn (new-mongo-connection)
 
-                  :store (store/new-prod-store)
+                  :store (store/new-prod-store  config)
 
                   :user-store (new-user-store)
 
                   :mimi (mimi/new-prod-mimi (:mimi config))
-
-                  :payment-gateway (payment-gateway/new-prod-payment-gateway (:payment-gateway config))
 
                   :api (api/new-api-component)
 
@@ -68,7 +66,7 @@
    :webserver {:request-handler :docsite-router}
    :db-conn {:database :db}
    :user-store [:db-conn]
-   :api [:store :mimi :db-conn :user-store :payment-gateway]
+   :api [:store :mimi :db-conn :user-store]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

@@ -41,7 +41,7 @@
                  [cheshire "5.5.0"]
                  [com.cognitect/transit-clj "0.8.285"]
                  [org.clojure/data.xml "0.0.8"]
-
+                 [com.github.kyleburton/clj-xpath "1.4.3"]
 
 
                  ;; config loader

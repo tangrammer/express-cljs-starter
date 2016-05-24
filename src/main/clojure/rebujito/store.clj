@@ -1,27 +1,27 @@
 (ns rebujito.store
   (:require
-   [rebujito.protocols :as protocols]
-   [com.stuartsierra.component  :as component]
-   [rebujito.store.mocks :as mocks]))
+    [rebujito.protocols :as protocols]
+    [com.stuartsierra.component :as component]
+    [rebujito.store.mocks :as mocks]
+    [rebujito.payment-gateway :as payment-gateway]
+    [rebujito.api.util :refer :all]))
 
-(defrecord ProdStore []
+(defrecord ProdStore [config]
   component/Lifecycle
   (start [this]
-    this)
-  (stop [this] this)
+    (let [gateway (payment-gateway/new-prod-payment-gateway (:payment-gateway config))]
+      (assoc this :payment-gateway gateway)))
+  (stop [this]
+        (assoc this :payment-gateway nil))
   protocols/Store
   (get-card [this]
     (assoc mocks/card :target-environment :prod))
   (get-payment-method-detail [this]
     (assoc mocks/get-payment-method-detail :target-environment :prod))
   (post-payment-method [this data]
-    (println "Validating Payment Request")
-    (let [ [status body] ["201" (assoc mocks/post-payment-method :target-environment :prod)]
-          ]
-      (println (format "Status:%s Body:%s" status body))
-      [status body]
-      )
-    )
+    (let [{:keys [status vaultId]} (protocols/create-card-token (:payment-gateway this) data)]
+      {:status status
+       :result vaultId}))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
   (post-token-resource-owner [this]
@@ -30,7 +30,7 @@
     (assoc mocks/post-refresh-token :target-environment :prod)))
 
 
-(defrecord MockStore []
+(defrecord MockStore [config]
   component/Lifecycle
   (start [this]
     this)
@@ -52,8 +52,8 @@
 
 
 
-(defn new-prod-store []
-  (map->ProdStore {}))
+(defn new-prod-store [config]
+  (map->ProdStore config))
 
-(defn new-mock-store []
-  (map->MockStore {}))
+(defn new-mock-store [config]
+  (map->MockStore config))

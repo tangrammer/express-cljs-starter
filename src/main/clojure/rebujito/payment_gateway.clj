@@ -1,13 +1,15 @@
 (ns rebujito.payment-gateway
   (:require
    [rebujito.protocols :as protocols]
-   [com.stuartsierra.component  :as component]))
+   [com.stuartsierra.component  :as component]
+   [org.httpkit.client :as http-k]
+   [ring.velocity.core :as velocity]
+   [clj-xpath.core :as xp]))
 
 
-(defrecord Paygate [paygate-account]
+(defrecord Paygate [config]
   component/Lifecycle
-  (start [this]
-    this)
+  (start [this] this)
   (stop [this] this)
   protocols/PaymentGateway
   (ping [this data]
@@ -19,21 +21,21 @@
    </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>"])
   (create-card-token [this data]
-    ["200"
-     "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">
-   <SOAP-ENV:Header/>
-   <SOAP-ENV:Body>
-      <ns2:SingleVaultResponse xmlns:ns2=\"http://www.paygate.co.za/PayHOST\">
-         <ns2:CardVaultResponse>
-            <ns2:Status>
-               <ns2:StatusName>Completed</ns2:StatusName>
-               <ns2:StatusDetail>Vault successfull</ns2:StatusDetail>
-               <ns2:VaultId>c57173a4-f313-465a-be1a-28030d38d5c0</ns2:VaultId>
-            </ns2:Status>
-         </ns2:CardVaultResponse>
-      </ns2:SingleVaultResponse>
-   </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>"])
+    @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
+                 {:body (velocity/render "paygate/vault.vm"
+                                         :paygateId "10011064270"
+                                         :paygatePassword "test"
+                                         :cardNumber "4000000000000002"
+                                         :expirationMonth 11
+                                         :expirationYear 2018)}
+                  (fn [{:keys [status body error]}]
+                    (if (or error (not= 200 status)) 
+                      {:status "500"}
+                      (let [response (xp/xml->doc body)]
+                        {:status "201"
+                         :vaultId (xp/$x:text "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)
+                         }
+                        )))))
   (delete-card-token [this data]
     ["200"
      "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">
