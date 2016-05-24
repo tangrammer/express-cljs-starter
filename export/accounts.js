@@ -1,3 +1,5 @@
+'use strict'
+
 module.exports = [
   { id: '40482954', primaryposref: '9623570100005101' },
   { id: '40873010', primaryposref: '9623570100010065' },
