@@ -1,27 +1,24 @@
 (ns rebujito.store
   (:require
-    [rebujito.protocols :as protocols]
-    [com.stuartsierra.component :as component]
-    [rebujito.store.mocks :as mocks]
-    [rebujito.payment-gateway :as payment-gateway]
-    [rebujito.api.util :refer :all]))
+   [rebujito.protocols :as protocols]
+   [com.stuartsierra.component  :as component]
+   [rebujito.store.mocks :as mocks]))
 
-(defrecord ProdStore [config]
+
+
+
+(defrecord ProdStore []
   component/Lifecycle
   (start [this]
-    (let [gateway (payment-gateway/new-prod-payment-gateway (:payment-gateway config))]
-      (assoc this :payment-gateway gateway)))
-  (stop [this]
-        (assoc this :payment-gateway nil))
+    this)
+  (stop [this] this)
   protocols/Store
   (get-card [this]
     (assoc mocks/card :target-environment :prod))
   (get-payment-method-detail [this]
     (assoc mocks/get-payment-method-detail :target-environment :prod))
   (post-payment-method [this data]
-    (let [{:keys [status vaultId]} (protocols/create-card-token (:payment-gateway this) data)]
-      {:status status
-       :result vaultId}))
+    (protocols/create-card-token (:payment-gateway this) data))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
   (post-token-resource-owner [this]
@@ -30,7 +27,7 @@
     (assoc mocks/post-refresh-token :target-environment :prod)))
 
 
-(defrecord MockStore [config]
+(defrecord MockStore []
   component/Lifecycle
   (start [this]
     this)
@@ -41,7 +38,7 @@
   (get-payment-method-detail [this]
     (assoc mocks/get-payment-method-detail :target-environment :dev))
   (post-payment-method [this data]
-    ["201" (assoc mocks/post-payment-method :target-environment :dev)])
+    (assoc mocks/post-payment-method :target-environment :dev))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :dev) mocks/get-payment-method))
   (post-token-resource-owner [this]
@@ -52,8 +49,8 @@
 
 
 
-(defn new-prod-store [config]
-  (map->ProdStore config))
+(defn new-prod-store []
+  (map->ProdStore {}))
 
-(defn new-mock-store [config]
-  (map->MockStore config))
+(defn new-mock-store []
+  (map->MockStore {}))

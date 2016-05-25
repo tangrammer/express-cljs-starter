@@ -1,15 +1,17 @@
 (ns rebujito.payment-gateway
-  (:require
+  (:require 
+   [schema.core :as s]
+   [taoensso.timbre :as log]
    [rebujito.protocols :as protocols]
    [com.stuartsierra.component  :as component]
    [org.httpkit.client :as http-k]
    [ring.velocity.core :as velocity]
    [clj-xpath.core :as xp]))
 
-
-(defrecord Paygate [config]
+(defrecord Paygate []
   component/Lifecycle
-  (start [this] this)
+  (start [this]
+    this)
   (stop [this] this)
   protocols/PaymentGateway
   (ping [this data]
@@ -21,19 +23,33 @@
    </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>"])
   (create-card-token [this data]
-    @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
+    (log/debug data)
+    @(http-k/post (-> this :url)
                  {:body (velocity/render "paygate/vault.vm"
-                                         :paygateId "10011064270"
-                                         :paygatePassword "test"
+                                         :paygateId (-> this :paygateId)
+                                         :paygatePassword (-> this :paygatePassword)
                                          :cardNumber "4000000000000002"
                                          :expirationMonth 11
                                          :expirationYear 2018)}
                   (fn [{:keys [status body error]}]
+                    (log/debug status error body)
                     (if (or error (not= 200 status)) 
                       {:status "500"}
                       (let [response (xp/xml->doc body)]
-                        {:status "201"
-                         :vaultId (xp/$x:text "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)
+                        {
+                         :expirationYear 0
+                         :billingAddressId nil
+                         :accountNumber "F67A77FC92D518AC9BF69B1028BCF7A711B1"
+                         :default false
+                         :paymentMethodId (xp/$x:text "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)
+                         :nickname "nick"
+                         :paymentType "visa"
+                         :accountNumberLastFour nil
+                         :cvn nil
+                         :fullName "fullname"
+                         :expirationMonth 0
+                         :isTemporary false
+                         :bankName nil
                          }
                         )))))
   (delete-card-token [this data]
@@ -86,6 +102,7 @@
 (defrecord MockPaymentGateway []
   component/Lifecycle
   (start [this]
+    (println "-----Paygate-STUB----")
     this)
   (stop [this] this)
   protocols/PaymentGateway
@@ -159,8 +176,14 @@
    </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>"]))
 
-(defn new-prod-payment-gateway [payment-gateway-config]
-  (map->Paygate payment-gateway-config))
+(def PaygateConfigSchema
+  {:paygateId s/Str
+   :paygatePassword s/Str
+   :url s/Str})
 
-(defn new-mock-payment-gateway [payment-gateway-config]
-  (map->MockPaymentGateway payment-gateway-config))
+(defn new-prod-payment-gateway [opts]
+  (s/validate PaygateConfigSchema opts)
+  (map->Paygate opts))
+
+(defn new-mock-payment-gateway [opts]
+  (map->MockPaymentGateway opts))

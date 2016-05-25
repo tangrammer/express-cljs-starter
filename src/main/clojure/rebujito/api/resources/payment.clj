@@ -100,30 +100,26 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
-                            (condp = (get-in ctx [:parameters :query :access_token] "No Access Token") ;;supposed to check that the acess token exists
-                              "No Access Token" (>500 ctx ["No Access Token"])
-                              (let [{:keys [status result] } (p/post-payment-method store (get-in ctx [:parameters :body]))]
-                                (condp = status ;; if it does proceed with processing
-                                  "141000" (>400 ctx ["No Request Supplied" "Request was malformed."])
-                                  "141001" (>400 ctx ["PaymentType cannot be null or empty."
-                                                      "Missing or Invalid type attribute"])
-                                  "141002" (>400 ctx ["FullName cannot be null or empty."
-                                                      "Missing or Invalid fullName attribute."])
-                                  "141003" (>400 ctx ["AccountNumber cannot be null or empty."
-                                                      "Missing or Invalid accountNumber attribute."])
-                                  "141004" (>400 ctx ["Cvn cannot be null or empty."
-                                                      "Missing or Invalid accountCVN attribute."])
-                                  "141005" (>400 ctx ["Invalid ExpirationMonth."
-                                                      "Invalid expirationMonth attribute."])
-                                  "141006" (>400 ctx ["Invalid ExpirationYear."
-                                                      "Invalid expirationYear attribute."])
-                                  "141007" (>400 ctx ["AddressId cannot be null or empty."
-                                                      "Missing or Invalid billingAddressId attribute."])
-                                  "141008" (>400 ctx ["Invalid PaymentMethod"  "Missing payment method object"])
-                                  "141025" (>400 ctx ["User cannot be null or empty"])
-                                  "141039" (>400 ctx ["Payment method already exists."])
-                                  "201" (>201 ctx result)
-                                  (>500 ctx ["An unexpected error occurred processing the request."])
-                                  ))))}}}
+                            (condp = (get-in ctx [:parameters :query :access_token])
+                              "141000" (>400 ctx ["No Request Supplied" "Request was malformed."])
+                              "141001" (>400 ctx ["PaymentType cannot be null or empty."
+                                                  "Missing or Invalid type attribute"])
+                              "141002" (>400 ctx ["FullName cannot be null or empty."
+                                                  "Missing or Invalid fullName attribute."])
+                              "141003" (>400 ctx ["AccountNumber cannot be null or empty."
+                                                  "Missing or Invalid accountNumber attribute."])
+                              "141004" (>400 ctx ["Cvn cannot be null or empty."
+                                                  "Missing or Invalid accountCVN attribute."])
+                              "141005" (>400 ctx ["Invalid ExpirationMonth."
+                                                  "Invalid expirationMonth attribute."])
+                              "141006" (>400 ctx ["Invalid ExpirationYear."
+                                                  "Invalid expirationYear attribute."])
+                              "141007" (>400 ctx ["AddressId cannot be null or empty."
+                                                  "Missing or Invalid billingAddressId attribute."])
+                              "141008" (>400 ctx ["Invalid PaymentMethod"  "Missing payment method object"])
+                              "141025" (>400 ctx ["User cannot be null or empty"])
+                              "141039" (>400 ctx ["Payment method already exists."])
+                              "500" (>500 ctx ["An unexpected error occurred processing the request."])
+                              (>201 ctx (p/post-payment-method store (get-in ctx [:parameters :body])))))}}}
        (merge (common-resource :me/payment-methods))
        (merge access-control))))
