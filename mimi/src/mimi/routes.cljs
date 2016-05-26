@@ -18,6 +18,7 @@
 
 (def create-micros-customer (.-createCustomer micros))
 (def link-card (.-setCustomerPosRef micros))
+(def get-balances (.-getStarbucksBalances micros))
 
 (defn now-iso []
   (.format (moment) "YYYY-MM-DD HH:mm:ss.S"))
@@ -90,3 +91,16 @@
             (if err
               (.json (.status res 500) #js {:error (.toString err)})
               (.json res #js {:status "ok"}))))))))
+
+(.get app "/mimi/starbucks/account/:cardNumber/balances"
+  (fn
+    [req res]
+    "get account balances"
+    (let [card-number (.param req "cardNumber")]
+      (log/info "getting balances for" card-number)
+      (.then (get-balances card-number)
+        (fn [result]
+          (log/debug "got result from micros:" result)
+          (.json res (clj->js result)))
+        (fn [err]
+          (.json (.status res 500) #js {:error (.toString err)}))))))
