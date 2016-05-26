@@ -30,7 +30,7 @@
 
 (.use app (.unless (jwt #js {:secret config/jwt-secret}) #js {:path #js ["/mimi/health"]}))
 
-(.get app "/mimi/health" #(.send %2 (str "ok, version: " version " " built)))
+(.get app "/mimi/health" #(.json %2 #js {:status "ok" :version version :built built}))
 
 (defn micros-transform [payload]
   (merge
