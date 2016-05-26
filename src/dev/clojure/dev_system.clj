@@ -1,12 +1,12 @@
 (ns dev-system
   "Dev Components and their dependency reationships"
-  (:require 
-    [com.stuartsierra.component :as component :refer (using)]
-    [rebujito.config :refer (config)]
-    [rebujito.store :refer (new-mock-store)]
-    [rebujito.mimi :refer (new-mock-mimi)]
-    [rebujito.payment-gateway :refer (new-mock-payment-gateway)]
-    [rebujito.system :refer (new-system-map new-dependency-map)]))
+  (:require
+   [rebujito.payment-gateway :refer (new-mock-payment-gateway)]
+   [com.stuartsierra.component :as component :refer (using)]
+   [rebujito.config :refer (config)]
+   [rebujito.store :refer (new-mock-store)]
+   [rebujito.mimi :refer (new-mock-mimi)]
+   [rebujito.system :refer (new-system-map new-dependency-map)]))
 
 
 (def mod-defs
