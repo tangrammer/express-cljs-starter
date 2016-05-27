@@ -1,4 +1,4 @@
-(ns dev-system
+(ns rebujito.system.dev-system
   "Dev Components and their dependency reationships"
   (:require
    [com.stuartsierra.component :as component :refer (using)]
@@ -38,12 +38,12 @@
 (defn new-dev-system
   "Create a development system"
   ([] (new-dev-system #{:+mock-store}))
-  ([opts]
-   (let [config (config :dev)]
-     (component/system-using
-      ((apply comp
-              (map #(% config) (remove nil? (for [mod opts] (get-in mod-defs [:system-mods mod])))))
-       (new-system-map config))
-      ((apply comp
-              (map #(% config) (remove nil? (for [mod opts] (get-in mod-defs [:dependency-mods mod])))))
-       (new-dependency-map))))))
+  ([opts]  (new-dev-system #{:+mock-store} (config :dev)))
+  ([opts config]
+   (component/system-using
+    ((apply comp
+            (map #(% config) (remove nil? (for [mod opts] (get-in mod-defs [:system-mods mod])))))
+     (new-system-map config))
+    ((apply comp
+            (map #(% config) (remove nil? (for [mod opts] (get-in mod-defs [:dependency-mods mod])))))
+     (new-dependency-map)))))

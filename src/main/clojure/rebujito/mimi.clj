@@ -46,10 +46,10 @@
    :city String
    :email String
    :firstname String
-   :gender GenderSchema
+   ;:gender GenderSchema
    :lastname String
-   :mobile String
-   :password String
+   ;:mobile String
+   ;:password String
    :postalcode String
    :region String
    })
@@ -62,7 +62,7 @@
   protocols/Mimi
   (create-account [this data]
     (log/info (format "%s/account" base-url))
-    (log/debug data)
+    (log/info data)
 ;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
       (d/future
@@ -75,16 +75,18 @@
                                                     :as :json
                                                     :throw-exceptions true
                                                     :form-params data})]
-               (log/debug status body)
-               (d/success! d* (-> body
-                                  :customerId
-                                  vector
-                                  (conj :prod-mimi))))
+            (log/info body)
+            (d/success! d* (-> body
+                               :customerId
+                               vector
+                               (conj :prod-mimi))))
           (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
                                                 (d/error! d* (ex-info (str "error!!!" (:status ex))
                                                                       {:type :mimi
                                                                        :status (:status ex)
-                                                                       :body (:body ex)}))))))
+                                                                       :body (:body ex)}))))
+          (catch Exception e (d/error! d* e))
+          ))
       d*))
   (register-physical-card [this data]
     (log/info (format "%s/account/card" base-url))
@@ -123,10 +125,23 @@
     this)
   (stop [this] this)
   protocols/Mimi
-  (create-account [this data ]
+  (create-account [this data]
     (let [d* (d/deferred)]
-      (d/error! d* (new-error "testing " (-> errors :create-account (get "111000"))))
-      d*)))
+      (d/success! d* (-> (str (rand-int 1000000))
+                         vector
+                         (conj :mock-mimi)))
+
+      d*))
+  (register-physical-card [this data]
+    (log/info (format "%s/account/card" base-url))
+    (log/info data)
+
+    (let [d* (d/deferred)]
+      (d/future
+        (d/success! d* (-> [:success]
+                           (conj :prod-mimi))))
+      d*))
+  )
 
 (defn new-prod-mimi [mimi-config]
   (map->ProdMimi mimi-config))

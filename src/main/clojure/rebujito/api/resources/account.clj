@@ -5,6 +5,7 @@
    [rebujito.mimi :as mim]
    [rebujito.protocols :as p]
    [rebujito.api.resources :refer (domain-exception)]
+   [buddy.core.codecs :refer (bytes->hex)]
    [schema.core :as s]
    [schema.coerce :as sc]
    [yada.resource :refer [resource]]))
@@ -34,10 +35,10 @@
       :city (:city x)
       :email (:emailAddress x)
       :firstname (:firstName x)
-      ;;     :gender "male"
+           ;:gender "male"
       :lastname (:lastName x)
-      ;;     :mobile "String"
-      ;;     :password (:password x)
+           ;:mobile "String"
+           ;:password (:password x)
       :postalcode (:postalCode x)
       :region (:countrySubdivision x)
       })})
@@ -50,14 +51,16 @@
     400 (>400 ctx body)
     500 (>500 ctx body)))
 
-(defn- create-account-mongo! [data-account mimi-res user-store]
+(defn- create-account-mongo! [data-account mimi-res user-store crypto]
   (let [mimi-id (first mimi-res)
         mongo-id (p/generate-id user-store mimi-id)
         mongo-account-data (-> data-account
-                               (assoc :_id mongo-id))]
+                               (assoc :_id mongo-id)
+                               (assoc :password (p/sign crypto (:password data-account)) )
+                               )]
     (p/get-and-insert! user-store mongo-account-data)))
 
-(defn create [store mimi user-store]
+(defn create [store mimi user-store crypto]
   (resource
    (-> {:methods
         {:post {:parameters {:query {:access_token String
@@ -71,11 +74,11 @@
                                 (d/chain
                                  (fn [mimi-res]
                                    (let [data-account  (get-in ctx [:parameters :body])
-                                         res (create-account-mongo! data-account mimi-res user-store)]
+                                         res (create-account-mongo! data-account mimi-res user-store crypto)]
                                      (>201 ctx res))))
                                 (d/catch clojure.lang.ExceptionInfo
                                     (fn [exception-info]
-                                      (domain-exception ctx (ex-data  exception-info))))
+                                      (domain-exception ctx (ex-data exception-info))))
                                 (d/catch Exception
                                     #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))}}}
 
@@ -83,7 +86,7 @@
        (merge (common-resource :account))
        (merge access-control))))
 
-(defn get-user [store mimi user-store]
+(defn get-user [store mimi user-store authorizer authenticator]
   (resource
    (-> {:methods
         {:get {:parameters {:query {:access_token String
@@ -93,9 +96,10 @@
                             :charset "UTF-8"}]
                :response (fn [ctx]
                            (try
-                             (if-let [res (p/find user-store (get-in ctx [:parameters :query :access_token]))]
-                               (>201 ctx res)
-                               (>404 ctx ["Not Found" "Account Profile with given userId was not found."]))
+                             (let [token (get-in ctx [:parameters :query :access_token])]
+                               (if (p/verify authorizer token :test-scope)
+                                 (>201 ctx (p/read-token authenticator token))
+                                 (>404 ctx ["Not Found" "Account Profile with given userId was not found."])))
                              (catch Exception e
                                (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 

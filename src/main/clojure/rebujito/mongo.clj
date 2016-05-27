@@ -32,7 +32,7 @@
           (str "Not ready to db-find using: " (type data)))))
 
 
-(defrecord UserStorage [db-conn collection]
+(defrecord UserStorage [db-conn collection secret-key]
   component/Lifecycle
   (start [this]
     (assoc this
@@ -54,8 +54,11 @@
 ; test!!           (throw (Exception. "joe!!"))
     (mc/insert-and-return (:db this) (:collection this) data)))
 
-(defn new-user-store []
-  (map->UserStorage {:collection :users}))
+(defn new-user-store [auth-data]
+  (map->UserStorage {:collection :users
+                     :secret-key (:secret-key auth-data)
+                     }))
+
 
 (defn- find-map-by-id [mutable-storage id]
   (mc/find-map-by-id (:db mutable-storage) (:collection mutable-storage) id))
@@ -70,4 +73,4 @@
 
 (defmethod db-find clojure.lang.PersistentArrayMap
   [mutable-storage data]
-  (mc/find (:db mutable-storage) (:collection mutable-storage) data))
+  (mc/find-maps (:db mutable-storage) (:collection mutable-storage) data))

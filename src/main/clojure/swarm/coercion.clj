@@ -1,5 +1,5 @@
 ;; utils about schema coercion
-(ns rebujito.coercion)
+(ns swarm.coercion)
 
 
 (defn throw-coercer-exceptions

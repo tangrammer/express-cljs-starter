@@ -9,10 +9,12 @@
                       :prod :prod}
  :yada {:port 3000}
 
-
+ :auth {:secret-key "the-secret-key"}
+ :api {:key "the-api-key-shared-with-the-client"
+       :secret "the-api-secret-key-shared-with-the-client"}
 
  :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
-        :token "the-token"}
+        :token "mimi-token"}
 
  :mongo {
          :host "localhost"

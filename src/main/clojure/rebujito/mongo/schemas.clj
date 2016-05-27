@@ -3,7 +3,7 @@
    [schema.coerce :as sc]
    [schema.core :as s]
    [schema.macros :as sm]
-   [rebujito.coercion :refer (throw-coercer-exceptions)]
+   [swarm.coercion :refer (throw-coercer-exceptions)]
 ))
 
 
