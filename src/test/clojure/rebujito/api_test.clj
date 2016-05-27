@@ -60,12 +60,38 @@
   (println ">>>>> ****"(-> c :body bs/to-string))
   c
   )
+(defn oauth-login-data []
+  (let [{:keys [key secret]} (api-config)]
+   {:grant_type "password",
+    :client_id key,
+    :client_secret secret,
+    :username "juanantonioruz@gmail.com",
+    :password "real-secret",
+    :scope "test_scope"}))
+
+
+(defn new-account-sb []
+{:countrySubdivision "aa",
+ :registrationSource "aa",
+ :addressLine1 "zz",
+ :password "real-secret",
+ :emailAddress "hola@hola.com",
+ :city "Sevilla",
+ :firstName "Juan",
+ :birthDay "13",
+ :birthMonth "06",
+ :lastName "Ruz",
+ :receiveStarbucksEmailCommunications "ok",
+ :postalCode "41003",
+ :country "Spain"}
+  )
 
 (deftest test-20*
   (time
    (let [r (-> *system* :docsite-router :routes)
          port (-> *system*  :webserver :port)
          new-account (g/generate (:post account/schema))
+         new-account (new-account-sb)
          sig (new-sig)]
      (testing ::account/create
        (let [api-id ::account/create
@@ -75,12 +101,13 @@
                                         {:throw-exceptions false
                                          :body (json/generate-string
                                                 (assoc new-account
+
                                                        :birthDay "1"
                                                        :birthMonth "1"
                                                        ))
                                          :body-encoding "UTF-8"
                                          :content-type :json})
-                         #_print-body
+                         print-body
                             :status)))))
 
      (testing ::oauth/token-resource-owner
@@ -127,9 +154,11 @@
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :body (json/generate-string
-                                            (g/generate (-> card/schema :post :register-physical)))
+                                            (assoc (g/generate (-> card/schema :post :register-physical))
+                                                   :cardNumber (str (+ (rand-int 1000) (read-string (format "96235709%05d" 0)))))
+                                            )
                                      :content-type :json})
-    ;                    print-body
+                        print-body
                         :status)))))
 
      (testing ::card/register-digital-cards
