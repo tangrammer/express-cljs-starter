@@ -2,11 +2,7 @@
   "Components and their dependency reationships"
   (:refer-clojure :exclude (read))
   (:require
-<<<<<<< HEAD
    [rebujito.payment-gateway :as payment-gateway]
-   [byte-streams :as bs]
-=======
->>>>>>> master
    [com.stuartsierra.component :refer [system-map system-using using] :as component]
    [modular.aleph :refer [new-webserver]]
    [modular.mongo :refer [new-mongo-database new-mongo-connection]]
@@ -54,15 +50,13 @@
 
                   :mimi (mimi/new-prod-mimi (:mimi config))
 
-<<<<<<< HEAD
-                  :payment-gateway (payment-gateway/new-prod-payment-gateway (-> config  :payment-gateway :paygate))
-=======
                   :crypto (encrypt/new-sha256-encrypter (:auth config))
 
                   :authorizer (oauth/new-authorizer)
 
                   :authenticator (jwt/new-authenticator (:auth config))
->>>>>>> master
+
+                  :payment-gateway (payment-gateway/new-prod-payment-gateway (-> config  :payment-gateway :paygate))
 
                   :api (api/new-api-component)
 
@@ -83,13 +77,9 @@
    :webserver {:request-handler :docsite-router}
    :db-conn {:database :db}
    :user-store [:db-conn]
-<<<<<<< HEAD
-   :store [:payment-gateway]
-   :api [:store :mimi :db-conn :user-store]
-=======
    :authorizer [:authenticator]
+   :store [:payment-gateway]
    :api [:store :mimi :user-store :authorizer :crypto :authenticator]
->>>>>>> master
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

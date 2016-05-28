@@ -1,30 +1,8 @@
 (ns rebujito.api-test
   (:require
-<<<<<<< HEAD
-    [aleph.http :as http]
-    [org.httpkit.client :as http-k]
-    [bidi.bidi :as bidi]
-    [byte-streams :as bs]
-    [cheshire.core :as json]
-    [clojure.pprint :refer (pprint)]
-    [clojure.test :refer :all]
-    [com.stuartsierra.component :as component]
-    [rebujito.api.resources.account :as account]
-    [rebujito.api.resources.card :as card]
-    [rebujito.api.resources.oauth :as oauth]
-    [rebujito.api.resources.payment :as payment]
-    [rebujito.api.resources.social-profile :as social-profile]
-    [rebujito.config :refer (config)]
-    [rebujito.system :refer (new-production-system)]
-    [schema-generators.generators :as g]
-    [schema.core :as s]
-    [ring.velocity.core :as velocity]))
-
-=======
    [buddy.sign.util :refer (to-timestamp)]
    [rebujito.api.sig :as api-sig]
-    [rebujito.api.time :as api-time]
-
+   [rebujito.api.time :as api-time]
    [aleph.http :as http]
    [org.httpkit.client :as http-k]
    [clj-http.client :as http-c]
@@ -46,8 +24,8 @@
    [schema.core :as s]
    [manifold.deferred :as d]
    [rebujito.system.dev-system :as dev]
+   [ring.velocity.core :as velocity]
    ))
->>>>>>> master
 
 (def ^:dynamic *system* nil)
 
@@ -243,27 +221,7 @@
                                     :body (json/generate-string
                                            (g/generate (-> social-profile/schema :put)))
                                     :content-type :json})
-<<<<<<< HEAD
-                        :status)))))))
-
-
-
-
-
-  (comment
-    "here the way to parse the byte-stream body response"
-
-    (let [{:keys [status body]}
-          (-> @(http-k/get "https://api.swarmloyalty.co.za/" )
-
-
-              )]
-      status
-      )
-
-    (-> @(http/get "https://api.swarmloyalty.co.za" {:insecure? true})
-        :body
-        )))
+                        :status))))))))
 
 (deftest velocityRenderingTest
   (is (= "hello,dennis,your age is 29." (velocity/render "test.vm" :name "dennis" :age 29)))
@@ -311,6 +269,3 @@
     (is (= 200 status))
     (is (.contains body "CardPaymentResponse"))
     (is (not (.contains body "SOAP-ENV:Fault|payhost:error")))))
-=======
-                        :status))))))))
->>>>>>> master
