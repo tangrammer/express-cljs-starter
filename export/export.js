@@ -3,8 +3,9 @@
 const
   Promise = require('bluebird'),
   sql = require('mssql'),
-  micros = require('micros'),
-  accounts = require('./accounts')
+  micros = require('micros')
+
+micros.setBrand('starbucks')
 
 const
   database = 'SCV_HUB',
@@ -20,9 +21,17 @@ const cols = [
   'state',
 ]
 
-micros.setBrand('starbucks')
+// console.log('starting')
+// getAccounts().then(a => {
+//   console.log('done')
+//   console.log(a)
+//   console.log(a.length)
+// })
+
 sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
-.then(() => {
+.then(getAccounts)
+// .then(console.log)
+.then(accounts => {
   return Promise.map(accounts, (account) => {
     const accountNumber = account.primaryposref
     console.log(`starting ${accountNumber}`)
@@ -36,15 +45,26 @@ function exportCustomer(accountNumber) {
   return Promise.all([
     micros.getCustomerDetails(accountNumber, cols),
     micros.transactions({accountNumber}),
+    micros.getStarbucksBalances(accountNumber),
   ])
-  .then(([[customer], txs]) => {
+  .then(([[customer], txs, balances]) => {
     return exportCustomerProfile(customer)
     .then(() => {
       return exportTransactions(customer, txs)
     })
+    .then(() => {
+      return exportBalances(customer, balances)
+    })
   })
 }
 
+function getAccounts() {
+  // const accounts = require('./accounts')
+  // return accounts
+  // return micros.get('Customer', {condition: 'primaryposref = ?', values: [{primaryposref: '9623570900002'}], resultCols: ['primaryposref']})
+  return Promise.resolve([ { id: '42406261', primaryposref: '9623570900002' } ])
+  // return Promise.resolve([ { id: '42229452', primaryposref: '9623570900003' }])
+}
 
 function exportCustomerProfile(customer) {
 
@@ -119,6 +139,22 @@ function exportTransactions(customer, txs) {
       console.log(`done exporting ${rowCount} transactions`)
     })
   })
+}
+
+function exportBalances(customer, balances) {
+  const table = new sql.Table('balances')
+  table.create = true
+
+  table.columns.add('customer_id', sql.Int, {nullable: false})
+  table.columns.add('program', sql.VarChar(128), {nullable: false})
+  table.columns.add('balance', sql.Decimal(19, 2), {nullable: false})
+
+  balances.programs.forEach((program) => {
+    table.rows.add(customer.id, program.program, program.balance)
+  })
+
+  var request = new sql.Request()
+  return request.bulk(table)
 }
 
 function exportCheckItems(transaction) {

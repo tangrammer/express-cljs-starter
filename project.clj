@@ -15,7 +15,7 @@
                  [aleph "0.4.2-alpha4" :exclusions [org.clojure/clojure]]
                  [bidi "2.0.6" :exclusions [ring/ring-core]]
                  [ring/ring-core "1.4.0"]
-                 [yada "1.1.6" :exclusions [bidi org.clojure/clojurescript]]
+                 [yada "1.1.6" :exclusions [bidi org.clojure/clojurescript buddy/buddy-sign]]
 
 
                  ;; optional http client
@@ -25,6 +25,8 @@
                  ;; optional http client
                  [clj-http "3.1.0"]
 
+                 ;; security libs
+                 [buddy "0.13.0"]
 
                  ;; components / modular
                  [com.stuartsierra/component "0.3.1"]

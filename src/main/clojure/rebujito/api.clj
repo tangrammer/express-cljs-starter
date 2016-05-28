@@ -7,15 +7,15 @@
     [rebujito.api.resources.oauth :as oauth]
     [rebujito.api.resources.account :as account]
     [rebujito.api.resources.card :as card]
+
     [rebujito.api.resources.social-profile :as social-profile]))
 
-
-(defn api [store mimi db-conn user-store]
-  ["/" [["account/create" (-> (account/create store mimi user-store)
+(defn api [store mimi user-store authorizer crypto authenticator]
+  ["/" [["account/create" (-> (account/create store mimi user-store crypto)
                               (assoc :id ::account/create))]
-        ["oauth/token" (-> (oauth/token-resource-owner store)
+        ["oauth/token" (-> (oauth/token-resource-owner store user-store authorizer crypto)
                            (assoc :id ::oauth/token-resource-owner))]
-        ["me" [["" (-> (account/get-user store mimi user-store)
+        ["me" [["" (-> (account/get-user store mimi user-store authorizer authenticator)
                               (assoc :id ::account/get-user))]
                ["/cards"
                 [["" (-> (card/get-cards store)
@@ -37,16 +37,15 @@
                                    [["/" :payment-method-id] (-> (payment/method-detail store)
                                                                 (assoc :id ::payment/method-detail))]]]
                ["/socialprofile/account" (-> (social-profile/account store)
-                                             (assoc :id ::social-profile/account))]]]]])
+                                             (assoc :id ::social-profile/account))]]]]]
+  )
 
-
-(s/defrecord ApiComponent [store mimi db-conn user-store]
+(s/defrecord ApiComponent [store mimi user-store authorizer crypto authenticator]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (api store mimi db-conn user-store)))
+    (assoc component :routes (api store mimi  user-store authorizer crypto authenticator)))
   (stop [component]
         component))
 
 (defn new-api-component []
-  (->
-   (map->ApiComponent {})))
+  (map->ApiComponent {}))

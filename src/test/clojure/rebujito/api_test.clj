@@ -1,5 +1,6 @@
 (ns rebujito.api-test
   (:require
+<<<<<<< HEAD
     [aleph.http :as http]
     [org.httpkit.client :as http-k]
     [bidi.bidi :as bidi]
@@ -19,6 +20,34 @@
     [schema.core :as s]
     [ring.velocity.core :as velocity]))
 
+=======
+   [buddy.sign.util :refer (to-timestamp)]
+   [rebujito.api.sig :as api-sig]
+    [rebujito.api.time :as api-time]
+
+   [aleph.http :as http]
+   [org.httpkit.client :as http-k]
+   [clj-http.client :as http-c]
+   [bidi.bidi :as bidi]
+   [byte-streams :as bs]
+   [cheshire.core :as json]
+   [clojure.pprint :refer (pprint)]
+   [clojure.test :refer :all]
+   [com.stuartsierra.component :as component]
+   [rebujito.api.resources.account :as account]
+   [rebujito.api.resources.card :as card]
+   [rebujito.api.resources.oauth :as oauth]
+   [rebujito.store.mocks :as mocks]
+   [rebujito.api.resources.payment :as payment]
+   [rebujito.api.resources.social-profile :as social-profile]
+   [rebujito.config :refer (config)]
+   [rebujito.system :refer (new-production-system)]
+   [schema-generators.generators :as g]
+   [schema.core :as s]
+   [manifold.deferred :as d]
+   [rebujito.system.dev-system :as dev]
+   ))
+>>>>>>> master
 
 (def ^:dynamic *system* nil)
 
@@ -29,39 +58,86 @@
        (finally
          (component/stop s#)))))
 
-(defn system-fixture [f]
-  (with-system (-> (new-production-system (update-in (config :test) [:yada :port] inc)))
-    (try
-      (s/with-fn-validation
-        (f))
-      (catch Exception e (do (println (str "caught exception: " (.getMessage e)))
-                             (throw e))))))
+(defn system-fixture [config-env]
+  (fn[f]
+    (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port] inc)))
+      (try
+        (s/with-fn-validation
+          (f))
+        (catch Exception e (do (println (str "caught exception: " (.getMessage e)))
+                               (throw e)))))))
+
+(use-fixtures :each (system-fixture #{:+mock-mimi}))
+
+(defn api-config []
+  (-> (config :test) :api))
+
+(defn new-sig []
+  (let [{:keys [key secret]} (api-config)
+        t (api-time/now)]
+    (println ">>>>" (to-timestamp t))
+    (api-sig/new-sig t key secret)))
+
+(defn print-body [c]
+  (println ">>>>> ****"(-> c :body bs/to-string))
+  c
+  )
+(defn oauth-login-data []
+  (let [{:keys [key secret]} (api-config)]
+   {:grant_type "password",
+    :client_id key,
+    :client_secret secret,
+    :username "juanantonioruz@gmail.com",
+    :password "real-secret",
+    :scope "test_scope"}))
 
 
-(use-fixtures :each system-fixture)
-
+(defn new-account-sb []
+{:countrySubdivision "aa",
+ :registrationSource "aa",
+ :addressLine1 "zz",
+ :password "real-secret",
+ :emailAddress "hola@hola.com",
+ :city "Sevilla",
+ :firstName "Juan",
+ :birthDay "13",
+ :birthMonth "06",
+ :lastName "Ruz",
+ :receiveStarbucksEmailCommunications "ok",
+ :postalCode "41003",
+ :country "Spain"}
+  )
 
 (deftest test-20*
   (time
    (let [r (-> *system* :docsite-router :routes)
-         port (-> *system*  :webserver :port)]
+         port (-> *system*  :webserver :port)
+         new-account (g/generate (:post account/schema))
+         new-account (new-account-sb)
+         sig (new-sig)]
      (testing ::account/create
        (let [api-id ::account/create
              path (bidi/path-for r api-id)]
-         (is (= 201 (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path 123 1234)
-                                    {:throw-exceptions false
-                                     :body (json/generate-string
-                                            (g/generate (:post account/schema)))
-                                     :body-encoding "UTF-8"
-                                     :content-type :json})
-                        :status)))))
+         (println (format "http://localhost:%s%s?access_token=%s&market=%s"  port path 123 1234))
+         (is (= 201  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path 123 1234)
+                                        {:throw-exceptions false
+                                         :body (json/generate-string
+                                                (assoc new-account
+
+                                                       :birthDay "1"
+                                                       :birthMonth "1"
+                                                       ))
+                                         :body-encoding "UTF-8"
+                                         :content-type :json})
+                         print-body
+                            :status)))))
 
      (testing ::oauth/token-resource-owner
        (let [api-id ::oauth/token-resource-owner
              path (bidi/path-for r api-id)]
 
          ;; body conform :token-refresh-token schema
-         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?sig="  port path 123)
+         #_(is (= 200 (-> @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
                                     {:throw-exceptions false
                                      :body (json/generate-string
                                             (g/generate (-> oauth/schema :token-refresh-token :post)))
@@ -69,15 +145,19 @@
                                      :content-type :json})
                         :status)))
          ;; body conform :token-resource-owner schema
-         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?sig="  port path 123)
+         (is (= 201 (-> @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
                                     {:throw-exceptions false
                                      :body (json/generate-string
-                                            (g/generate (-> oauth/schema :token-resource-owner :post)))
+                                            (assoc (g/generate (-> oauth/schema :token-resource-owner :post))
+                                                   :client_id (:key (api-config))
+                                                   :client_secret (:secret (api-config))
+                                                   :username (:emailAddress new-account)
+                                                   :password (:password new-account)
+                                                   ))
                                      :body-encoding "UTF-8"
                                      :content-type :json})
+      ;;                  print-body
                         :status)))))
-
-
 
      (testing ::card/get-cards
        (let [api-id ::card/get-cards
@@ -96,8 +176,11 @@
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :body (json/generate-string
-                                            (g/generate (-> card/schema :post :register-physical)))
+                                            (assoc (g/generate (-> card/schema :post :register-physical))
+                                                   :cardNumber (str (+ (rand-int 1000) (read-string (format "96235709%05d" 0)))))
+                                            )
                                      :content-type :json})
+                        print-body
                         :status)))))
 
      (testing ::card/register-digital-cards
@@ -160,6 +243,7 @@
                                     :body (json/generate-string
                                            (g/generate (-> social-profile/schema :put)))
                                     :content-type :json})
+<<<<<<< HEAD
                         :status)))))))
 
 
@@ -227,3 +311,6 @@
     (is (= 200 status))
     (is (.contains body "CardPaymentResponse"))
     (is (not (.contains body "SOAP-ENV:Fault|payhost:error")))))
+=======
+                        :status))))))))
+>>>>>>> master

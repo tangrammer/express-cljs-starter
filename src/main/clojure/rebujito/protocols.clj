@@ -17,8 +17,20 @@
 
 (defprotocol Mimi
   (create-account [this data])
-  (register-physical-card [this data])
-  )
+  (register-physical-card [this data]))
+
+(defprotocol Encrypter
+  (sign [_ data])
+  (unsign [this token]))
+
+(defprotocol Authorizer
+  (grant [this data scopes])
+  (verify [this token scope])
+  (scopes [this token]))
+
+(defprotocol Authenticator
+  (read-token [this token])
+  (generate-token [this data]))
 
 (defprotocol MutableStorage
   (find
