@@ -12,7 +12,7 @@
     [clojure.repl :refer [apropos dir doc find-doc pst source]]
     [clojure.test :refer [run-tests run-all-tests]]
     [clojure.tools.namespace.repl :refer [refresh refresh-all]]
-    [dev-system :refer (new-dev-system)]
+    [rebujito.system.dev-system :refer (new-dev-system)]
 
     [plumbing.core :refer (fnk defnk)]
     [bidi.bidi :as bidi]
