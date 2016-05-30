@@ -78,8 +78,8 @@
    :db-conn {:database :db}
    :user-store [:db-conn]
    :authorizer [:authenticator]
-   :store [:payment-gateway]
-   :api [:store :mimi :user-store :authorizer :crypto :authenticator]
+   :store []
+   :api [:store :mimi :user-store :authorizer :crypto :authenticator :payment-gateway]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

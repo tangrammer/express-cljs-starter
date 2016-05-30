@@ -10,7 +10,7 @@
 
     [rebujito.api.resources.social-profile :as social-profile]))
 
-(defn api [store mimi user-store authorizer crypto authenticator]
+(defn api [store mimi user-store authorizer crypto authenticator payment-gateway]
   ["/" [["account/create" (-> (account/create store mimi user-store crypto)
                               (assoc :id ::account/create))]
         ["oauth/token" (-> (oauth/token-resource-owner store user-store authorizer crypto)
@@ -32,7 +32,7 @@
 
 
 
-               ["/paymentmethods" [["" (-> (payment/methods store)
+               ["/paymentmethods" [["" (-> (payment/methods store payment-gateway)
                                            (assoc :id ::payment/methods))]
                                    [["/" :payment-method-id] (-> (payment/method-detail store)
                                                                 (assoc :id ::payment/method-detail))]]]
@@ -40,10 +40,10 @@
                                              (assoc :id ::social-profile/account))]]]]]
   )
 
-(s/defrecord ApiComponent [store mimi user-store authorizer crypto authenticator]
+(s/defrecord ApiComponent [store mimi user-store authorizer crypto authenticator payment-gateway]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (api store mimi  user-store authorizer crypto authenticator)))
+    (assoc component :routes (api store mimi  user-store authorizer crypto authenticator payment-gateway)))
   (stop [component]
         component))
 
