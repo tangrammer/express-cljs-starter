@@ -3,6 +3,9 @@
   not be included in a production build of the application."
   (:import [java.util Locale])
   (:require
+   [buddy.core.nonce :as nonce]
+   [rebujito.protocols :as p]
+   [buddy.core.codecs :refer (bytes->hex)]
     [clojure.java.browse :refer (browse-url)]
     [com.stuartsierra.component :refer [system-map system-using using] :as component]
     [clojure.java.io :as io]
@@ -13,7 +16,7 @@
     [clojure.test :refer [run-tests run-all-tests]]
     [clojure.tools.namespace.repl :refer [refresh refresh-all]]
     [rebujito.system.dev-system :refer (new-dev-system)]
-
+    [manifold.deferred :as d]
     [plumbing.core :refer (fnk defnk)]
     [bidi.bidi :as bidi]
     [schema.core :as s]
@@ -95,3 +98,14 @@
 
 (defn set-env! [& env]
   (alter-var-root #'env/env (constantly (set env))))
+(defn generate-random [n]
+  (-> (nonce/random-bytes n)
+      (bytes->hex)
+      )
+  )
+
+(generate-random 32)
+
+
+(defn insert-new-api-key []
+  (p/get-and-insert! (-> system :api-client-store) {"secret" (generate-random 32)}))

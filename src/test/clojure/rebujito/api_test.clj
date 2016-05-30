@@ -37,7 +37,11 @@
 
 (defn system-fixture [config-env]
   (fn[f]
-    (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port] inc)))
+    (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port]
+                                                               (comp inc (fn [s]
+                                                                           (if (= String (type s))
+                                                                             (read-string s)
+                                                                             s) )))))
       (try
         (s/with-fn-validation
           (f))

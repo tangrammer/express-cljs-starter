@@ -32,7 +32,7 @@
           (str "Not ready to db-find using: " (type data)))))
 
 
-(defrecord UserStorage [db-conn collection secret-key]
+(defrecord MongoStorage [db-conn collection secret-key]
   component/Lifecycle
   (start [this]
     (assoc this
@@ -55,10 +55,14 @@
     (mc/insert-and-return (:db this) (:collection this) data)))
 
 (defn new-user-store [auth-data]
-  (map->UserStorage {:collection :users
+  (map->MongoStorage {:collection :users
                      :secret-key (:secret-key auth-data)
                      }))
 
+(defn new-api-key-store [auth-data]
+  (map->MongoStorage {:collection :api-keys
+                     :secret-key (:secret-key auth-data)
+                     }))
 
 (defn- find-map-by-id [mutable-storage id]
   (mc/find-map-by-id (:db mutable-storage) (:collection mutable-storage) id))
@@ -74,3 +78,8 @@
 (defmethod db-find clojure.lang.PersistentArrayMap
   [mutable-storage data]
   (mc/find-maps (:db mutable-storage) (:collection mutable-storage) data))
+
+
+(defmethod clojure.core/print-method MongoStorage
+  [storage ^java.io.Writer writer]
+  (.write writer (str "#<MongoStorage> Collection: " (:collection storage))))
