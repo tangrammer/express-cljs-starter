@@ -1,0 +1,12 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pay="http://www.paygate.co.za/PayHOST">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <pay:PingRequest>
+            <pay:Account>
+                <pay:PayGateId>#if($paygateId)$paygateId#end</pay:PayGateId>
+                <pay:Password>#if($paygatePassword)$paygatePassword#end</pay:Password>
+            </pay:Account>
+            <pay:Identifier>#if($identifier)$identifier#end</pay:Identifier>
+        </pay:PingRequest>
+    </soapenv:Body>
+</soapenv:Envelope>

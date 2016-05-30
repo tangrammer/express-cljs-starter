@@ -1,32 +1,29 @@
-{
-
- :secrets #include #join [#env HOME "/.secrets.edn"]
-
- :cookie-name "rebujito-cookie"
+{:cookie-name "rebujito-cookie"
 
  :env-type  #profile {:dev :dev
                       :test :test
                       :prod :prod}
- :yada {:port 3000}
 
- :auth {:secret-key "the-secret-key"}
- :api {:key "the-api-key-shared-with-the-client"
-       :secret "the-api-secret-key-shared-with-the-client"}
+ :yada {:base-url #profile {:prod "/starbucks/api/v1"
+                            :default "/starbucks/v1"}
+        :port #or [#env REBUJITO_YADA_PORT 3000]}
+
+ :auth {:secret-key #or [#env REBUJITO_AUTH_SECRET_KEY "fake-secret-key"]}
+
+ :api {:key "6368f6919ad04192ecb9a8cc4bf9"
+       :secret "5fcf0bb6b0738aeaadec934cbb10c68b1140ab494a466e79f9a66d679edb72d5"}
 
  :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
-        :token "mimi-token"}
+        :token #profile {:dev "fake-token"
+                         :test #env REBUJITO_MIMI_TOKEN
+                         :prod #env REBUJITO_MIMI_TOKEN}}
 
- :mongo {
-         :host "localhost"
+ :mongo {:host "localhost"
          :port 27017
-         :database "documents"
-
+         :database "rebujito"
          #_:user #_{:username "juan"
-                :password "juan"}}
+                    :password "juan"}}
 
-
- :greeting "World!"
-
- :aws-secret-access-key
- #profile {:test ^:ref [:secrets :aws-secret-access-key]
-           :prod ^:ref [:secrets :aws-secret-access-key]}}
+ :payment-gateway {:paygate {:paygateId "10011064270"
+                             :paygatePassword "test"
+                             :url "https://secure.paygate.co.za/payhost/process.trans"}}}

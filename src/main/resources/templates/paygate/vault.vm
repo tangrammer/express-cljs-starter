@@ -1,0 +1,30 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pay="http://www.paygate.co.za/PayHOST">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <pay:SingleVaultRequest>
+            <pay:CardVaultRequest>
+                <pay:Account>
+                    <pay:PayGateId>#if($paygateId)$paygateId#end</pay:PayGateId> ## 10011064270
+                    <pay:Password>#if($paygatePassword)$paygatePassword#end</pay:Password> ## test
+                </pay:Account>
+                <pay:CardNumber>#if($cardNumber)$cardNumber#end</pay:CardNumber> ## 4000000000000002
+                <pay:CardExpiryDate>#if($expirationMonth && $expirationYear)$expirationMonth$expirationYear#end</pay:CardExpiryDate>  ##11 ##2018
+            </pay:CardVaultRequest>
+        </pay:SingleVaultRequest>
+    </soapenv:Body>
+</soapenv:Envelope>
+
+#*
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+   <SOAP-ENV:Header/>
+   <SOAP-ENV:Body>
+      <SOAP-ENV:Fault>
+         <faultcode>SOAP-ENV:Client</faultcode>
+         <faultstring xml:lang="en">Validation error</faultstring>
+         <detail>
+            <payhost:error xmlns:payhost="http://www.paygate.co.za/PayHOST">cvc-complex-type.2.4.a: Invalid content was found starting with element 'pay:CardExpiryDate'. One of '{"http://www.paygate.co.za/PayHOST":CardNumber}' is expected.</payhost:error>
+         </detail>
+      </SOAP-ENV:Fault>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+ *#
