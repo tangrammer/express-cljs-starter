@@ -1,4 +1,4 @@
-FROM naartjie/alpine-lein-node
+FROM naartjie/alpine-lein
 
 WORKDIR /src
 
