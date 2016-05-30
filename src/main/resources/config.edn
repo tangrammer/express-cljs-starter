@@ -7,7 +7,8 @@
  :env-type  #profile {:dev :dev
                       :test :test
                       :prod :prod}
- :yada {:port 3000}
+ :yada {:base-url "/starbucks/v1"
+        :port 3000}
 
  :auth {:secret-key "fake"}
 

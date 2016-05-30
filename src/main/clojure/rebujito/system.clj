@@ -60,7 +60,7 @@
 
                   :api (api/new-api-component)
 
-                  :yada (wh/handler)
+                  :yada (wh/handler (:yada config))
 
                   :webserver  (webserver config)
 

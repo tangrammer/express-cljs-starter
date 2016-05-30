@@ -5,7 +5,7 @@
             [rebujito.config :refer [config]]
             [yada.yada :as yada]))
 
-(defrecord Handler [api]
+(defrecord Handler [api base-url]
   component/Lifecycle
   (start [this]
     this)
@@ -13,7 +13,7 @@
 
   bidi/RouteProvider
   (routes [_]
-    ["" [["/starbucks/v1" (yada/swaggered
+    ["" [[base-url (yada/swaggered
                             (:routes api)
                             {:info     {:title       "Rebujito REST API"
                                         :version     "1.0"
@@ -30,5 +30,5 @@
                                {:status 404 :body "Not found"}))]]
      ]))
 
-(defn handler []
-  (map->Handler {}))
+(defn handler [config]
+  (map->Handler config))
