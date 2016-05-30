@@ -6,7 +6,7 @@
 
  :yada {:base-url #profile {:prod "/starbucks/api/v1"
                             :default "/starbucks/v1"}
-                            :port #or [#env REBUJITO_YADA_PORT 3000]}
+        :port #or [#env REBUJITO_YADA_PORT 3000]}
 
  :auth {:secret-key #or [#env REBUJITO_AUTH_SECRET_KEY "fake-secret-key"]}
 
