@@ -4,7 +4,7 @@ WORKDIR /src
 
 # preload dependencies in a separate layer
 COPY project.clj /tmp/project.clj
-RUN cd /tmp && lein deps
+RUN cd /tmp && lein deps && rm -rf /tmp/*
 
 COPY . .
 RUN lein do clean, uberjar
