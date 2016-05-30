@@ -2,8 +2,7 @@
   (:require
    [buddy.sign.util :refer (to-timestamp)]
    [rebujito.api.sig :as api-sig]
-    [rebujito.api.time :as api-time]
-
+   [rebujito.api.time :as api-time]
    [aleph.http :as http]
    [org.httpkit.client :as http-k]
    [clj-http.client :as http-c]
@@ -188,13 +187,29 @@
                                     :body-encoding "UTF-8"
                                     :content-type :json})
                         :status)))
-         (is (= 201 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                   {:throw-exceptions false
-                                    :body-encoding "UTF-8"
-                                    :body (json/generate-string
-                                           (g/generate (-> payment/schema :methods :post)))
-                                    :content-type :json})
-                        :status)))))
+         (let [{:keys [status body]}
+               (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
+                               {:throw-exceptions false
+                                :body-encoding "UTF-8"
+                                :body (json/generate-string
+                                        {
+                                         :expirationYear 2018
+                                         :billingAddressId "string"
+                                         :accountNumber "4000000000000002"
+                                         :default "false"
+                                         :nickname "string"
+                                         :paymentType "visa"
+                                         :cvn "12345"
+                                         :fullName "string"
+                                         :expirationMonth 11
+                                         }
+                                        )
+                                :content-type :json})
+                   )]
+           (is (= status 201))
+           (is (.contains (slurp body) "paymentMethodId"))
+           )
+         ))
 
      (testing ::social-profile/account
        (let [api-id ::social-profile/account

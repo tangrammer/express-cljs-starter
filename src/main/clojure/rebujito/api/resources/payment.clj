@@ -1,6 +1,7 @@
 (ns rebujito.api.resources.payment
   (:refer-clojure :exclude [methods])
   (:require
+   [taoensso.timbre :as log]
    [rebujito.protocols :as p]
    [rebujito.api.util :refer :all]
    [cheshire.core :as json]
@@ -12,7 +13,7 @@
    (->
     {:methods
      {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}
-                         :path {:payment-mehod-id String}}
+                         :path {:payment-method-id String}}
             :consumes [{:media-type #{"application/json"}
                         :charset "UTF-8"}]
 
@@ -23,7 +24,7 @@
                           (>201 ctx (p/get-payment-method-detail store))))}
 
       :delete {:parameters {:query {:access_token String}
-                            :path {:payment-mehod-id String}}
+                            :path {:payment-method-id String}}
                :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
 
@@ -34,7 +35,7 @@
                              (>200 ctx ["OK" "Success"])))}
 
       :put {:parameters {:query {:access_token String}
-                         :path {:payment-mehod-id String}
+                         :path {:payment-method-id String}
                          :body {:expirationYear Long
                                 :billingAddressId String
                                 :accountNumber String
@@ -70,7 +71,7 @@
                           (>200 ctx ["OK" "Success"])))}}}
 
 
-    (merge (common-resource "me/payment-methods/payment/{payment-method-id}"))
+    (merge (common-resource "me/payment-methods/{payment-method-id}"))
     (merge access-control))))
 
 (def schema {:methods {:post {:expirationYear Long
@@ -83,7 +84,7 @@
                               :fullName String
                               :expirationMonth Long}}})
 
-(defn methods [store]
+(defn methods [store payment-gateway]
   (resource
    (-> {:methods
         {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
@@ -120,6 +121,25 @@
                               "141025" (>400 ctx ["User cannot be null or empty"])
                               "141039" (>400 ctx ["Payment method already exists."])
                               "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                              (>201 ctx (p/post-payment-method store))))}}}
+                              (>201 ctx
+                                    (let [data (get-in ctx [:parameters :body])
+                                          {:keys [cardToken]} (p/create-card-token payment-gateway  data)]
+                                      (log/debug cardToken)
+                                        ; create the payment method
+                                      {
+                                       :fullName (-> data :fullName)
+                                       :billingAddressId (-> data :billingAddressId)
+                                       :accountNumber cardToken
+                                       :default (-> data :default)
+                                       :paymentMethodId "string"
+                                       :nickname (-> data :nickname)
+                                       :paymentType (-> data :paymentType)
+                                       :accountNumberLastFour nil
+                                       :cvn (-> data :cvn)
+                                       :expirationYear (-> data :expirationYear)
+                                       :expirationMonth (-> data :expirationMonth)
+                                       :isTemporary false
+                                       :bankName nil
+                                       }))))}}}
        (merge (common-resource :me/payment-methods))
        (merge access-control))))

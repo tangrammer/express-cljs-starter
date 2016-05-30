@@ -43,7 +43,7 @@
                  [cheshire "5.5.0"]
                  [com.cognitect/transit-clj "0.8.285"]
                  [org.clojure/data.xml "0.0.8"]
-
+                 [com.github.kyleburton/clj-xpath "1.4.3"]
 
 
                  ;; config loader
@@ -72,6 +72,9 @@
                  [org.slf4j/log4j-over-slf4j "1.7.21"]
                  [org.slf4j/slf4j-nop "1.7.21"]
 
+                 ;; external web services
+                 [ring.velocity "0.1.2"]
+                 
                  ;; explicit deps to avoid conflicts
                  [clj-time "0.11.0"]
                  [org.clojure/tools.reader "1.0.0-beta1"]]

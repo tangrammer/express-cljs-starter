@@ -29,4 +29,13 @@
 
  :aws-secret-access-key
  #profile {:test ^:ref [:secrets :aws-secret-access-key]
-           :prod ^:ref [:secrets :aws-secret-access-key]}}
+           :prod ^:ref [:secrets :aws-secret-access-key]}
+
+ :payment-gateway {
+                   :paygate {
+                             :paygateId "10011064270"
+                             :paygatePassword "test"
+                             :url "https://secure.paygate.co.za/payhost/process.trans"
+                             }}
+ }
+

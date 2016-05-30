@@ -1,5 +1,6 @@
 (ns rebujito.store
   (:require
+   [taoensso.timbre :as log]
    [rebujito.protocols :as protocols]
    [com.stuartsierra.component  :as component]
    [rebujito.store.mocks :as mocks]))
@@ -17,7 +18,7 @@
     (assoc mocks/card :target-environment :prod))
   (get-payment-method-detail [this]
     (assoc mocks/get-payment-method-detail :target-environment :prod))
-  (post-payment-method [this]
+  (post-payment-method [this data]
     (assoc mocks/post-payment-method :target-environment :prod))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
@@ -37,7 +38,7 @@
     (assoc mocks/card :target-environment :dev))
   (get-payment-method-detail [this]
     (assoc mocks/get-payment-method-detail :target-environment :dev))
-  (post-payment-method [this]
+  (post-payment-method [this data]
     (assoc mocks/post-payment-method :target-environment :dev))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :dev) mocks/get-payment-method))

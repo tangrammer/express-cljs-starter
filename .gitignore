@@ -7,3 +7,5 @@ target
 .lein-failures
 .#*
 /notes.org
+.idea
+*.iml

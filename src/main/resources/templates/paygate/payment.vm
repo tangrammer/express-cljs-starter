@@ -1,0 +1,68 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pay="http://www.paygate.co.za/PayHOST">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <pay:SinglePaymentRequest>
+            <pay:CardPaymentRequest>
+                <pay:Account>
+                    <pay:PayGateId>#if ($paygateId)$paygateId#end</pay:PayGateId> ## 10011064270
+                    <pay:Password>#if ($paygatePassword)$paygatePassword#end</pay:Password> ## test
+                </pay:Account>
+                <pay:Customer>
+                    <pay:FirstName>#if ($firstName)$firstName#end</pay:FirstName> ## Stefan
+                    <pay:LastName>#if ($lastName)$lastName#end</pay:LastName> ## Tester
+                    <pay:Email>#if ($emailAddress)$emailAddress#end</pay:Email> ## person@example.com
+                    #*
+                    <pay:Address>
+                        #foreach( $addressline in $addresslines )
+                            <pay:AddressLine>$addressline</pay:AddressLine> ## 1 Main Street
+                        #end
+                        <pay:City>#if ($)$city#end</pay:City>  ## New Vegas
+                    </pay:Address>
+                    *#
+                </pay:Customer>
+                <pay:VaultId>#if ($cardToken)$cardToken#end</pay:VaultId> ## 7a17ba06-deab-4e53-b7d9-ca4cfc3d94ec
+                <pay:CVV>$cvn</pay:CVV>## 123
+                <pay:Order>
+                    <pay:MerchantOrderId>#if ($transactionId)$transactionId#end</pay:MerchantOrderId> ## 123456789
+                    <pay:Currency>#if ($currency)$currency#end</pay:Currency> ## ZAR
+                    <pay:Amount>#if ($amount)$amount#end</pay:Amount> ## 100
+                    #*
+                    <pay:TransactionDate>#if ($transactionTimestamp)$transactionTimestamp#end</pay:TransactionDate> ## 2002-05-30T09:00:00
+                    *#
+                </pay:Order>
+            </pay:CardPaymentRequest>
+        </pay:SinglePaymentRequest>
+    </soapenv:Body>
+</soapenv:Envelope>
+
+#*
+## Sample Response from Paygate
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+   <SOAP-ENV:Header/>
+   <SOAP-ENV:Body>
+      <ns2:SinglePaymentResponse xmlns:ns2="http://www.paygate.co.za/PayHOST">
+         <ns2:CardPaymentResponse>
+            <ns2:Status>
+               <ns2:TransactionId>38374432</ns2:TransactionId>
+               <ns2:Reference>someRandomIdForInvoice</ns2:Reference>
+               <ns2:AcquirerCode>00</ns2:AcquirerCode>
+               <ns2:StatusName>Completed</ns2:StatusName>
+               <ns2:AuthCode>UB9HLE</ns2:AuthCode>
+               <ns2:PayRequestId>172EC689-B186-436C-92E6-E206F598F688</ns2:PayRequestId>
+               <ns2:TransactionStatusCode>1</ns2:TransactionStatusCode>
+               <ns2:TransactionStatusDescription>Approved</ns2:TransactionStatusDescription>
+               <ns2:ResultCode>990017</ns2:ResultCode>
+               <ns2:ResultDescription>Auth Done</ns2:ResultDescription>
+               <ns2:Currency>ZAR</ns2:Currency>
+               <ns2:Amount>100</ns2:Amount>
+               <ns2:RiskIndicator>XX</ns2:RiskIndicator>
+               <ns2:PaymentType>
+                  <ns2:Method>CC</ns2:Method>
+                  <ns2:Detail>Visa</ns2:Detail>
+               </ns2:PaymentType>
+            </ns2:Status>
+         </ns2:CardPaymentResponse>
+      </ns2:SinglePaymentResponse>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+*#
