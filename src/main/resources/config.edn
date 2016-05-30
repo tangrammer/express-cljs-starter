@@ -9,12 +9,13 @@
                       :prod :prod}
  :yada {:port 3000}
 
- :auth {:secret-key "the-secret-key"}
+ :auth {:secret-key "fake"}
+
  :api {:key "the-api-key-shared-with-the-client"
        :secret "the-api-secret-key-shared-with-the-client"}
 
  :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
-        :token "mimi-token"}
+        :token "fake"}
 
  :mongo {
          :host "localhost"
@@ -23,9 +24,6 @@
 
          #_:user #_{:username "juan"
                 :password "juan"}}
-
-
- :greeting "World!"
 
  :aws-secret-access-key
  #profile {:test ^:ref [:secrets :aws-secret-access-key]
@@ -38,4 +36,3 @@
                              :url "https://secure.paygate.co.za/payhost/process.trans"
                              }}
  }
-
