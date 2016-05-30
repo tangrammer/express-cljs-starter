@@ -47,7 +47,7 @@
 
 
                  ;; config loader
-                 [tangrammer/aero "0.2.3"]
+                 [aero "1.0.0-beta3"]
 
 
                  [potemkin "0.4.3" :exclusions [riddley]]
@@ -74,7 +74,7 @@
 
                  ;; external web services
                  [ring.velocity "0.1.2"]
-                 
+
                  ;; explicit deps to avoid conflicts
                  [clj-time "0.11.0"]
                  [org.clojure/tools.reader "1.0.0-beta1"]]
