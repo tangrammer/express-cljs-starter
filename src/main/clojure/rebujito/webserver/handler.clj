@@ -18,7 +18,7 @@
                             {:info     {:title       "Rebujito REST API"
                                         :version     "1.0"
                                         :description "Having good times with clojure and rest"}
-                             :basePath "/starbucks/v1"})]
+                             :basePath base-url})]
          [true (yada/handler (fn [ctx]
                                (println ">>>>>>NOT_FOUND")
                                (clojure.pprint/pprint ctx)
