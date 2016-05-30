@@ -107,5 +107,5 @@
 (generate-random 32)
 
 
-(defn insert-new-api-key []
-  (p/get-and-insert! (-> system :api-client-store) {"secret" (generate-random 32)}))
+(defn insert-new-api-key [who]
+  (p/get-and-insert! (-> system :api-client-store) {"secret" (generate-random 32) "who" who}))
