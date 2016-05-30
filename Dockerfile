@@ -2,11 +2,11 @@ FROM naartjie/alpine-lein-node
 
 WORKDIR /src
 
-COPY ./project.clj ./project.clj
-RUN lein deps
+# preload dependencies in a separate layer
+COPY project.clj /tmp/project.clj
+RUN cd /tmp && lein deps
 
 COPY . .
-
 RUN lein do clean, uberjar
 
 EXPOSE 3000
