@@ -30,7 +30,10 @@
 
 (defn webserver [config]
   (->
-    (new-webserver :port (-> config :yada :port) :raw-stream? true)
+   (new-webserver :port (if (= String (type (-> config :yada :port)))
+                          (read-string (-> config :yada :port))
+                          (-> config :yada :port)
+                          ) :raw-stream? true)
     (using {})))
 
 (defn new-system-map [config]
@@ -60,7 +63,7 @@
 
                   :api (api/new-api-component)
 
-                  :yada (wh/handler)
+                  :yada (wh/handler (:yada config))
 
                   :webserver  (webserver config)
 
@@ -78,8 +81,8 @@
    :db-conn {:database :db}
    :user-store [:db-conn]
    :authorizer [:authenticator]
-   :store [:payment-gateway]
-   :api [:store :mimi :user-store :authorizer :crypto :authenticator]
+   :store []
+   :api [:store :mimi :user-store :authorizer :crypto :authenticator :payment-gateway]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

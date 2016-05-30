@@ -1,11 +1,10 @@
-node_modules
-target
+**/target
+**/node_modules
 *.log
 .nrepl-port
 .lein-repl-history
 .lein-env
 .lein-failures
-.#*
-/notes.org
-.idea
-*.iml
+**/.#*
+**/.idea
+**/*.iml

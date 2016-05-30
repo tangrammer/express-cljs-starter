@@ -1,5 +1,5 @@
 (ns rebujito.payment-gateway
-  (:require 
+  (:require
    [schema.core :as s]
    [taoensso.timbre :as log]
    [rebujito.protocols :as protocols]
@@ -36,7 +36,7 @@
                                          :expirationYear (-> data :expirationYear))}
                   (fn [{:keys [status body error]}]
                     (log/debug status error body)
-                    (if (or error (not= 200 status) (not (.contains body "CardVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error")) 
+                    (if (or error (not= 200 status) (not (.contains body "CardVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
                       (throw (ex-info "500" {:status status :body body} error))
                       (let [response (xp/xml->doc body)]
                         {:cardToken (xp/$x:text "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)}

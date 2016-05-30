@@ -19,24 +19,7 @@
   (get-payment-method-detail [this]
     (assoc mocks/get-payment-method-detail :target-environment :prod))
   (post-payment-method [this data]
-    (let [{:keys [cardToken]} (protocols/create-card-token (:payment-gateway this) data)]
-      (log/debug cardToken)
-      ; create the payment method
-      {
-       :fullName (-> data :fullName)
-       :billingAddressId (-> data :billingAddressId)
-       :accountNumber cardToken
-       :default (-> data :default)
-       :paymentMethodId "string"
-       :nickname (-> data :nickname)
-       :paymentType (-> data :paymentType)
-       :accountNumberLastFour nil
-       :cvn (-> data :cvn)
-       :expirationYear (-> data :expirationYear)
-       :expirationMonth (-> data :expirationMonth)
-       :isTemporary false
-       :bankName nil
-       }))
+    (assoc mocks/post-payment-method :target-environment :prod))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
   (post-token-resource-owner [this]
