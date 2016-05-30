@@ -30,7 +30,10 @@
 
 (defn webserver [config]
   (->
-    (new-webserver :port (-> config :yada :port) :raw-stream? true)
+   (new-webserver :port (if (= String (type (-> config :yada :port)))
+                          (read-string (-> config :yada :port))
+                          (-> config :yada :port)
+                          ) :raw-stream? true)
     (using {})))
 
 (defn new-system-map [config]
