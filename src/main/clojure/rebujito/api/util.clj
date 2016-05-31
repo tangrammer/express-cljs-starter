@@ -48,25 +48,41 @@
 
 (defn log-handler-res  [ctx]
 
-  (log/info "RES >>  "  (:response ctx)  #_(-> ctx :response :body bs/to-string))
+  (log/info "RES >>  "  (:response ctx) (-> ctx :request :uri)  #_(-> ctx :response :body bs/to-string))
 
   ctx
   )
 
 
 (def default-interceptor-chain
-  [i/available?
+  [(fn [ctx]
+     (clojure.pprint/pprint (:request ctx))
+     (log/info (:request ctx))
+     ctx
+     )
+   i/available?
    i/known-method?
    i/uri-too-long?
    i/TRACE
+
+
+
    i/method-allowed?
    i/parse-parameters
 
    sec/authenticate ; step 1
+
    i/get-properties ; step 2
+
+
    sec/authorize ; steps 3,4 and 5
+
+
+
    i/process-request-body
+
    log-handler-req
+
    i/check-modification-time
    i/select-representation
    ;; if-match and if-none-match computes the etag of the selected
