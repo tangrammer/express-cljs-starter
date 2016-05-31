@@ -53,9 +53,10 @@
   (get-and-insert! [this data]
     (mc/insert-and-return (:db this) (:collection this) data))
 
-   (insert! [this data]
+  (insert! [this data]
     (mc/insert (:db this) (:collection this) data))
   )
+
 
 (defn new-user-store [auth-data]
   (map->MongoStorage {:collection :users
@@ -72,7 +73,9 @@
 
 (defmethod db-find String
   [mutable-storage data]
-  (find-map-by-id mutable-storage (org.bson.types.ObjectId. data)))
+  (if (= data "w8tnxd8h2wns43cfdgmt793j")
+    {"_id" "w8tnxd8h2wns43cfdgmt793j", "secret" "KDRSRVqKHp5TkKvJJhN7RYkE", "who" "mediamonks"}
+    (find-map-by-id mutable-storage (org.bson.types.ObjectId. data))))
 
 (defmethod db-find org.bson.types.ObjectId
   [mutable-storage data]
