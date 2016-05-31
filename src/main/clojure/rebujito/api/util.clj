@@ -1,6 +1,9 @@
 (ns rebujito.api.util
   (:require [manifold.deferred :as d]
+            [yada.media-type :as mt]
+            [yada.request-body :as rb]
             [yada.interceptors :as i]
+            [manifold.stream :as stream]
             [yada.security :as sec]
             [byte-streams :as bs]
             [yada.handler :as yh]
@@ -40,22 +43,20 @@
 ;[b (when (and (= manifold.stream.BufferedStream (type (-> ctx :request :body))) (nil? (-> ctx :parameters :body))) (-> ctx :request :body bs/to-string))]
 
 (defn log-handler-req  [ctx]
-
   (log/info "REQ <<  " (:method ctx) (-> ctx :request :uri) " :::: " (-> ctx :parameters)  )
-
-  ctx
-  )
+  ctx)
 
 (defn log-handler-res  [ctx]
+  (log/info "RES >>  "  (:response ctx) (-> ctx :request :uri)
+            (when (>= (-> ctx :response :status) 400)
+              (-> ctx :response :body bs/to-string)))
+  ctx)
 
-  (log/info "RES >>  "  (:response ctx) (-> ctx :request :uri)  #_(-> ctx :response :body bs/to-string))
 
-  ctx
-  )
 
 
 (def default-interceptor-chain
-  [(fn [ctx]
+  [#_(fn [ctx]
      (clojure.pprint/pprint (:request ctx))
      (log/info (:request ctx))
      ctx
