@@ -1,5 +1,7 @@
 (ns rebujito.api.util
-  (:require [manifold.deferred :as d]))
+  (:require [manifold.deferred :as d]
+            [byte-streams :as bs]
+            [taoensso.timbre :as log]))
 
 (defn >base [ctx status body]
   (-> ctx :response (assoc :status status)
@@ -29,6 +31,11 @@
 (defn >200 [ctx body]
   (>base ctx 200 body))
 
+(defn log-handler  [ctx]
+  (let [body (when (= manifold.stream.BufferedStream (type (-> ctx :request :body)))
+               (-> ctx :request :body bs/to-string))]
+    (log/info ">> : " (:method ctx) (-> ctx :request :uri) " :::: "(-> ctx :request :query-string) " :::: "  (if body body "body nil"))))
+
 (defn common-resource
   ([desc]
    (let [n (if (keyword? desc)
@@ -39,6 +46,7 @@
     (common-resource n n)))
   ([desc swagger-tag]
    {:description desc
+    :interceptor-chain (into [log-handler] yada.handler/default-interceptor-chain)
     :produces [{:media-type #{"application/json"}
                 :charset "UTF-8"}]
     :swagger/tags (if (vector? swagger-tag)
