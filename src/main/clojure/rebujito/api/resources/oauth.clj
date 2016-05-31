@@ -23,7 +23,8 @@
                                                                :client_secret String
                                                                :username String
                                                                :password String
-                                                               :scope String}
+                                                               (s/optional-key :scope) String
+                                                               (s/optional-key :timestamp) String}
                                                         "token-resource-owner")}})
 
 (comment "sb-errors"
@@ -67,7 +68,7 @@
                                     #(nil? (-> % :refresh_token))
                                     (-> schema :token-resource-owner :post))}
 
-                :consumes [{:media-type #{#_"application/x-www-form-urlencoded" "application/json"}
+                :consumes [{:media-type #{"application/x-www-form-urlencoded" #_"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
                             (->
@@ -75,7 +76,7 @@
                                (get-in ctx [:parameters :body :client_id])
                                (get-in ctx [:parameters :body :client_secret]))
                              (d/chain
-                              (fn [n]
+                              #_(fn [n]
                                 (api-sig/deferred-check
                                        (get-in ctx [:parameters :query :sig])
                                        (get-in ctx [:parameters :body :client_id])
