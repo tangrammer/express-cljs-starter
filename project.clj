@@ -10,7 +10,6 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
 
-
                  ;; http server
                  [aleph "0.4.2-alpha4" :exclusions [org.clojure/clojure]]
                  [bidi "2.0.6" :exclusions [ring/ring-core]]
@@ -26,8 +25,8 @@
                  [clj-http "3.1.0"]
 
                  ;; security libs
-                 [buddy "0.13.0"]
 
+                 [buddy "0.13.0" :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor com.taoensso/encore com.fasterxml.jackson.core/jackson-core]]
                  ;; components / modular
                  [com.stuartsierra/component "0.3.1"]
                  [juxt.modular/aleph "0.1.4"]
@@ -40,7 +39,7 @@
 
 
                  ;; data / data manipulation
-                 [cheshire "5.5.0"]
+                 [cheshire "5.6.1"]
                  [com.cognitect/transit-clj "0.8.285"]
                  [org.clojure/data.xml "0.0.8"]
                  [com.github.kyleburton/clj-xpath "1.4.3"]
@@ -65,7 +64,8 @@
 
                  ;; logging + profiling
                  [org.slf4j/slf4j-api "1.7.21"]
-                 [com.taoensso/timbre "4.1.4"]
+
+                 [com.taoensso/timbre "4.1.4" :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor com.fasterxml.jackson.core/jackson-core]]
                  [com.fzakaria/slf4j-timbre "0.3.1" :exclusions [com.taoensso/timbre junit]]
                  [org.slf4j/jcl-over-slf4j "1.7.21"]
                  [org.slf4j/jul-to-slf4j "1.7.21"]
@@ -78,6 +78,7 @@
                  ;; explicit deps to avoid conflicts
                  [clj-time "0.11.0"]
                  [org.clojure/tools.reader "1.0.0-beta1"]]
+  :pedantic? :abort
 
   :uberjar-name "rebujito.jar"
   :plugins [[lein-ring "0.9.7"]]
@@ -86,7 +87,8 @@
   :profiles {:uberjar {:main       ring.rebujito
                        :aot        :all}
 
-             :dev     {:dependencies   [[org.clojure/tools.nrepl "0.2.11"]
+             :dev     {:dependencies   [;[cider/cider-nrepl "0.10.1" :exclusions [org.clojure/tools.nrepl]]
+                                        [org.clojure/tools.nrepl "0.2.12"]
                                         [org.clojure/tools.namespace "0.2.11"]]
                        :main user
                        :resource-paths ["src/main/resources" "src/test/resources"]
