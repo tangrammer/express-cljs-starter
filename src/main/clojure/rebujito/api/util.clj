@@ -35,7 +35,8 @@
 (defn log-handler  [ctx]
   (let [body (when (= manifold.stream.BufferedStream (type (-> ctx :request :body)))
                (-> ctx :request :body bs/to-string))]
-    (log/info ">> : " (:method ctx) (-> ctx :request :uri) " :::: "(-> ctx :request :query-string) " :::: "  (if body body "body nil"))))
+    (log/info ">> : " (:method ctx) (-> ctx :request :uri) " :::: "(-> ctx :request :query-string) " :::: "  (if body body "body nil"))
+    ctx))
 
 (defn common-resource
   ([desc]
