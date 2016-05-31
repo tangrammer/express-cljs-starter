@@ -1,6 +1,7 @@
 (ns rebujito.api.util
   (:require [manifold.deferred :as d]
             [byte-streams :as bs]
+            [yada.handler :as yh]
             [taoensso.timbre :as log]))
 
 (defn >base [ctx status body]
@@ -46,7 +47,7 @@
     (common-resource n n)))
   ([desc swagger-tag]
    {:description desc
-    :interceptor-chain (into [log-handler] yada.handler/default-interceptor-chain)
+    :interceptor-chain (into [log-handler] yh/default-interceptor-chain)
     :produces [{:media-type #{"application/json"}
                 :charset "UTF-8"}]
     :swagger/tags (if (vector? swagger-tag)
