@@ -68,7 +68,7 @@
                                     #(nil? (-> % :refresh_token))
                                     (-> schema :token-resource-owner :post))}
 
-                :consumes [{:media-type #{"application/x-www-form-urlencoded" #_"application/json"}
+                :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
                             (->
