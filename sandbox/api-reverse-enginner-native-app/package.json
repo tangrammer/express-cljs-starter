@@ -14,7 +14,7 @@
     "ws": "1.0.1"
   },
   "scripts": {
-    "start": "target/index.js",
+    "start": "node target/index.js",
     "dev": "nodemon target/index.js"
   }
 }
