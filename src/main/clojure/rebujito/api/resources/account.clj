@@ -1,6 +1,7 @@
 (ns rebujito.api.resources.account
   (:require
    [manifold.deferred :as d]
+   [taoensso.timbre :as log]
    [rebujito.api.util :refer :all]
    [rebujito.mimi :as mim]
    [rebujito.protocols :as p]

@@ -1,6 +1,7 @@
 (ns rebujito.api.resources.oauth
   (:refer-clojure :exclude [methods])
   (:require
+   [taoensso.timbre :as log]
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.protocols :as p]
@@ -37,6 +38,7 @@
              ))
 
 (defn deferred-find-client [api-client-store client-id client-secret]
+  (log/info "deferred-find-client" api-client-store client-id client-secret)
   (let [d* (d/deferred)]
     (future
       (try

@@ -2,6 +2,7 @@
   (:require [buddy.sign.util :refer (to-timestamp)]
             [buddy.core.codecs :refer (bytes->hex)]
             [manifold.deferred :as d]
+            [taoensso.timbre :as log]
             [rebujito.api.time :as api-time]
             [buddy.core.hash :as hash])
   (:import [java.time ZonedDateTime]
@@ -34,6 +35,7 @@
            nil))))))
 
 (defn deferred-check [sig client-id client-secret]
+  (log/info "deferred-check" sig client-id client-secret)
   (let [d* (d/deferred)]
     (future
       (if (check sig client-id client-secret)

@@ -51,8 +51,11 @@
     (db-find this data))
 
   (get-and-insert! [this data]
-; test!!           (throw (Exception. "joe!!"))
-    (mc/insert-and-return (:db this) (:collection this) data)))
+    (mc/insert-and-return (:db this) (:collection this) data))
+
+   (insert! [this data]
+    (mc/insert (:db this) (:collection this) data))
+  )
 
 (defn new-user-store [auth-data]
   (map->MongoStorage {:collection :users

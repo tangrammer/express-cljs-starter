@@ -23,8 +23,12 @@
    [schema-generators.generators :as g]
    [schema.core :as s]
    [manifold.deferred :as d]
+   [rebujito.logging :as log-levels]
+   [taoensso.timbre :as log]
    [rebujito.system.dev-system :as dev]
    ))
+
+(log/set-config! log-levels/timbre-info-config)
 
 (def ^:dynamic *system* nil)
 
@@ -60,7 +64,7 @@
     (api-sig/new-sig t key secret)))
 
 (defn print-body [c]
-  (println ">>>>> ****"(-> c :body bs/to-string))
+  (log/info ">>>>> ****"(-> c :body bs/to-string))
   c
   )
 (defn oauth-login-data []
