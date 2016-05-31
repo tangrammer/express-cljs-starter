@@ -52,7 +52,7 @@
     400 (>400 ctx body)
     500 (>500 ctx body)))
 
-(defn- create-account-mongo! [data-account mimi-res user-store crypto]
+(defn create-account-mongo! [data-account mimi-res user-store crypto]
   (let [mimi-id (first mimi-res)
         mongo-id (p/generate-id user-store mimi-id)
         mongo-account-data (-> data-account
