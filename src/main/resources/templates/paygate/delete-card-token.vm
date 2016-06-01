@@ -1,0 +1,14 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pay="http://www.paygate.co.za/PayHOST">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <pay:SingleVaultRequest>
+            <pay:DeleteVaultRequest>
+                <pay:Account>
+                    <pay:PayGateId>#if($paygateId)$paygateId#end</pay:PayGateId> ## 10011064270
+                    <pay:Password>#if($paygatePassword)$paygatePassword#end</pay:Password> ## test
+                </pay:Account>
+                <pay:VaultId>#if($vaultId)$vaultId#end</pay:VaultId>
+            </pay:DeleteVaultRequest>
+        </pay:SingleVaultRequest>
+    </soapenv:Body>
+</soapenv:Envelope>

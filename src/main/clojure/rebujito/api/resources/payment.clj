@@ -101,47 +101,28 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
-                            (condp = (get-in ctx [:parameters :query :access_token])
-                              "141000" (>400 ctx ["No Request Supplied" "Request was malformed."])
-                              "141001" (>400 ctx ["PaymentType cannot be null or empty."
-                                                  "Missing or Invalid type attribute"])
-                              "141002" (>400 ctx ["FullName cannot be null or empty."
-                                                  "Missing or Invalid fullName attribute."])
-                              "141003" (>400 ctx ["AccountNumber cannot be null or empty."
-                                                  "Missing or Invalid accountNumber attribute."])
-                              "141004" (>400 ctx ["Cvn cannot be null or empty."
-                                                  "Missing or Invalid accountCVN attribute."])
-                              "141005" (>400 ctx ["Invalid ExpirationMonth."
-                                                  "Invalid expirationMonth attribute."])
-                              "141006" (>400 ctx ["Invalid ExpirationYear."
-                                                  "Invalid expirationYear attribute."])
-                              "141007" (>400 ctx ["AddressId cannot be null or empty."
-                                                  "Missing or Invalid billingAddressId attribute."])
-                              "141008" (>400 ctx ["Invalid PaymentMethod"  "Missing payment method object"])
-                              "141025" (>400 ctx ["User cannot be null or empty"])
-                              "141039" (>400 ctx ["Payment method already exists."])
-                              "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                              (let [data (get-in ctx [:parameters :body]) 
-                                    {:keys [cardToken]} (p/create-card-token payment-gateway data)] 
-                                (println "CardToken" cardToken)
-                                ; create the payment method
-                                (if cardToken
-                                  (>201 ctx {
-                                             :fullName (-> data :fullName)
-                                             :billingAddressId (-> data :billingAddressId)
-                                             :accountNumber cardToken
-                                             :default (-> data :default)
-                                             :paymentMethodId "string"
-                                             :nickname (-> data :nickname)
-                                             :paymentType (-> data :paymentType)
-                                             :accountNumberLastFour nil
-                                             :cvn (-> data :cvn)
-                                             :expirationYear (-> data :expirationYear)
-                                             :expirationMonth (-> data :expirationMonth)
-                                             :isTemporary false
-                                             :bankName nil
-                                             })
-                                  (>500 ctx ["An unexpected error occurred processing the request."])
-                                  ))))}}}
+                            (let [data (get-in ctx [:parameters :body])
+                                  {:keys [cardToken]} (p/create-card-token payment-gateway data)]
+                              (println "CardToken" cardToken)
+                              ; create the payment method
+                              (if cardToken
+                                (>201 ctx {
+                                           :fullName (-> data :fullName)
+                                           :billingAddressId (-> data :billingAddressId)
+                                           :accountNumber cardToken
+                                           :default (-> data :default)
+                                           :paymentMethodId "string"
+                                           :nickname (-> data :nickname)
+                                           :paymentType (-> data :paymentType)
+                                           :accountNumberLastFour nil
+                                           :cvn (-> data :cvn)
+                                           :expirationYear (-> data :expirationYear)
+                                           :expirationMonth (-> data :expirationMonth)
+                                           :isTemporary false
+                                           :bankName nil
+                                           })
+                                (>500 ctx ["An unexpected error occurred processing the request."])
+                                ))
+                            )}}}
        (merge (common-resource :me/payment-methods))
        (merge access-control))))

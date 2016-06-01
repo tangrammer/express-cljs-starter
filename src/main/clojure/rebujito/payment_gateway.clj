@@ -44,51 +44,58 @@
                           {:cardToken cardToken}
                           nil))))))
   (delete-card-token [this data]
-    ["200"
-     "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">
-   <SOAP-ENV:Header/>
-   <SOAP-ENV:Body>
-      <ns2:SingleVaultResponse xmlns:ns2=\"http://www.paygate.co.za/PayHOST\">
-         <ns2:DeleteVaultResponse>
-            <ns2:Status>
-               <ns2:StatusName>Completed</ns2:StatusName>
-               <ns2:StatusDetail>Vault successfull</ns2:StatusDetail>
-            </ns2:Status>
-         </ns2:DeleteVaultResponse>
-      </ns2:SingleVaultResponse>
-   </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>"])
+    (log/debug data)
+    @(http-k/post (-> this :url)
+                  {:body (velocity/render "paygate/delete-card-token.vm"
+                                          :paygateId (-> this :paygateId)
+                                          :paygatePassword (-> this :paygatePassword)
+                                          :vaultId (-> data :accountNumber))}
+                  (fn [{:keys [status body error]}]
+                    (log/debug status error body)
+                    (if (or error (not= 200 status) (not (.contains body "DeleteVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
+                      false
+                      (let [response (xp/xml->doc body)
+                            result (xp/$x:text* "/Envelope/Body/SingleVaultResponse/DeleteVaultResponse/Status/StatusName" response)]
+                        (= result "Completed"))))))
   (execute-payment [this data]
-    ["200"
-     "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">
-   <SOAP-ENV:Header/>
-   <SOAP-ENV:Body>
-      <ns2:SinglePaymentResponse xmlns:ns2=\"http://www.paygate.co.za/PayHOST\">
-         <ns2:CardPaymentResponse>
-            <ns2:Status>
-               <ns2:TransactionId>38430056</ns2:TransactionId>
-               <ns2:Reference>123456789</ns2:Reference>
-               <ns2:AcquirerCode>00</ns2:AcquirerCode>
-               <ns2:StatusName>Completed</ns2:StatusName>
-               <ns2:AuthCode>J3BBBZ</ns2:AuthCode>
-               <ns2:PayRequestId>0B282A21-865C-484C-9A21-D9211F8CCEA2</ns2:PayRequestId>
-               <ns2:TransactionStatusCode>1</ns2:TransactionStatusCode>
-               <ns2:TransactionStatusDescription>Approved</ns2:TransactionStatusDescription>
-               <ns2:ResultCode>990017</ns2:ResultCode>
-               <ns2:ResultDescription>Auth Done</ns2:ResultDescription>
-               <ns2:Currency>ZAR</ns2:Currency>
-               <ns2:Amount>100</ns2:Amount>
-               <ns2:RiskIndicator>XX</ns2:RiskIndicator>
-               <ns2:PaymentType>
-                  <ns2:Method>CC</ns2:Method>
-                  <ns2:Detail>Visa</ns2:Detail>
-               </ns2:PaymentType>
-            </ns2:Status>
-         </ns2:CardPaymentResponse>
-      </ns2:SinglePaymentResponse>
-   </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>"]))
-
+    (log/debug data)
+    @(http-k/post (-> this :url)
+                  {:body (velocity/render "paygate/payment-with-token.vm"
+                                          :paygateId (-> this :paygateId)
+                                          :paygatePassword (-> this :paygatePassword)
+                                          :firstName (-> data :firstName)
+                                          :lastName (-> data :lastName)
+                                          :emailAddress (-> data :emailAddress)
+                                          :cardToken (-> data :accountNumber)
+                                          :cvn (-> data :cvn)
+                                          :transactionId (-> data :transactionId)
+                                          :currency "ZAR"
+                                          :amount (-> data :amount))
+                   }
+                  (fn [{:keys [status body error]}]
+                    (log/debug status error body)
+                    (if (or error (not= 200 status) (not (.contains body "CardPaymentResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
+                      false
+                      (let [response (xp/xml->doc body)
+                            TransactionId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionId" response)
+                            StatusName (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/StatusName" response)
+                            AuthCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/AuthCode" response)
+                            PayRequestId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/PayRequestId" response)
+                            TransactionStatusCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusCode" response)
+                            TransactionStatusDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusDescription" response)
+                            ResultCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultCode" response)
+                            ResultDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultDescription" response)
+                            ]
+                        (log/debug "TransactionId" TransactionId 
+                                   "StatusName" StatusName 
+                                   "AuthCode" AuthCode
+                                   "PayRequestId" PayRequestId
+                                   "TransactionStatusCode" TransactionStatusCode
+                                   "TransactionStatusDescription" TransactionStatusDescription
+                                   "ResultCode" ResultCode
+                                   "ResultDescription" ResultDescription
+                                   )
+                        (= TransactionStatusCode 1)))))))
 
 (defrecord MockPaymentGateway []
   component/Lifecycle
