@@ -15,6 +15,7 @@
    [rebujito.api.resources.account :as account]
    [rebujito.api.resources.card :as card]
    [rebujito.api.resources.oauth :as oauth]
+   [rebujito.api.resources.login :as login]
    [rebujito.store.mocks :as mocks]
    [rebujito.api.resources.payment :as payment]
    [rebujito.api.resources.social-profile :as social-profile]
@@ -99,7 +100,8 @@
          port (-> *system*  :webserver :port)
          new-account (g/generate (:post account/schema))
          new-account (new-account-sb)
-         sig (new-sig)]
+         sig (new-sig)
+         access_token (atom "")]
      (testing ::account/create
        (let [api-id ::account/create
              path (bidi/path-for r api-id)]
@@ -130,7 +132,7 @@
                                      :content-type :json})
                         :status)))
          ;; body conform :token-resource-owner schema
-         (is (= 201 (-> @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+         (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
                                     {:throw-exceptions false
                                      :body (json/generate-string
                                             (assoc (g/generate (-> oauth/schema :token-resource-owner :post))
@@ -141,7 +143,13 @@
                                                    ))
                                      :body-encoding "UTF-8"
                                      :content-type :json})
-      ;;                  print-body
+                              body (-> r :body bs/to-string (json/parse-string true))
+                              ]
+                          (reset! access_token (:access_token body))
+
+                          r
+                          ;;                  print-body
+)
                         :status)))))
 
      (testing ::card/get-cards
@@ -219,6 +227,7 @@
            )
          ))
 
+
      (testing ::social-profile/account
        (let [api-id ::social-profile/account
              path (bidi/path-for r api-id)]
@@ -228,4 +237,18 @@
                                     :body (json/generate-string
                                            (g/generate (-> social-profile/schema :put)))
                                     :content-type :json})
-                        :status))))))))
+                        :status)))))
+
+     (testing ::login/validate-password
+       (let [api-id ::login/validate-password
+             path (bidi/path-for r api-id)]
+         (println "@access_token" @access_token)
+         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
+                        print-body
+                        :status)))
+
+         ))
+     )))

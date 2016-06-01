@@ -39,7 +39,9 @@
 
   (verify [this token scope]
     (let [data (p/read-token authenticator token)]
-      (contains? (into #{} (:scope data)) (name scope)))))
+      (contains? (into #{} (:scope data)) (str (.-sym scope))))))
+
+
 
 (defn new-authorizer []
   (map->OauthAuthorizer {}))
