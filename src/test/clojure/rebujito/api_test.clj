@@ -91,7 +91,8 @@
  :lastName "Ruz",
  :receiveStarbucksEmailCommunications "ok",
  :postalCode "41003",
- :country "Spain"}
+ :country "Spain"
+ :userName "juan"}
   )
 
 (deftest test-20*
@@ -247,10 +248,25 @@
                                    {:throw-exceptions false
                                     :body-encoding "UTF-8"
                                     :body (json/generate-string
-                                           (assoc (g/generate (-> login/schema :validate-password :post)) :password "real-secret"))
+                                           (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password new-account)))
                                     :content-type :json})
                         print-body
                         :status)))
 
          ))
+     (testing ::login/forgot-password
+       (let [api-id ::login/forgot-password
+             path (bidi/path-for r api-id)]
+         (println "@access_token" @access_token)
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :body (json/generate-string
+                                           (select-keys new-account (keys (-> login/schema :forgot-password :post))))
+                                    :content-type :json})
+                        print-body
+                        :status)))
+
+         ))
+
      )))

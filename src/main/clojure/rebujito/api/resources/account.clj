@@ -13,6 +13,7 @@
    [yada.resource :refer [resource]]))
 
 (def schema {:post {
+                    (s/optional-key :userName) String
                     :addressLine1 String
                     :birthDay String
                     :birthMonth String

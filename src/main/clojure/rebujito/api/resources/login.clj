@@ -20,10 +20,13 @@
                             :body (-> schema :forgot-password :post)}
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
-               :response (fn [ctx]
+                :response (fn [ctx]
                            (let [token (get-in ctx [:parameters :query :access_token])]
                              (if (p/verify authorizer token scopes/application)
-                               (>200 ctx "")
+                               (do
+                                 (p/send mailer {:what "sending forgot-password"
+                                                 :data (get-in ctx [:parameters :body])})
+                                 (>200 ctx ""))
                                (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"]))))}}}
 
 
