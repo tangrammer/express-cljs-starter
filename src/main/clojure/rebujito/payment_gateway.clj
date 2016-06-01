@@ -49,9 +49,9 @@
                   {:body (velocity/render "paygate/delete-card-token.vm"
                                           :paygateId (-> this :paygateId)
                                           :paygatePassword (-> this :paygatePassword)
-                                          :vaultId (-> data :accountNumber))}
+                                          :vaultId (-> data :cardToken))}
                   (fn [{:keys [status body error]}]
-                    (log/debug status error body)
+                    (println "Delete Card Token Response" status error body)
                     (if (or error (not= 200 status) (not (.contains body "DeleteVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
                       false
                       (let [response (xp/xml->doc body)

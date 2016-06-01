@@ -8,7 +8,7 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(defn method-detail [store]
+(defn method-detail [store payment-gateway]
   (resource
    (->
     {:methods
@@ -18,10 +18,11 @@
                         :charset "UTF-8"}]
 
             :response (fn [ctx]
-                        (condp = (get-in ctx [:parameters :query :access_token])
-                          "404" (>400 ctx ["Resource was not found"])
-                          "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                          (>201 ctx (p/get-payment-method-detail store))))}
+                        (let [paymentMethod (p/get-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
+                          (println "paymentMethod" paymentMethod)
+                          (if paymentMethod
+                            (>200 ctx paymentMethod)
+                            (>404 ctx ["Not Found"]))))}
 
       :delete {:parameters {:query {:access_token String}
                             :path {:payment-method-id String}}
@@ -29,10 +30,13 @@
                            :charset "UTF-8"}]
 
                :response (fn [ctx]
-                           (condp = (get-in ctx [:parameters :query :access_token])
-                             "404" (>400 ctx ["Not Found" "Resource was not found"])
-                             "500" (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."])
-                             (>200 ctx ["OK" "Success"])))}
+                           (let [paymentMethod (p/get-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
+                             (println "paymentMethod" paymentMethod)
+                             (if paymentMethod
+                               (if (p/delete-card-token payment-gateway {:cardToken (-> paymentMethod :routingNumber)})
+                                 (>200 ctx ["OK" "Success"])
+                                 (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."]))
+                               (>404 ctx ["Not Found"]))))}
 
       :put {:parameters {:query {:access_token String}
                          :path {:payment-method-id String}
@@ -40,10 +44,8 @@
                                 :billingAddressId String
                                 :accountNumber String
                                 :default Boolean
-                                :paymentMethodId String
                                 :nickname String
-                                :type String
-                                :accountNumberLastFour String
+                                :paymentType String
                                 :cvn String
                                 :fullName String
                                 :expirationMonth Long}}
@@ -52,24 +54,62 @@
                         :charset "UTF-8"}]
 
             :response (fn [ctx]
-                        (condp = (get-in ctx [:parameters :query :access_token])
-                          "404" (>400 ctx ["Not Found" "Resource was not found"])
-                          "500" (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."])
-                          "141000" (>400 ctx ["No Request Supplied" "Request was malformed."])
-                          "141001" (>400 ctx ["PaymentType cannot be null or empty." "Missing or Invalid type attribute."])
-                          "141002" (>400 ctx ["FullName cannot be null or empty." "Missing or Invalid fullName attribute."])
-                          "141003" (>400 ctx ["AccountNumber cannot be null or empty." "Missing or Invalid accountNumber attribute."])
-                          "141004" (>400 ctx ["Cvn cannot be null or empty." "Missing or Invalid accountCVN attribute."])
-                          "141005" (>400 ctx ["Invalid ExpirationMonth." "Invalid expirationMonth attribute."])
-                          "141006" (>400 ctx ["Invalid ExpirationYear." "Invalid expirationYear attribute."])
-                          "141007" (>400 ctx ["AddressId cannot be null or empty." "Missing or Invalid billingAddressId attribute."])
-                          "141008" (>400 ctx ["Invalid PaymentMethod" "Missing payment method object"])
-                          "141010" (>400 ctx ["PaymentMethodId cannot be null or empty." "Invalid paymentMethodId attribute."])
-                          "141011" (>400 ctx ["Updating PayPal payment method is not allowed." "Can't Update PayPal"])
-                          "141025" (>400 ctx ["UserId cannot be null or empty."])
-
-                          (>200 ctx ["OK" "Success"])))}}}
-
+                        ; get existing payment method
+                        (let [paymentMethod (p/get-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
+                          (println "paymentMethod" paymentMethod)
+                          (if paymentMethod
+                            ; create a new token
+                            (let [request (get-in ctx [:parameters :body])
+                                  {:keys [cardToken]} (p/create-card-token payment-gateway
+                                                                           {:cardNumber (-> request :accountNumber)
+                                                                            :expirationMonth (-> request :expirationMonth)
+                                                                            :expirationYear (-> request :expirationYear)
+                                                                            :cvn (-> request :cvn)})]
+                              (println "CardToken" cardToken)
+                              (if cardToken
+                                ; update payment method with new details and token
+                                (let [updatedPaymentMethod (p/put-payment-method-detail store
+                                                                              {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])
+                                                                               :nickName (-> ctx :nickName)
+                                                                               :paymentType (-> ctx :paymentType)
+                                                                               :fullName (-> ctx :fullName)
+                                                                               :default (-> ctx :default)
+                                                                               :accountNumber "****************"
+                                                                               :accountNumberLastFour "****"
+                                                                               :cvn (-> ctx :cvn)
+                                                                               :expirationMonth (-> ctx :expirationMonth)
+                                                                               :expirationYear (-> ctx :expirationYear)
+                                                                               :billingAddressId (-> ctx :billingAddressId)
+                                                                               :routingNumber cardToken
+                                                                               })]
+                                  (println "updatedPaymentMethod" updatedPaymentMethod)
+                                  (if updatedPaymentMethod
+                                    (fn []
+                                      ; delete the old token
+                                      (try
+                                        (p/delete-card-token payment-gateway {:cardToken (-> paymentMethod :routingNumber)})
+                                        (catch Exception e
+                                          ; ignore errors
+                                          (println e)))
+                                      ; return result
+                                      (>200 ctx {
+                                                 :fullName (-> updatedPaymentMethod :fullName)
+                                                 :billingAddressId (-> updatedPaymentMethod :billingAddressId)
+                                                 :accountNumber (-> updatedPaymentMethod :accountNumber)
+                                                 :default (-> updatedPaymentMethod :default)
+                                                 :paymentMethodId (-> updatedPaymentMethod :paymentMethodId)
+                                                 :nickname (-> updatedPaymentMethod :nickname)
+                                                 :paymentType (-> updatedPaymentMethod :paymentType)
+                                                 :accountNumberLastFour (-> updatedPaymentMethod :accountNumberLastFour)
+                                                 :cvn (-> updatedPaymentMethod :cvn)
+                                                 :expirationYear (-> updatedPaymentMethod :expirationYear)
+                                                 :expirationMonth (-> updatedPaymentMethod :expirationMonth)
+                                                 :isTemporary (-> updatedPaymentMethod :isTemporary)
+                                                 :bankName (-> updatedPaymentMethod :bankName)
+                                                 :routingNumber (-> updatedPaymentMethod :routingNumber)
+                                                 }))
+                                    (>500 ctx ["An unexpected error occurred processing the request."])))))
+                            (>404 ctx ["Not Found"]))))}}}
 
     (merge (common-resource "me/payment-methods/{payment-method-id}"))
     (merge access-control))))
@@ -91,11 +131,12 @@
                :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
                :response (fn [ctx]
-                           (condp = (get-in ctx [:parameters :query :access_token])
-                             "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                             (>200 ctx (p/get-payment-method store))))}
-
-
+                           (let [paymentMethods (p/get-payment-method store)]
+                             (println "paymentMethods" paymentMethods)
+                             (if paymentMethods
+                               (>200 ctx paymentMethods)
+                               (>500 ctx ["An unexpected error occurred processing the request."]))))}
+         
          :post {:parameters {:query {:access_token String}
                              :body (-> schema :methods :post)}
                 :consumes [{:media-type #{"application/json"}
@@ -107,8 +148,7 @@
                                                                            {:cardNumber (-> request :accountNumber) 
                                                                             :expirationMonth (-> request :expirationMonth) 
                                                                             :expirationYear (-> request :expirationYear) 
-                                                                            :cvn (-> request :cvn)
-                                                                            })]
+                                                                            :cvn (-> request :cvn)})]
                               (println "CardToken" cardToken)
                               (if cardToken
                                 ; Create a new payment method with the Token
@@ -143,12 +183,6 @@
                                                :bankName (-> newPaymentMethod :bankName)
                                                :routingNumber (-> newPaymentMethod :routingNumber)
                                                })
-                                    (>500 ctx ["An unexpected error occurred processing the request."])
-                                    )
-                                )
-                              
-                                )
-                              )
-                            )}}}
+                                    (>500 ctx ["An unexpected error occurred processing the request."]))))))}}}
        (merge (common-resource :me/payment-methods))
        (merge access-control))))

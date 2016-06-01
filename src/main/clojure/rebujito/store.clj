@@ -16,8 +16,10 @@
   protocols/Store
   (get-card [this]
     (assoc mocks/card :target-environment :prod))
-  (get-payment-method-detail [this]
+  (get-payment-method-detail [this data]
     (assoc mocks/get-payment-method-detail :target-environment :prod))
+  (put-payment-method-detail [this data]
+    (assoc mocks/put-payment-method-detail :target-environment :prod))
   (post-payment-method [this data]
     (assoc mocks/post-payment-method :target-environment :prod))
   (get-payment-method [this]
@@ -36,8 +38,10 @@
   protocols/Store
   (get-card [this]
     (assoc mocks/card :target-environment :dev))
-  (get-payment-method-detail [this]
+  (get-payment-method-detail [this data]
     (assoc mocks/get-payment-method-detail :target-environment :dev))
+  (put-payment-method-detail [this data]
+    (assoc mocks/put-payment-method-detail :target-environment :dev))
   (post-payment-method [this data]
     (assoc mocks/post-payment-method :target-environment :dev))
   (get-payment-method [this]
