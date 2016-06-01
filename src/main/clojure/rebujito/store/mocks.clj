@@ -259,7 +259,7 @@
       }
    ],
    \"user\": {
-      \"subMarket\": \"US\",
+      \"subMarket\": \"FR\",
       \"exId\": \"93A985A0-12E2-42B6-A995-AA701358BD47\",
       \"userName\": \"sbuxapitestuser@gmail.com\",
       \"firstName\": \"API Test\",
