@@ -3,6 +3,7 @@
 
 (defprotocol Store
   (get-card [this])
+  (get-profile [this])
   (get-payment-method-detail [this])
   (post-payment-method [this data])
   (get-payment-method [this])

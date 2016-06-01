@@ -4,6 +4,7 @@
 
     [schema.core :as s]
     [rebujito.api.resources.payment :as payment]
+    [rebujito.api.resources.profile :as profile]
     [rebujito.api.resources.oauth :as oauth]
     [rebujito.api.resources.account :as account]
     [rebujito.api.resources.card :as card]
@@ -17,6 +18,8 @@
                            (assoc :id ::oauth/token-resource-owner))]
         ["me" [["" (-> (account/get-user store mimi user-store authorizer authenticator)
                               (assoc :id ::account/get-user))]
+               ["/profile"  (-> (profile/me store mimi user-store authorizer authenticator)
+                                  (assoc :id ::profile/me))]
                ["/cards"
                 [["" (-> (card/get-cards store)
                          (assoc :id ::card/get-cards))]
