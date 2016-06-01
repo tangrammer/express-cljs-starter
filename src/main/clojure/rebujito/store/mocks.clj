@@ -5,7 +5,7 @@
 
 (def mimi-card {:id "7777064199346273"
                 :currency "USD"
-                :balance 0.0
+                :balance 125.0
                 :balanceDate "2014-03-07T19:52:42.0500000Z"})
 
 (def card {:cardNumber "7777064199346273"
@@ -41,7 +41,7 @@
             {:imageType "iosLargeHighRes"
              :uri
              "http://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270@2x.png"}]
-           :balance 0.0
+           :balance 86.0
            :submarketCode "US"
            :cardId "85607AF09DD610"
            :class "242"
@@ -54,16 +54,16 @@
 
 (def get-payment-method-detail (json/parse-string "{
    \"isTemporary\":false,
-   \"routingNumber\":null,
+   \"routingNumber\":\"7a17ba06-deab-4e53-b7d9-ca4cfc3d94ec\",
    \"bankName\":null,
    \"paymentMethodId\":\"866F71F993D6\",
    \"billingAddressId\":null,
    \"paymentType\":\"Paypal\",
    \"accountNumberLastFour\":null,
-   \"accountNumber\":\"F67A77FC92D518AC9BF69B1028BCF7A711B1\",
+   \"accountNumber\":\"12345678\",
    \"expirationMonth\":0,
    \"expirationYear\":0,
-   \"cvn\":null,
+   \"cvn\":\"123\",
    \"fullName\":\"API Test User1\",
    \"default\":false,
    \"nickname\":\"SODOOO\"

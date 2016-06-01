@@ -195,6 +195,23 @@
                                        :body-encoding "UTF-8"
                                        :content-type :json})
                         :status)))))
+     
+     (testing ::payment/reload
+       (let [api-id ::payment/reload
+             path (bidi/path-for r api-id :card-id 123)]
+         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
+                                      {:throw-exceptions false
+                                       :body-encoding "UTF-8"
+                                       :body (json/generate-string
+                                               {
+                                                :amount 15
+                                                :paymentMethodId "1234567"
+                                                :sessionId ""
+                                                }
+                                               )
+                                       :content-type :json})
+                        :status)))))
 
      (testing ::payment/methods
        (let [api-id ::payment/methods

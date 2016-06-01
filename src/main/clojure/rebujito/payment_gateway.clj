@@ -59,7 +59,7 @@
                         (and (not-empty result) (= (first result)  "Completed"))
                         )))))
   (execute-payment [this data]
-    (log/debug data)
+    (println "PayGate Payment Request" data)
     @(http-k/post (-> this :url)
                   {:body (velocity/render "paygate/payment-with-token.vm"
                                           :paygateId (-> this :paygateId)
@@ -67,14 +67,14 @@
                                           :firstName (-> data :firstName)
                                           :lastName (-> data :lastName)
                                           :emailAddress (-> data :emailAddress)
-                                          :cardToken (-> data :accountNumber)
+                                          :cardToken (-> data :routingNumber)
                                           :cvn (-> data :cvn)
                                           :transactionId (-> data :transactionId)
                                           :currency "ZAR"
                                           :amount (-> data :amount))
                    }
                   (fn [{:keys [status body error]}]
-                    (log/debug status error body)
+                    (println "PayGate Payment Response" status error body)
                     (if (or error (not= 200 status) (not (.contains body "CardPaymentResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
                       false
                       (let [response (xp/xml->doc body)

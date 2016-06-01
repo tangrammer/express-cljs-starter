@@ -24,7 +24,7 @@
 
                            "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request.
 "])
-                           (>201 ctx [(p/get-card store)])))}}}
+                           (>201 ctx [(p/get-cards store)])))}}}
 
     (merge (common-resource :me/cards))
     (merge access-control))))
@@ -75,7 +75,7 @@
 
                                (d/chain
                                 (fn [mimi-res]
-                                  (>200 ctx (assoc (p/get-card store) :cardNumber cardNumber))))
+                                  (>200 ctx (assoc (p/get-card store {}) :cardNumber cardNumber))))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data  exception-info))))
@@ -99,7 +99,7 @@
                              "122000" (>403 ctx ["Card is already registered.." "Card number and pin are already registered to user."])
 
                              "500" (>500 ctx ["Internal Server Error :( "])
-                             (>200 ctx (p/get-card store))))}}}
+                             (>200 ctx (p/get-cards store))))}}}
 
     (merge (common-resource :me/cards))
     (merge access-control))))
@@ -116,7 +116,7 @@
                          (condp = (get-in ctx [:parameters :query :access_token])
                            "400" (>400 ctx ["No registration address on file. Registration address must already exist for user."])
                            "500" (>500 ctx ["Internal Server Error :( "])
-                           (>201 ctx (p/get-card store))))}}}
+                           (>201 ctx (p/get-cards store))))}}}
 
     (merge (common-resource :me/cards))
     (merge access-control))))

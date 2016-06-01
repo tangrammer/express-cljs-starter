@@ -19,14 +19,16 @@
                            (assoc :id ::oauth/token-resource-owner))]
         ["login/forgot-password" (-> (login/forgot-password authorizer mailer)
                                                (assoc :id ::login/forgot-password))]
-        ["me" [["" (-> (account/get-user store mimi user-store authorizer authenticator)
+        ["me" [
+               ["" (-> (account/get-user store mimi user-store authorizer authenticator)
                        (assoc :id ::account/get-user))]
                ["/login/validate-password" (-> (login/validate-password user-store crypto authorizer authenticator)
                                                (assoc :id ::login/validate-password))]
                ["/profile"  (-> (profile/me store mimi user-store authorizer authenticator)
                                   (assoc :id ::profile/me))]
                ["/cards"
-                [["" (-> (card/get-cards store)
+                [
+                 ["" (-> (card/get-cards store)
                          (assoc :id ::card/get-cards))]
 
                  ["/register"
@@ -36,7 +38,17 @@
                  ["/register-digital" (-> (card/register-digital-cards store)
                                           (assoc :id ::card/register-digital-cards))]
 
-                 ["/" [[["" :card-id] (-> (card/unregister store)(assoc :id ::card/unregister))]]]]]
+                 ["/" [
+                       [
+                        ["" :card-id] [
+                                       ["" (-> (card/unregister store)(assoc :id ::card/unregister))]
+                                       ["/reload" (-> (payment/reload store payment-gateway mimi)(assoc :id ::payment/reload))]
+                                       ] 
+                        ]
+                       ]
+                  ]
+                 ]
+                ]
 
 
 
@@ -45,7 +57,8 @@
                                    [["/" :payment-method-id] (-> (payment/method-detail store payment-gateway)
                                                                 (assoc :id ::payment/method-detail))]]]
                ["/socialprofile/account" (-> (social-profile/account store)
-                                             (assoc :id ::social-profile/account))]]]]]
+                                             (assoc :id ::social-profile/account))]
+               ]]]]
   )
 
 (s/defrecord ApiComponent [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]

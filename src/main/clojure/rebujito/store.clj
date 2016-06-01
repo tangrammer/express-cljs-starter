@@ -14,7 +14,9 @@
     this)
   (stop [this] this)
   protocols/Store
-  (get-card [this]
+  (get-cards [this]
+    (assoc mocks/card :target-environment :prod))
+  (get-card [this data]
     (assoc mocks/card :target-environment :prod))
   (get-payment-method-detail [this data]
     (assoc mocks/get-payment-method-detail :target-environment :prod))
@@ -39,7 +41,9 @@
     this)
   (stop [this] this)
   protocols/Store
-  (get-card [this]
+  (get-cards [this]
+    (assoc mocks/card :target-environment :dev))
+  (get-card [this data]
     (assoc mocks/card :target-environment :dev))
   (get-payment-method-detail [this data]
     (assoc mocks/get-payment-method-detail :target-environment :dev))

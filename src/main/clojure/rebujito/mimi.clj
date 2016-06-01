@@ -117,6 +117,9 @@
                                                                        :status (:status ex)
                                                                        :body (:body ex)}))))))
       d*))
+  
+  (load-card [this data]
+    (assoc mocks/mimi-card :target-environment :prod))
   )
 
 (defrecord MockMimi [base-url token]
@@ -141,6 +144,8 @@
         (d/success! d* (-> [:success]
                            (conj :prod-mimi))))
       d*))
+  (load-card [this data]
+    (assoc mocks/mimi-card :target-environment :dev))
   )
 
 (defn new-prod-mimi [mimi-config]

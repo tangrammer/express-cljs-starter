@@ -2,7 +2,8 @@
   (:refer-clojure :exclude (find send)))
 
 (defprotocol Store
-  (get-card [this])
+  (get-cards [this])
+  (get-card [this data])
   (get-profile [this])
   (get-payment-method-detail [this data])
   (put-payment-method-detail [this data])
@@ -19,7 +20,9 @@
 
 (defprotocol Mimi
   (create-account [this data])
-  (register-physical-card [this data]))
+  (register-physical-card [this data])
+  (load-card [this data])
+  )
 
 (defprotocol Encrypter
   (sign [_ data])
