@@ -5,6 +5,7 @@
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.protocols :as p]
+   [rebujito.scopes :as scopes]
    [rebujito.api.sig :as api-sig]
    [rebujito.api.util :refer :all]
    [cheshire.core :as json]
@@ -87,7 +88,7 @@
                                                                        :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
                                                    first
                                                    (dissoc :password))]
-                                  (>201 ctx (p/grant authorizer user #{:test-scope}))
+                                  (>201 ctx (p/grant authorizer user #{scopes/application scopes/user}))
                                   (>404 ctx [:user-not-found (get-in ctx [:parameters :body :username])]))))
                                 (d/catch clojure.lang.ExceptionInfo
                                     (fn [exception-info]

@@ -4,6 +4,7 @@
    [taoensso.timbre :as log]
    [rebujito.api.util :refer :all]
    [rebujito.mimi :as mim]
+   [rebujito.scopes :as scopes]
    [rebujito.protocols :as p]
    [rebujito.api.resources :refer (domain-exception)]
    [buddy.core.codecs :refer (bytes->hex)]
@@ -98,7 +99,7 @@
                :response (fn [ctx]
                            (try
                              (let [token (get-in ctx [:parameters :query :access_token])]
-                               (if (p/verify authorizer token :test-scope)
+                               (if (p/verify authorizer token scopes/user)
                                  (>201 ctx (p/read-token authenticator token))
                                  (>404 ctx ["Not Found" "Account Profile with given userId was not found."])))
                              (catch Exception e

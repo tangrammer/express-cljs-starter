@@ -1,6 +1,7 @@
 (ns rebujito.api.resources.profile
   (:require
    [rebujito.protocols :as p]
+   [rebujito.scopes :as scopes]
    [rebujito.api.util :refer :all]
    [cheshire.core :as json]
    [schema.core :as s]
@@ -19,7 +20,14 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                :response (fn [ctx]
-                           (>200 ctx (p/get-profile store))
+                           (try
+                             (let [token (get-in ctx [:parameters :query :access_token])]
+                               (if (p/verify authorizer token scopes/application)
+                                 (>200 ctx (p/get-profile store))
+                                 (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"])))
+                             (catch Exception e
+                               (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))])))
+
                            )}}}
 
 
