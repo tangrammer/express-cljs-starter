@@ -1,10 +1,15 @@
 (ns rebujito.protocols
-  (:refer-clojure :exclude (find)))
+  (:refer-clojure :exclude (find send)))
 
 (defprotocol Store
   (get-card [this])
+<<<<<<< HEAD
   (get-payment-method-detail [this data])
   (put-payment-method-detail [this data])
+=======
+  (get-profile [this])
+  (get-payment-method-detail [this])
+>>>>>>> master
   (post-payment-method [this data])
   (get-payment-method [this])
   (post-token-resource-owner [this])
@@ -22,7 +27,7 @@
 
 (defprotocol Encrypter
   (sign [_ data])
-  (unsign [this token]))
+  (check [this unhash hashed]))
 
 (defprotocol Authorizer
   (grant [this data scopes])
@@ -53,3 +58,7 @@
     "sync, the result is the updated document")
   (get-and-insert! [this data]
     "sync, the result is the new document"))
+
+
+(defprotocol MailService
+  (send [this data]))

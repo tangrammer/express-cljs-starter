@@ -12,7 +12,7 @@
                      :alg :hmac+sha256}))
 
 
-(verify "asd"  (hash-password "asd" "asd") "asd")
+(verify "asd"  (hash-password "asd" "xxx") "xxx")
 
 
 (defrecord SHA256Encrypter [secret-key]
@@ -23,8 +23,10 @@
   p/Encrypter
   (sign [_ data]
     (bytes->hex (hash-password data secret-key)))
-  (unsign [this token]
-    ;; TODO:
+  (check [this unhash hashed]
+      (= hashed (p/sign this unhash))
+
+
     ))
 
 (defn new-sha256-encrypter [config]

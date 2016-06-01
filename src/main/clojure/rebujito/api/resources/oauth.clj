@@ -1,9 +1,11 @@
 (ns rebujito.api.resources.oauth
   (:refer-clojure :exclude [methods])
   (:require
+   [taoensso.timbre :as log]
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.protocols :as p]
+   [rebujito.scopes :as scopes]
    [rebujito.api.sig :as api-sig]
    [rebujito.api.util :refer :all]
    [cheshire.core :as json]
@@ -22,7 +24,8 @@
                                                                :client_secret String
                                                                :username String
                                                                :password String
-                                                               :scope String}
+                                                               (s/optional-key :scope) String
+                                                               (s/optional-key :timestamp) String}
                                                         "token-resource-owner")}})
 
 (comment "sb-errors"
@@ -36,7 +39,27 @@
              "500" (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."])
              ))
 
-(defn token-resource-owner [store user-store authorizer crypto]
+(defn deferred-find-client [api-client-store client-id client-secret]
+  (log/info "deferred-find-client" api-client-store client-id client-secret)
+  (let [d* (d/deferred)]
+    (future
+      (try
+        (if-let [api-client  (p/find api-client-store client-id)]
+          (d/success! d* "SUCCESS")
+          (d/error! d*
+                    (ex-info (str "API ERROR!")
+                             {:type :api
+                              :status 400
+                              :body (format "client-id and client-secret: %s :: %s not valid  " client-id client-secret)}))
+          )
+        (catch Exception e (fn [e] (d/error! d*
+                                            (ex-info (str "API ERROR!")
+                                                     {:type :api
+                                                      :status 400
+                                                      :body (format "client-id and client-secret: %s :: %s not valid  " client-id client-secret)}))))))
+    d*))
+
+(defn token-resource-owner [store user-store authorizer crypto api-client-store]
   (resource
    (-> {:methods
         {:post {:parameters {:query {:sig String}
@@ -46,21 +69,27 @@
                                     #(nil? (-> % :refresh_token))
                                     (-> schema :token-resource-owner :post))}
 
-                :consumes [{:media-type #{#_"application/x-www-form-urlencoded" "application/json"}
+                :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
-                            (-> (api-sig/deferred-check
-                                  (get-in ctx [:parameters :query :sig])
-                                  (get-in ctx [:parameters :body :client_id])
-                                  (get-in ctx [:parameters :body :client_secret]))
-                                (d/chain
-                                 (fn [m]
-                                   (if-let [user  (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
-                                                                          :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
-                                                      first
-                                                      (dissoc :password))]
-                                     (>201 ctx (p/grant authorizer user #{:test-scope}))
-                                     (>404 ctx [:user-not-found (get-in ctx [:parameters :body :username])]))))
+                            (->
+                             (deferred-find-client api-client-store
+                               (get-in ctx [:parameters :body :client_id])
+                               (get-in ctx [:parameters :body :client_secret]))
+                             (d/chain
+                              #_(fn [n]
+                                (api-sig/deferred-check
+                                       (get-in ctx [:parameters :query :sig])
+                                       (get-in ctx [:parameters :body :client_id])
+                                       (get-in ctx [:parameters :body :client_secret])
+                                       ))
+                              (fn [m]
+                                (if-let [user  (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
+                                                                       :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
+                                                   first
+                                                   (dissoc :password))]
+                                  (>201 ctx (p/grant authorizer user #{scopes/application scopes/user}))
+                                  (>404 ctx [:user-not-found (get-in ctx [:parameters :body :username])]))))
                                 (d/catch clojure.lang.ExceptionInfo
                                     (fn [exception-info]
                                       (domain-exception ctx (ex-data exception-info))))

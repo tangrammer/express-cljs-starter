@@ -15,6 +15,7 @@
    [rebujito.api.resources.account :as account]
    [rebujito.api.resources.card :as card]
    [rebujito.api.resources.oauth :as oauth]
+   [rebujito.api.resources.login :as login]
    [rebujito.store.mocks :as mocks]
    [rebujito.api.resources.payment :as payment]
    [rebujito.api.resources.social-profile :as social-profile]
@@ -23,8 +24,12 @@
    [schema-generators.generators :as g]
    [schema.core :as s]
    [manifold.deferred :as d]
+   [rebujito.logging :as log-levels]
+   [taoensso.timbre :as log]
    [rebujito.system.dev-system :as dev]
    ))
+
+(log/set-config! log-levels/timbre-info-config)
 
 (def ^:dynamic *system* nil)
 
@@ -37,7 +42,11 @@
 
 (defn system-fixture [config-env]
   (fn[f]
-    (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port] inc)))
+    (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port]
+                                                               (comp inc (fn [s]
+                                                                           (if (= String (type s))
+                                                                             (read-string s)
+                                                                             s) )))))
       (try
         (s/with-fn-validation
           (f))
@@ -56,7 +65,7 @@
     (api-sig/new-sig t key secret)))
 
 (defn print-body [c]
-  (println ">>>>> ****"(-> c :body bs/to-string))
+  (log/info ">>>>> ****"(-> c :body bs/to-string))
   c
   )
 (defn oauth-login-data []
@@ -82,7 +91,8 @@
  :lastName "Ruz",
  :receiveStarbucksEmailCommunications "ok",
  :postalCode "41003",
- :country "Spain"}
+ :country "Spain"
+ :userName "juan"}
   )
 
 (deftest test-20*
@@ -91,7 +101,8 @@
          port (-> *system*  :webserver :port)
          new-account (g/generate (:post account/schema))
          new-account (new-account-sb)
-         sig (new-sig)]
+         sig (new-sig)
+         access_token (atom "")]
      (testing ::account/create
        (let [api-id ::account/create
              path (bidi/path-for r api-id)]
@@ -122,7 +133,7 @@
                                      :content-type :json})
                         :status)))
          ;; body conform :token-resource-owner schema
-         (is (= 201 (-> @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+         (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
                                     {:throw-exceptions false
                                      :body (json/generate-string
                                             (assoc (g/generate (-> oauth/schema :token-resource-owner :post))
@@ -133,7 +144,13 @@
                                                    ))
                                      :body-encoding "UTF-8"
                                      :content-type :json})
-      ;;                  print-body
+                              body (-> r :body bs/to-string (json/parse-string true))
+                              ]
+                          (reset! access_token (:access_token body))
+
+                          r
+                          ;;                  print-body
+)
                         :status)))))
 
      (testing ::card/get-cards
@@ -212,6 +229,7 @@
            )
          ))
 
+<<<<<<< HEAD
      (testing ::payment/method-detail
        (let [api-id ::payment/method-detail
              path (bidi/path-for r api-id :payment-method-id 12345)]
@@ -252,6 +270,8 @@
            (is (.contains (slurp body) "paymentMethodId"))
            )
          ))
+=======
+>>>>>>> master
 
      (testing ::social-profile/account
        (let [api-id ::social-profile/account
@@ -262,4 +282,35 @@
                                     :body (json/generate-string
                                            (g/generate (-> social-profile/schema :put)))
                                     :content-type :json})
-                        :status))))))))
+                        :status)))))
+
+     (testing ::login/validate-password
+       (let [api-id ::login/validate-password
+             path (bidi/path-for r api-id)]
+         (println "@access_token" @access_token)
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :body (json/generate-string
+                                           (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password new-account)))
+                                    :content-type :json})
+                        print-body
+                        :status)))
+
+         ))
+     (testing ::login/forgot-password
+       (let [api-id ::login/forgot-password
+             path (bidi/path-for r api-id)]
+         (println "@access_token" @access_token)
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :body (json/generate-string
+                                           (select-keys new-account (keys (-> login/schema :forgot-password :post))))
+                                    :content-type :json})
+                        print-body
+                        :status)))
+
+         ))
+
+     )))

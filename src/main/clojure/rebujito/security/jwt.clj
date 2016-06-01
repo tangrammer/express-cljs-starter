@@ -1,6 +1,7 @@
 (ns rebujito.security.jwt
   "Namespace for handling authentication json-web-token creation and validation."
   (:require
+   [taoensso.timbre :as log]
    [com.stuartsierra.component :as component]
    [rebujito.protocols :as p]
    [buddy.sign.jws :as jws])
@@ -41,7 +42,12 @@
   (stop [this] this)
   p/Authenticator
   (read-token [this token]
-    (jws-unsign token secret-key))
+    (try
+      (jws-unsign token secret-key)
+      (catch Exception e (do
+                           (log/error (.getMessage e))
+                           nil))
+      ))
   (generate-token [this data]
     (let [expire-in 1440 ;; 1 day in minutes
           token-id (.toString (UUID/randomUUID))]

@@ -27,7 +27,10 @@
   (post-token-resource-owner [this]
     (assoc mocks/post-token-resource-owner :target-environment :prod))
   (post-refresh-token [this]
-    (assoc mocks/post-refresh-token :target-environment :prod)))
+    (assoc mocks/post-refresh-token :target-environment :prod))
+  (get-profile [this]
+      (assoc mocks/me-profile :target-environment :prod))
+  )
 
 
 (defrecord MockStore []
@@ -49,7 +52,11 @@
   (post-token-resource-owner [this]
     (assoc mocks/post-token-resource-owner  :target-environment :dev))
   (post-refresh-token [this]
-    (assoc mocks/post-refresh-token :target-environment :dev)))
+    (assoc mocks/post-refresh-token :target-environment :dev))
+  (get-profile [this]
+      (assoc mocks/me-profile :target-environment :dev))
+
+  )
 
 
 

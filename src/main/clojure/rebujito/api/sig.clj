@@ -2,6 +2,7 @@
   (:require [buddy.sign.util :refer (to-timestamp)]
             [buddy.core.codecs :refer (bytes->hex)]
             [manifold.deferred :as d]
+            [taoensso.timbre :as log]
             [rebujito.api.time :as api-time]
             [buddy.core.hash :as hash])
   (:import [java.time ZonedDateTime]
@@ -21,9 +22,11 @@
    (check (api-time/now) sign api-key api-secret))
   ([^ZonedDateTime now sign api-key api-secret]
    (loop [grace-seconds 0]
-     (let [t (.minus now grace-seconds ChronoUnit/SECONDS)
-           past-sign (new-sig t api-key api-secret)]
-       (if (= past-sign sign)
+     (let [t1 (.minus now grace-seconds ChronoUnit/SECONDS)
+           t2 (.plus now grace-seconds ChronoUnit/SECONDS)
+           past-sign (new-sig t1 api-key api-secret)
+           next-sign (new-sig t2 api-key api-secret)]
+       (if (or (= past-sign sign) (= next-sign sign))
          (do
            (println "found sign at " grace-seconds " seconds")
            true)
@@ -32,6 +35,7 @@
            nil))))))
 
 (defn deferred-check [sig client-id client-secret]
+  (log/info "deferred-check" sig client-id client-secret)
   (let [d* (d/deferred)]
     (future
       (if (check sig client-id client-secret)

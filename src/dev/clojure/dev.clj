@@ -3,6 +3,12 @@
   not be included in a production build of the application."
   (:import [java.util Locale])
   (:require
+   [rebujito.api.resources.account :as ac]
+   [schema-generators.generators :as g]
+   [rebujito.api.sig :as sig]
+   [buddy.core.nonce :as nonce]
+   [rebujito.protocols :as p]
+   [buddy.core.codecs :refer (bytes->hex)]
     [clojure.java.browse :refer (browse-url)]
     [com.stuartsierra.component :refer [system-map system-using using] :as component]
     [clojure.java.io :as io]
@@ -13,7 +19,7 @@
     [clojure.test :refer [run-tests run-all-tests]]
     [clojure.tools.namespace.repl :refer [refresh refresh-all]]
     [rebujito.system.dev-system :refer (new-dev-system)]
-
+    [manifold.deferred :as d]
     [plumbing.core :refer (fnk defnk)]
     [bidi.bidi :as bidi]
     [schema.core :as s]
@@ -31,6 +37,7 @@
   ^{:docstring "A Var containing an object representing the application under development."}
   system
   nil)
+
 (defn alter-system!
   [f & args]
   (apply alter-var-root #'system f args))
@@ -95,3 +102,42 @@
 
 (defn set-env! [& env]
   (alter-var-root #'env/env (constantly (set env))))
+(defn generate-random [n]
+  (-> (nonce/random-bytes n)
+      (bytes->hex)
+      )
+  )
+
+(generate-random 32)
+
+
+(defn insert-new-api-key [who]
+  (p/get-and-insert! (-> system :api-client-store) {"secret" (generate-random 32) "who" who}))
+
+(defn insert [data]
+  (p/insert! (-> system :api-client-store) data)
+  )
+
+(defn find [id]
+  (p/find (-> system :api-client-store) id)
+  )
+
+(comment )
+
+(defn find-all []
+  (p/find (-> system :api-client-store))
+  )
+
+
+(defn check-mobile-user []
+  (let [u (-> (g/generate (ac/schema :post))
+              (merge
+               {:emailAddress "stephan+starbucks_fr_02@mediamonks.com" :password "#myPassword01"}))]
+    (if-let [res (first (p/find (-> system :user-store) (select-keys u [:email]) ))]
+      (str "exists" res)
+      (ac/create-account-mongo! u (-> (str (rand-int 1000000))
+                                                 vector
+                                                 (conj :mock-mimi))
+                                (-> system :user-store) (:crypto system)))
+    )
+  )

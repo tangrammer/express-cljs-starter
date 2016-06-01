@@ -15,7 +15,8 @@
    [rebujito.webserver.handler :as wh]
    [rebujito.logging :as log-levels]
    [rebujito.store :as store]
-   [rebujito.mongo :refer (new-user-store)]
+   [rebujito.mongo :refer (new-user-store new-api-key-store)]
+   [rebujito.mailer :refer (new-prod-mailer)]
    [rebujito.mimi :as mimi]
    [taoensso.timbre :as log])
   (:import [java.util Date]))
@@ -47,9 +48,13 @@
 
                   :db-conn (new-mongo-connection)
 
+                  :mailer (new-prod-mailer (-> config :mailer))
+
                   :store (store/new-prod-store)
 
                   :user-store (new-user-store (:auth config))
+
+                  :api-client-store (new-api-key-store (:auth config))
 
                   :mimi (mimi/new-prod-mimi (:mimi config))
 
@@ -80,9 +85,10 @@
    :webserver {:request-handler :docsite-router}
    :db-conn {:database :db}
    :user-store [:db-conn]
+   :api-client-store [:db-conn]
    :authorizer [:authenticator]
    :store []
-   :api [:store :mimi :user-store :authorizer :crypto :authenticator :payment-gateway]
+   :api [:store :mimi :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

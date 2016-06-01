@@ -1,8 +1,10 @@
 (ns rebujito.api.resources.account
   (:require
    [manifold.deferred :as d]
+   [taoensso.timbre :as log]
    [rebujito.api.util :refer :all]
    [rebujito.mimi :as mim]
+   [rebujito.scopes :as scopes]
    [rebujito.protocols :as p]
    [rebujito.api.resources :refer (domain-exception)]
    [buddy.core.codecs :refer (bytes->hex)]
@@ -11,6 +13,7 @@
    [yada.resource :refer [resource]]))
 
 (def schema {:post {
+                    (s/optional-key :userName) String
                     :addressLine1 String
                     :birthDay String
                     :birthMonth String
@@ -51,7 +54,7 @@
     400 (>400 ctx body)
     500 (>500 ctx body)))
 
-(defn- create-account-mongo! [data-account mimi-res user-store crypto]
+(defn create-account-mongo! [data-account mimi-res user-store crypto]
   (let [mimi-id (first mimi-res)
         mongo-id (p/generate-id user-store mimi-id)
         mongo-account-data (-> data-account
@@ -97,7 +100,7 @@
                :response (fn [ctx]
                            (try
                              (let [token (get-in ctx [:parameters :query :access_token])]
-                               (if (p/verify authorizer token :test-scope)
+                               (if (p/verify authorizer token scopes/user)
                                  (>201 ctx (p/read-token authenticator token))
                                  (>404 ctx ["Not Found" "Account Profile with given userId was not found."])))
                              (catch Exception e
