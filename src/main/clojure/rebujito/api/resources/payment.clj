@@ -101,28 +101,54 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
-                            (let [data (get-in ctx [:parameters :body])
-                                  {:keys [cardToken]} (p/create-card-token payment-gateway data)]
+                            (let [request (get-in ctx [:parameters :body])
+                                  ; Create the token at the gateway
+                                  {:keys [cardToken]} (p/create-card-token payment-gateway 
+                                                                           {:cardNumber (-> request :accountNumber) 
+                                                                            :expirationMonth (-> request :expirationMonth) 
+                                                                            :expirationYear (-> request :expirationYear) 
+                                                                            :cvn (-> request :cvn)
+                                                                            })]
                               (println "CardToken" cardToken)
-                              ; create the payment method
                               (if cardToken
-                                (>201 ctx {
-                                           :fullName (-> data :fullName)
-                                           :billingAddressId (-> data :billingAddressId)
-                                           :accountNumber cardToken
-                                           :default (-> data :default)
-                                           :paymentMethodId "string"
-                                           :nickname (-> data :nickname)
-                                           :paymentType (-> data :paymentType)
-                                           :accountNumberLastFour nil
-                                           :cvn (-> data :cvn)
-                                           :expirationYear (-> data :expirationYear)
-                                           :expirationMonth (-> data :expirationMonth)
-                                           :isTemporary false
-                                           :bankName nil
-                                           })
-                                (>500 ctx ["An unexpected error occurred processing the request."])
-                                ))
+                                ; Create a new payment method with the Token
+                                (let [newPaymentMethod (p/post-payment-method store
+                                                                              {:nickName (-> request :nickName)
+                                                                               :paymentType (-> request :paymentType)
+                                                                               :fullName (-> request :fullName)
+                                                                               :default (-> request :default)
+                                                                               :accountNumber "****************"
+                                                                               :accountNumberLastFour "****"
+                                                                               :cvn (-> request :cvn)
+                                                                               :expirationMonth (-> request :expirationMonth)
+                                                                               :expirationYear (-> request :expirationYear)
+                                                                               :billingAddressId (-> request :billingAddressId)
+                                                                               :routingNumber cardToken
+                                                                               })]
+                                  (println "newPaymentMethod" newPaymentMethod)
+                                  (if newPaymentMethod
+                                    (>201 ctx {
+                                               :fullName (-> newPaymentMethod :fullName)
+                                               :billingAddressId (-> newPaymentMethod :billingAddressId)
+                                               :accountNumber (-> newPaymentMethod :accountNumber)
+                                               :default (-> newPaymentMethod :default)
+                                               :paymentMethodId (-> newPaymentMethod :paymentMethodId)
+                                               :nickname (-> newPaymentMethod :nickname)
+                                               :paymentType (-> newPaymentMethod :paymentType)
+                                               :accountNumberLastFour (-> newPaymentMethod :accountNumberLastFour)
+                                               :cvn (-> newPaymentMethod :cvn)
+                                               :expirationYear (-> newPaymentMethod :expirationYear)
+                                               :expirationMonth (-> newPaymentMethod :expirationMonth)
+                                               :isTemporary (-> newPaymentMethod :isTemporary)
+                                               :bankName (-> newPaymentMethod :bankName)
+                                               :routingNumber (-> newPaymentMethod :routingNumber)
+                                               })
+                                    (>500 ctx ["An unexpected error occurred processing the request."])
+                                    )
+                                )
+                              
+                                )
+                              )
                             )}}}
        (merge (common-resource :me/payment-methods))
        (merge access-control))))

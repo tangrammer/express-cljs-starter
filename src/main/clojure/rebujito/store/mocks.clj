@@ -72,16 +72,16 @@
 
 (def post-payment-method (json/parse-string "{
    \"isTemporary\":false,
-   \"routingNumber\":null,
+   \"routingNumber\":\"F67A77FC92D518AC9BF69B1028BCF7A711B1\",
    \"bankName\":null,
    \"paymentMethodId\":\"866F71F993D6\",
-   \"billingAddressId\":null,
+   \"billingAddressId\":\"1234567890\",
    \"paymentType\":\"Paypal\",
-   \"accountNumberLastFour\":null,
-   \"accountNumber\":\"F67A77FC92D518AC9BF69B1028BCF7A711B1\",
+   \"accountNumberLastFour\":\"1234\",
+   \"accountNumber\":\"1234567890123456\",
    \"expirationMonth\":0,
    \"expirationYear\":0,
-   \"cvn\":null,
+   \"cvn\":\"123\",
    \"fullName\":\"API Test User1\",
    \"default\":false,
    \"nickname\":\"SODOOO\"

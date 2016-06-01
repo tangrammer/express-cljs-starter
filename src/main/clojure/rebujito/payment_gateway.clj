@@ -31,7 +31,7 @@
                  {:body (velocity/render "paygate/create-card-token.vm"
                                          :paygateId (-> this :paygateId)
                                          :paygatePassword (-> this :paygatePassword)
-                                         :cardNumber (-> data :accountNumber)
+                                         :cardNumber (-> data :cardNumber)
                                          :expirationMonth (-> data :expirationMonth)
                                          :expirationYear (-> data :expirationYear))}
                   (fn [{:keys [status body error]}]
@@ -40,8 +40,8 @@
                       nil
                       (let [response (xp/xml->doc body)
                             cardToken (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
-                        (if cardToken
-                          {:cardToken cardToken}
+                        (if (and (not-empty cardToken) (first cardToken))
+                          {:cardToken (first cardToken)}
                           nil))))))
   (delete-card-token [this data]
     (log/debug data)
@@ -56,7 +56,8 @@
                       false
                       (let [response (xp/xml->doc body)
                             result (xp/$x:text* "/Envelope/Body/SingleVaultResponse/DeleteVaultResponse/Status/StatusName" response)]
-                        (= result "Completed"))))))
+                        (and (not-empty result) (= (first result)  "Completed"))
+                        )))))
   (execute-payment [this data]
     (log/debug data)
     @(http-k/post (-> this :url)
@@ -95,7 +96,8 @@
                                    "ResultCode" ResultCode
                                    "ResultDescription" ResultDescription
                                    )
-                        (= TransactionStatusCode 1)))))))
+                        (and (not-empty TransactionStatusCode) (= (first TransactionStatusCode)  "1"))
+                        ))))))
 
 (defrecord MockPaymentGateway []
   component/Lifecycle
