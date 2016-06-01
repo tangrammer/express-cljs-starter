@@ -229,7 +229,6 @@
            )
          ))
 
-<<<<<<< HEAD
      (testing ::payment/method-detail
        (let [api-id ::payment/method-detail
              path (bidi/path-for r api-id :payment-method-id 12345)]
@@ -270,8 +269,6 @@
            (is (.contains (slurp body) "paymentMethodId"))
            )
          ))
-=======
->>>>>>> master
 
      (testing ::social-profile/account
        (let [api-id ::social-profile/account

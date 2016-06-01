@@ -3,13 +3,9 @@
 
 (defprotocol Store
   (get-card [this])
-<<<<<<< HEAD
+  (get-profile [this])
   (get-payment-method-detail [this data])
   (put-payment-method-detail [this data])
-=======
-  (get-profile [this])
-  (get-payment-method-detail [this])
->>>>>>> master
   (post-payment-method [this data])
   (get-payment-method [this])
   (post-token-resource-owner [this])
