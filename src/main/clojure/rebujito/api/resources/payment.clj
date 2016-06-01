@@ -121,25 +121,27 @@
                               "141025" (>400 ctx ["User cannot be null or empty"])
                               "141039" (>400 ctx ["Payment method already exists."])
                               "500" (>500 ctx ["An unexpected error occurred processing the request."])
-                              (>201 ctx
-                                    (let [data (get-in ctx [:parameters :body])
-                                          {:keys [cardToken]} (p/create-card-token payment-gateway  data)]
-                                      (log/debug cardToken)
-                                        ; create the payment method
-                                      {
-                                       :fullName (-> data :fullName)
-                                       :billingAddressId (-> data :billingAddressId)
-                                       :accountNumber cardToken
-                                       :default (-> data :default)
-                                       :paymentMethodId "string"
-                                       :nickname (-> data :nickname)
-                                       :paymentType (-> data :paymentType)
-                                       :accountNumberLastFour nil
-                                       :cvn (-> data :cvn)
-                                       :expirationYear (-> data :expirationYear)
-                                       :expirationMonth (-> data :expirationMonth)
-                                       :isTemporary false
-                                       :bankName nil
-                                       }))))}}}
+                              (let [data (get-in ctx [:parameters :body]) 
+                                    {:keys [cardToken]} (p/create-card-token payment-gateway data)] 
+                                (println "CardToken" cardToken)
+                                ; create the payment method
+                                (if cardToken
+                                  (>201 ctx {
+                                             :fullName (-> data :fullName)
+                                             :billingAddressId (-> data :billingAddressId)
+                                             :accountNumber cardToken
+                                             :default (-> data :default)
+                                             :paymentMethodId "string"
+                                             :nickname (-> data :nickname)
+                                             :paymentType (-> data :paymentType)
+                                             :accountNumberLastFour nil
+                                             :cvn (-> data :cvn)
+                                             :expirationYear (-> data :expirationYear)
+                                             :expirationMonth (-> data :expirationMonth)
+                                             :isTemporary false
+                                             :bankName nil
+                                             })
+                                  (>500 ctx ["An unexpected error occurred processing the request."])
+                                  ))))}}}
        (merge (common-resource :me/payment-methods))
        (merge access-control))))

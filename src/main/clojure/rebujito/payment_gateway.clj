@@ -28,7 +28,7 @@
   (create-card-token [this data]
     (log/debug data)
     @(http-k/post (-> this :url)
-                 {:body (velocity/render "paygate/vault.vm"
+                 {:body (velocity/render "paygate/create-card-token.vm"
                                          :paygateId (-> this :paygateId)
                                          :paygatePassword (-> this :paygatePassword)
                                          :cardNumber (-> data :accountNumber)
@@ -37,10 +37,12 @@
                   (fn [{:keys [status body error]}]
                     (log/debug status error body)
                     (if (or error (not= 200 status) (not (.contains body "CardVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
-                      (throw (ex-info "500" {:status status :body body} error))
-                      (let [response (xp/xml->doc body)]
-                        {:cardToken (xp/$x:text "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)}
-                        )))))
+                      nil
+                      (let [response (xp/xml->doc body)
+                            cardToken (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
+                        (if cardToken
+                          {:cardToken cardToken}
+                          nil))))))
   (delete-card-token [this data]
     ["200"
      "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">

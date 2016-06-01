@@ -25,7 +25,7 @@
 (deftest paygateVaultTest
   (let [{:keys [status body]}
         (-> @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
-                          {:body (velocity/render "paygate/vault.vm"
+                          {:body (velocity/render "paygate/create-card-token.vm"
                                                   :paygateId (config [:payment-gateway :paygate-account :paygateId])
                                                   :paygatePassword (config [:payment-gateway :paygate-account :paygatePassword])
                                                   :cardNumber "4000000000000002"
@@ -39,7 +39,7 @@
 (deftest paygatePaymentTest
   (let [{:keys [status body]}
         (-> @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
-                          {:body (velocity/render "paygate/payment.vm"
+                          {:body (velocity/render "paygate/payment-with-token.vm"
                                                   :paygateId (config [:payment-gateway :paygate-account :paygateId])
                                                   :paygatePassword (config [:payment-gateway :paygate-account :paygatePassword])
                                                   :firstName "Stefan"
