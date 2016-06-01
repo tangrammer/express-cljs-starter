@@ -13,7 +13,7 @@
    (new-sig (api-time/now) api-key api-secret))
   ([^ZonedDateTime time api-key api-secret]
    (let [s (to-timestamp time)]
-     (-> (hash/md5 (format "%s%s%s" api-key api-secret s))
+     (-> (hash/sha256 (format "%s%s%s" api-key api-secret s))
          (bytes->hex)))))
 
 (defn check
