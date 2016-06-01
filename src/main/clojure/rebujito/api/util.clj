@@ -39,11 +39,11 @@
   (>base ctx 200 body))
 
 (defn log-handler  [ctx]
-  (let [s1 (bs/to-string (-> ctx :response :body ))]
-    (log/info "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters) " :: "
-              (when (>= (-> ctx :response :status) 400)
-                s1))
-    (assoc-in ctx [:response :body] (bs/convert s1 java.nio.ByteBuffer))))
+  (if  (>= (-> ctx :response :status) 400)
+    (let [body (bs/to-string (-> ctx :response :body ))]
+      (log/info "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters) " :: " body)
+      (assoc-in ctx [:response :body] (bs/convert body java.nio.ByteBuffer)))
+    (log/info "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters))))
 
 
 (defn common-resource
