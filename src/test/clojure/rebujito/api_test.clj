@@ -243,9 +243,11 @@
        (let [api-id ::login/validate-password
              path (bidi/path-for r api-id)]
          (println "@access_token" @access_token)
-         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
                                    {:throw-exceptions false
                                     :body-encoding "UTF-8"
+                                    :body (json/generate-string
+                                           (assoc (g/generate (-> login/schema :validate-password :post)) :password "real-secret"))
                                     :content-type :json})
                         print-body
                         :status)))

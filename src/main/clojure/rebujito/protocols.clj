@@ -1,5 +1,5 @@
 (ns rebujito.protocols
-  (:refer-clojure :exclude (find)))
+  (:refer-clojure :exclude (find send)))
 
 (defprotocol Store
   (get-card [this])
@@ -22,7 +22,7 @@
 
 (defprotocol Encrypter
   (sign [_ data])
-  (unsign [this token]))
+  (check [this unhash hashed]))
 
 (defprotocol Authorizer
   (grant [this data scopes])
@@ -53,3 +53,7 @@
     "sync, the result is the updated document")
   (get-and-insert! [this data]
     "sync, the result is the new document"))
+
+
+(defprotocol MailService
+  (send [this data]))
