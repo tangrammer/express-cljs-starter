@@ -63,23 +63,49 @@
 
 (defmulti get-token
   "OAuth Token methods: dispatch on grant_type"
-  (fn [ctx authorizer]
+  (fn [ctx store user-store authorizer crypto api-client-store]
     (keyword (-> ctx :parameters :body :grant_type))))
 
 (defmethod get-token :client_credentials
   ; http://bit.ly/1sLcJZO
-  [ctx authorizer]
+  [ctx store user-store authorizer crypto api-client-store]
   (>201 ctx (p/grant authorizer {} #{scopes/application})))
 
 (defmethod get-token :password
   ; http://bit.ly/1sLd3YB
-  [ctx authorizer]
-  (>201 ctx (p/grant authorizer {} #{scopes/application})))
+  [ctx store user-store authorizer crypto api-client-store]
+  (->
+   (deferred-find-client api-client-store
+     (get-in ctx [:parameters :body :client_id])
+     (get-in ctx [:parameters :body :client_secret]))
+   (d/chain
+    (fn [n]
+      (api-sig/deferred-check
+             (get-in ctx [:parameters :query :sig])
+             (get-in ctx [:parameters :body :client_id])
+             (get-in ctx [:parameters :body :client_secret])
+             ))
+    (fn [m]
+      (if-let [user  (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
+                                             :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
+                         first
+                         (dissoc :password))]
+        (>201 ctx (p/grant authorizer user #{scopes/application scopes/user}))
+        (>404 ctx [:user-not-found (get-in ctx [:parameters :body :username])]))))
+      (d/catch clojure.lang.ExceptionInfo
+          (fn [exception-info]
+            (domain-exception ctx (ex-data exception-info))))
+      (d/catch Exception
+          #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))
 
 (defmethod get-token :refresh_token
   ; http://bit.ly/1sLcWfw
-  [ctx authorizer]
+  [ctx store user-store authorizer crypto api-client-store]
+  ;         #_(>200 ctx (when (get-in ctx [:parameters :body :refresh_token])
+  ;                     (p/post-refresh-token store)
+  ;                     (p/post-token-resource-owner store))))}}}
   (>201 ctx (p/grant authorizer {} #{scopes/application})))
+
 
 (defn token-resource-owner [store user-store authorizer crypto api-client-store]
   (resource
@@ -94,40 +120,9 @@
 
                 :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
                             :charset "UTF-8"}]
+
                 :response (fn [ctx]
-                            (get-token ctx authorizer))}}}
-
-                    ; => call multhimethod
-                    ; (token (get-in ctx [:parameters :body]) ctx)
-                    ;         (->
-                    ;          (deferred-find-client api-client-store
-                    ;            (get-in ctx [:parameters :body :client_id])
-                    ;            (get-in ctx [:parameters :body :client_secret]))
-                    ;          (d/chain
-                    ;           #_(fn [n]
-                    ;             (api-sig/deferred-check
-                    ;                    (get-in ctx [:parameters :query :sig])
-                    ;                    (get-in ctx [:parameters :body :client_id])
-                    ;                    (get-in ctx [:parameters :body :client_secret])
-                    ;                    ))
-                    ;           (fn [m]
-                    ;             (if-let [user  (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
-                    ;                                                    :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
-                    ;                                first
-                    ;                                (dissoc :password))]
-                    ;               (>201 ctx (p/grant authorizer user #{scopes/application scopes/user}))
-                    ;               (>404 ctx [:user-not-found (get-in ctx [:parameters :body :username])]))))
-                    ;             (d/catch clojure.lang.ExceptionInfo
-                    ;                 (fn [exception-info]
-                    ;                   (domain-exception ctx (ex-data exception-info))))
-                    ;             (d/catch Exception
-                    ;                 #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %)))))
-                    ;
-                    ;
-                    ;         #_(>200 ctx (when (get-in ctx [:parameters :body :refresh_token])
-                    ;                     (p/post-refresh-token store)
-                    ;                     (p/post-token-resource-owner store))))}}}
-
+                            (get-token ctx store user-store authorizer crypto api-client-store))}}}
 
        (merge (common-resource :oauth))
        (merge access-control))))
