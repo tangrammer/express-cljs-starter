@@ -18,7 +18,8 @@
                                                         :refresh_token String
                                                         :client_id String
                                                         :client_secret String
-                                                        (s/optional-key :scope) String}
+                                                        (s/optional-key :scope) String
+                                                        (s/optional-key :timestamp) String}
                                                        "token-refresh-token")
              :token-resource-owner (s/schema-with-name {:grant_type String
                                                         :client_id String
@@ -31,7 +32,8 @@
              :token-client-credentials (s/schema-with-name {:grant_type String
                                                             :client_id String
                                                             :client_secret String
-                                                            (s/optional-key :scope) String}
+                                                            (s/optional-key :scope) String
+                                                            (s/optional-key :timestamp) String}
                                                            "token-client-credentials")})
 
 (comment "sb-errors"
