@@ -3,8 +3,7 @@
             [com.stuartsierra.component :refer [system-map system-using using] :as component]
             [rebujito.protocols :as p]
             [plumbing.core :refer [defnk]]
-            [buddy.core.codecs :refer (bytes->hex)]
-            ))
+            [buddy.core.codecs :refer (bytes->hex)]))
 
 (defn authentication-from-ctx
   "The ctx argument is the top level yada context.
@@ -40,8 +39,6 @@
   (verify [this token scope]
     (let [data (p/read-token authenticator token)]
       (contains? (into #{} (:scope data)) (str (.-sym scope))))))
-
-
 
 (defn new-authorizer []
   (map->OauthAuthorizer {}))
