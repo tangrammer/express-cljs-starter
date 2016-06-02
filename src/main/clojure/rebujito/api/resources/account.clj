@@ -95,17 +95,15 @@
         {:get {:parameters {:query {:access_token String
                                      (s/optional-key :select) String
                                      (s/optional-key :ignore) String}}
-                :consumes [{:media-type #{"application/json"}
+               :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                :response (fn [ctx]
+                           (log/info "*******" )
                            (try
-                             (let [token (get-in ctx [:parameters :query :access_token])]
-                               (if (p/verify authorizer token scopes/user)
-                                 (>201 ctx (p/read-token authenticator token))
-                                 (>404 ctx ["Not Found" "Account Profile with given userId was not found."])))
+                             (>201 ctx (get-in ctx [:authentication "default"]))
                              (catch Exception e
                                (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 
 
        (merge (common-resource :account))
-       (merge access-control))))
+       (merge (access-control* authenticator authorizer {:get :rebujito.scopes/user})))))
