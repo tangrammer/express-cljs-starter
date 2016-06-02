@@ -382,9 +382,9 @@
                                         {:throw-exceptions false
                                          :body (json/generate-string
                                                 (assoc new-account
-
+                                                       ;; string or int should both work here
                                                        :birthDay "1"
-                                                       :birthMonth "1"
+                                                       :birthMonth 1
                                                        ))
                                          :body-encoding "UTF-8"
                                          :content-type :json})

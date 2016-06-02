@@ -15,8 +15,8 @@
 (def schema {:post {
                     (s/optional-key :userName) String
                     :addressLine1 String
-                    :birthDay String
-                    :birthMonth String
+                    :birthDay (s/conditional number? s/Int :else s/Str)
+                    :birthMonth (s/conditional number? s/Int :else s/Str)
                     :city String
                     :country String
                     :countrySubdivision String
