@@ -34,7 +34,7 @@
                                  (clojure.pprint/pprint (-> ctx :body bs/to-string))
                                  )
                                (println ">>>" )
-                               (util/>404 ctx "Default Not found"))
+                               (util/>404 ctx "Not Found"))
              :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
                          :charset "UTF-8"}]
               }}}
