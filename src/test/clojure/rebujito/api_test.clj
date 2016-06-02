@@ -395,6 +395,7 @@
        (let [path (get-path ::oauth/token-resource-owner) ]
 
          ;; body conform :token-refresh-token schema
+         ;; :grant_type "refresh_token"
          (is (= 201 (-> @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
                                     {:throw-exceptions false
                                      :body  (json/generate-string
@@ -407,6 +408,7 @@
                                      :content-type :json})
           ;;              print-body
                         :status)))
+                        
          ;; body conform :token-resource-owner schema
          ;; :grant_type "password"
          (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
@@ -453,7 +455,7 @@
                                             {:throw-exceptions false
                                              :body (json/generate-string
                                                     (assoc (g/generate (-> oauth/schema :token-resource-owner))
-                                                           :grant_type "refresh_token"
+                                                           :grant_type "password"
                                                            :client_id (:key (api-config))
                                                            :client_secret (:secret (api-config))
                                                            :username (:emailAddress new-account)

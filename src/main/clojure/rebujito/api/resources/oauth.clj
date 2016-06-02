@@ -118,14 +118,12 @@
    (-> {:methods
         {:post {:parameters {:query {:sig String}
                              :body (s/conditional
-                                    #(some? (-> % :refresh_token))
-                                    (-> schema :token-refresh-token)
-                                    #(nil? (-> % :refresh_token))
-                                    (s/conditional
-                                     #(nil? (-> % :password))
-                                     (-> schema :token-client-credentials)
-                                     #(some? (-> % :password))
-                                     (-> schema :token-resource-owner)))}
+                                    #(= (:grant_type %) "client_credentials")
+                                    (-> schema :token-client-credentials)
+                                    #(= (:grant_type %) "password")
+                                    (-> schema :token-resource-owner)
+                                    #(= (:grant_type %) "refresh_token")
+                                    (-> schema :token-refresh-token))}
 
                 :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
                             :charset "UTF-8"}]
