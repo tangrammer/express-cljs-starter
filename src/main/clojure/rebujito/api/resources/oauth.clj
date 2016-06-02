@@ -16,19 +16,25 @@
 
 (def dynamic-schema {s/Keyword s/Any})
 
-(def schema {:token-refresh-token {:post (s/schema-with-name {:grant_type String
-                                                              :refresh_token String
-                                                              :client_id String
-                                                              :client_secret String}
-                                                             "token-refresh-token")}
-             :token-resource-owner {:post (s/schema-with-name {:grant_type String
-                                                               :client_id String
-                                                               :client_secret String
-                                                               :username String
-                                                               :password String
-                                                               (s/optional-key :scope) String
-                                                               (s/optional-key :timestamp) String}
-                                                        "token-resource-owner")}})
+(def schema {:token-refresh-token  (s/schema-with-name {:grant_type String
+                                                        :refresh_token String
+                                                        :client_id String
+                                                        :client_secret String
+                                                        (s/optional-key :scope) String}
+                                                       "token-refresh-token")
+             :token-resource-owner (s/schema-with-name {:grant_type String
+                                                        :client_id String
+                                                        :client_secret String
+                                                        :username String
+                                                        :password String
+                                                        (s/optional-key :scope) String
+                                                        (s/optional-key :timestamp) String}
+                                                       "token-resource-owner")
+             :token-client-credentials (s/schema-with-name {:grant_type String
+                                                            :client_id String
+                                                            :client_secret String
+                                                            (s/optional-key :scope) String}
+                                                           "token-client-credentials")})
 
 (comment "sb-errors"
          #_(condp = (get-in ctx [:parameters :query :sig])
@@ -111,12 +117,15 @@
   (resource
    (-> {:methods
         {:post {:parameters {:query {:sig String}
-                             :body dynamic-schema}
-                            ;  :body (s/conditional
-                            ;         #(some? (-> % :refresh_token))
-                            ;         (-> schema :token-refresh-token :post)
-                            ;         #(nil? (-> % :refresh_token))
-                            ;         (-> schema :token-resource-owner :post))}
+                             :body (s/conditional
+                                    #(some? (-> % :refresh_token))
+                                    (-> schema :token-refresh-token)
+                                    #(nil? (-> % :refresh_token))
+                                    (s/conditional
+                                     #(nil? (-> % :password))
+                                     (-> schema :token-client-credentials)
+                                     #(some? (-> % :password))
+                                     (-> schema :token-resource-owner)))}
 
                 :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
                             :charset "UTF-8"}]
