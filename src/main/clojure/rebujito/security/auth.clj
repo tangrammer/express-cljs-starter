@@ -30,7 +30,7 @@
     (let [scopes {:scope scopes}]
       (merge {:extended nil
               :access_token (p/generate-token authenticator (merge data scopes))
-              :refresh_token "todo: "
+              :refresh_token (p/generate-token authenticator (merge data scopes))
               :return_type "json"
               :state nil
               :token_type "bearer"
