@@ -14,8 +14,6 @@
    [buddy.core.codecs :refer (bytes->hex)]
    ))
 
-(def dynamic-schema {s/Keyword s/Any})
-
 (def schema {:token-refresh-token  (s/schema-with-name {:grant_type String
                                                         :refresh_token String
                                                         :client_id String
