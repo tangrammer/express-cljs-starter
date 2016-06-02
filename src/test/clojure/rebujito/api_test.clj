@@ -97,30 +97,6 @@
   )
 
 
-;; we need to create an user to test this one
-#_(deftest test-get-user
-  (time
-   (let [r (-> *system* :docsite-router :routes)
-         port (-> *system*  :webserver :port)
-         new-account (g/generate (:post account/schema))
-         new-account (new-account-sb)
-         sig (new-sig)
-         access_token (atom "")]
-     (testing ::account/get-user
-       (let [api-id ::account/get-user
-             path (bidi/path-for r api-id)
-             access_token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXUyJ9.eyJfaWQiOiIwMDAwMDAwMDAwMDAwMDAwMDAwZWY1YjUiLCJjb3VudHJ5U3ViZGl2aXNpb24iOiJhYSIsInJlZ2lzdHJhdGlvblNvdXJjZSI6ImFhIiwiYWRkcmVzc0xpbmUxIjoienoiLCJpc3MiOiJyZWJ1aml0by1hdXRoIiwiZW1haWxBZGRyZXNzIjoiaG9sYUBob2xhLmNvbSIsImNpdHkiOiJTZXZpbGxhIiwiZXhwIjoxNDY0OTQzMjA0LCJmaXJzdE5hbWUiOiJKdWFuIiwic2NvcGUiOlsicmVidWppdG8uc2NvcGVzL3VzZXIiLCJyZWJ1aml0by5zY29wZXMvYXBwbGljYXRpb24iXSwiYmlydGhEYXkiOiIxIiwiYmlydGhNb250aCI6IjEiLCJqdGkiOiI3MjRmZTYxZi04YzNjLTRmYzUtODc4My1iNDY2YTc0MTZiNmQiLCJuYmYiOjE0NjQ4NTY4MDQsImxhc3ROYW1lIjoiUnV6IiwicmVjZWl2ZVN0YXJidWNrc0VtYWlsQ29tbXVuaWNhdGlvbnMiOiJvayIsInBvc3RhbENvZGUiOiI0MTAwMyIsImNvdW50cnkiOiJTcGFpbiIsImlhdCI6MTQ2NDg1NjgwNH0.CCH1lNcgOclTaBqhUWFrPwUphuGNWaFgFD3C9wPqrBA"
-             ]
-         (println (format "http://localhost:%s%s?access_token=%s"  port path access_token))
-         (is (= 201  (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path access_token)
-                                        {:throw-exceptions false
-
-                                         :body-encoding "UTF-8"
-                                         :content-type :json})
-                         print-body
-                            :status)))))
-
-     )))
 
 #_(deftest test-token
   (time
@@ -266,10 +242,43 @@
                        r)
                      :status)))
       )
-    @access_token
-    )
-  )
+    @access_token))
 
+
+(defn access-token-user [username password]
+  (let [r (-> *system* :docsite-router :routes)
+        port (-> *system*  :webserver :port)
+        new-account (g/generate (:post account/schema))
+        new-account (new-account-sb)
+        sig (new-sig)
+        access_token (atom "")]
+
+    (let [api-id ::oauth/token-resource-owner
+          path (bidi/path-for r api-id)]
+
+      (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                              {:throw-exceptions false
+                               :body (json/generate-string
+                                      (assoc (g/generate (-> oauth/schema :token-resource-owner))
+                                             :grant_type "password"
+                                             :client_id (:key (api-config))
+                                             :client_secret (:secret (api-config))
+                                             :username username
+                                             :password password
+                                             ))
+                               :body-encoding "UTF-8"
+                               :content-type :json})
+                body (-> r :body bs/to-string (json/parse-string true))
+                ;;                  _ (println body)
+
+                ]
+            (reset! access_token (:access_token body))
+            (println "\n >>>> password access_token "@access_token "\n")
+            r)
+          :status)
+
+      )
+    @access_token))
 
 (defn get-path [kw]
   (let [r (-> *system* :docsite-router :routes)
@@ -309,6 +318,53 @@
                         :status)))))
     )
   )
+
+
+(defn create-account [account-data]
+  (let [port (-> *system*  :webserver :port)
+        path (get-path ::account/create)
+        access_token (access-token-application)]
+    (let [res @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path access_token 1234)
+                          {:throw-exceptions false
+                           :body (json/generate-string account-data)
+                           :body-encoding "UTF-8"
+                           :content-type :json})]
+      res
+      (is (= 201 (:status res) ))
+      (json/parse-string (bs/to-string (:body res)) true)
+      )
+)
+  )
+
+
+;; we need to create an user to test this one
+(deftest test-get-user
+  (time
+   (testing ::account/get-user
+     (let [account-data #_(g/generate (:post account/schema)) (assoc (new-account-sb)
+                                                                     :birthDay "1"
+                                                                     :birthMonth "1")
+           account (create-account  account-data)
+           port (-> *system*  :webserver :port)
+           path (get-path ::account/get-user)
+           access_token (access-token-user (:emailAddress account-data)(:password account-data))]
+       (pprint account)
+       (println access_token)
+
+
+       (is (= 201  (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path access_token)
+                                    {:throw-exceptions false
+                                     :body-encoding "UTF-8"
+                                     :content-type :json})
+                         print-body
+                         :status)))
+       )
+
+     )
+
+
+   ))
+
 
 (deftest test-20*
   (time
