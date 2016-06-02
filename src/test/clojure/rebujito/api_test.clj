@@ -305,7 +305,7 @@
                                      :content-type :json})
                         print-body
                         :status)))
-        (is (= 401  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path "wronga_access_token" 1234)
+        (is (= 401  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path "wrong_access_token" 1234)
                                     {:throw-exceptions false
                                      :body (json/generate-string
                                             (assoc new-account
