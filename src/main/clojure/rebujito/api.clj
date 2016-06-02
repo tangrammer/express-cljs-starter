@@ -3,6 +3,7 @@
     [com.stuartsierra.component :as component]
 
     [schema.core :as s]
+    [yada.yada :refer [handler]]
     [rebujito.api.resources.payment :as payment]
     [rebujito.api.resources.login :as login]
     [rebujito.api.resources.profile :as profile]
@@ -13,7 +14,8 @@
     [rebujito.api.resources.social-profile :as social-profile]))
 
 (defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
-  ["/" [["account/create" (-> (account/create store mimi user-store crypto authenticator authorizer)
+  ["/" [["health" (handler (clojure.java.io/resource "VERSION.edn"))]
+        ["account/create" (-> (account/create store mimi user-store crypto authenticator authorizer)
                               (assoc :id ::account/create))]
         ["oauth/token" (-> (oauth/token-resource-owner store user-store authorizer crypto api-client-store)
                            (assoc :id ::oauth/token-resource-owner))]
