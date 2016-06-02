@@ -21,15 +21,10 @@
                             :charset "UTF-8"}]
                :response (fn [ctx]
                            (try
-                             (let [token (get-in ctx [:parameters :query :access_token])]
-                               (if (p/verify authorizer token scopes/application)
-                                 (>200 ctx (p/get-profile store))
-                                 (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"])))
+                             (>200 ctx (p/get-profile store))
                              (catch Exception e
-                               (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))])))
-
-                           )}}}
+                               (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 
 
        (merge (common-resource :profile))
-       (merge access-control))))
+       (merge (access-control* authenticator authorizer {:get scopes/user})))))

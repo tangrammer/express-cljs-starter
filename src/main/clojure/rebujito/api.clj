@@ -13,11 +13,11 @@
     [rebujito.api.resources.social-profile :as social-profile]))
 
 (defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
-  ["/" [["account/create" (-> (account/create store mimi user-store crypto)
+  ["/" [["account/create" (-> (account/create store mimi user-store crypto authenticator authorizer)
                               (assoc :id ::account/create))]
         ["oauth/token" (-> (oauth/token-resource-owner store user-store authorizer crypto api-client-store)
                            (assoc :id ::oauth/token-resource-owner))]
-        ["login/forgot-password" (-> (login/forgot-password authorizer mailer)
+        ["login/forgot-password" (-> (login/forgot-password authorizer mailer authorizer authenticator)
                                                (assoc :id ::login/forgot-password))]
         ["me" [
                ["" (-> (account/get-user store mimi user-store authorizer authenticator)
@@ -43,7 +43,7 @@
                         ["" :card-id] [
                                        ["" (-> (card/unregister store)(assoc :id ::card/unregister))]
                                        ["/reload" (-> (payment/reload store payment-gateway mimi)(assoc :id ::payment/reload))]
-                                       ] 
+                                       ]
                         ]
                        ]
                   ]

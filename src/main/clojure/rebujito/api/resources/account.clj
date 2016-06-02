@@ -63,7 +63,7 @@
                                )]
     (p/get-and-insert! user-store mongo-account-data)))
 
-(defn create [store mimi user-store crypto]
+(defn create [store mimi user-store crypto authenticator authorizer]
   (resource
    (-> {:methods
         {:post {:parameters {:query {:access_token String
@@ -84,10 +84,8 @@
                                       (domain-exception ctx (ex-data exception-info))))
                                 (d/catch Exception
                                     #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))}}}
-
-
        (merge (common-resource :account))
-       (merge access-control))))
+       (merge (access-control* authenticator authorizer {:post :rebujito.scopes/application})))))
 
 (defn get-user [store mimi user-store authorizer authenticator]
   (resource
@@ -106,4 +104,4 @@
 
 
        (merge (common-resource :account))
-       (merge (access-control* authenticator authorizer {:get :rebujito.scopes/user})))))
+       (merge (access-control* authenticator authorizer {:get scopes/user})))))

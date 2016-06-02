@@ -1,5 +1,6 @@
 (ns rebujito.api.resources.login
   (:require
+   [taoensso.timbre :as log]
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
    [rebujito.api.util :refer :all]
@@ -13,7 +14,7 @@
              :validate-password {:post {(s/optional-key :encoded) Boolean
                                         :password String}}})
 
-(defn forgot-password [authorizer mailer]
+(defn forgot-password [authorizer mailer  authorizer authenticator ]
   (resource
    (-> {:methods
         {:post {:parameters {:query {:access_token String}
@@ -31,7 +32,7 @@
 
 
        (merge (common-resource :login))
-       (merge access-control))))
+       (merge (access-control* authenticator authorizer {:post scopes/application})))))
 
 (defn validate-password [user-store crypto authorizer authenticator ]
   (resource
@@ -41,19 +42,12 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                :response (fn [ctx]
-
-                           (let [token (get-in ctx [:parameters :query :access_token])]
-                             (if (p/verify authorizer token scopes/user)
-                               (let [user (p/read-token authenticator token)
-                                     user (p/find user-store (:_id user))]
-
-
-                                 (if (p/check crypto (get-in ctx [:parameters :body :password]) (:password user))
-                                   (>200 ctx "")
-                                   (>403 ctx ["Forbidden" "password doesn't match"])))
-                               (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"])))
-                           )}}}
+                           (let [user (p/read-token authenticator (get-in ctx [:parameters :query :access_token]))
+                                 user (p/find user-store (:_id user))]
+                             (if (p/check crypto (get-in ctx [:parameters :body :password]) (:password user))
+                               (>200 ctx "")
+                               (>403 ctx ["Forbidden" "password doesn't match"]))))}}}
 
 
        (merge (common-resource :login))
-       (merge access-control))))
+       (merge (access-control* authenticator authorizer {:post scopes/user})))))

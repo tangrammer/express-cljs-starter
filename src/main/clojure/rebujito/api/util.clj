@@ -74,6 +74,7 @@
 
 
 ;; TODO: returns this kind of result to match starbucks doc
+;; (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"])
 ;; (>404 ctx ["Not Found" "Account Profile with given userId was not found."])
 (defmethod yada.authorization/validate :rebujito [ctx credentials authorization]
   (log/info "credentials scope"  (set (map keyword (:scope credentials))))

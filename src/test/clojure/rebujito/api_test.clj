@@ -13,6 +13,7 @@
    [clojure.test :refer :all]
    [com.stuartsierra.component :as component]
    [rebujito.api.resources.account :as account]
+   [rebujito.api.resources.profile :as profile]
    [rebujito.api.resources.card :as card]
    [rebujito.api.resources.oauth :as oauth]
    [rebujito.api.resources.login :as login]
@@ -96,6 +97,7 @@
   )
 
 
+;; we need to create an user to test this one
 #_(deftest test-get-user
   (time
    (let [r (-> *system* :docsite-router :routes)
@@ -233,6 +235,81 @@
 
      )
 
+
+
+(defn access-token-application []
+  (let [r (-> *system* :docsite-router :routes)
+        port (-> *system*  :webserver :port)
+        new-account (g/generate (:post account/schema))
+        new-account (new-account-sb)
+        sig (new-sig)
+        access_token (atom "")]
+
+    (let [api-id ::oauth/token-resource-owner
+          path (bidi/path-for r api-id)]
+
+      ;; :grant_type ""client_credentials""
+      (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                         {:throw-exceptions false
+                                          :body (json/generate-string
+                                                 (assoc (g/generate (-> oauth/schema :token-client-credentials))
+                                                        :grant_type "client_credentials"
+                                                        :client_id (:key (api-config))
+                                                        :client_secret (:secret (api-config))))
+                                          :body-encoding "UTF-8"
+                                          :content-type :json})
+                           body (-> r :body bs/to-string (json/parse-string true))
+                                        ;                                            _ (println body)
+
+                           ]
+                       (reset! access_token (:access_token body))
+                       r)
+                     :status)))
+      )
+    @access_token
+    )
+  )
+
+
+(defn get-path [kw]
+  (let [r (-> *system* :docsite-router :routes)
+        sig (new-sig)
+        api-id kw]
+    (bidi/path-for r api-id)))
+
+(deftest access-token-application*
+  (testing "access resource protected with application role"
+    (testing ::account/create
+      (let [path (get-path ::account/create)
+            port (-> *system*  :webserver :port)
+            access_token (access-token-application)
+            new-account (g/generate (:post account/schema))
+            url (format "http://localhost:%s%s?access_token=%s&market=%s"  port path access_token 1234)]
+        (is (= 201  (-> @(http/post url
+                                    {:throw-exceptions false
+                                     :body (json/generate-string
+                                            (assoc new-account
+                                                   :birthDay "1"
+                                                   :birthMonth "1"
+                                                   ))
+                                     :body-encoding "UTF-8"
+                                     :content-type :json})
+                        print-body
+                        :status)))
+        (is (= 401  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path "wronga_access_token" 1234)
+                                    {:throw-exceptions false
+                                     :body (json/generate-string
+                                            (assoc new-account
+                                                   :birthDay "1"
+                                                   :birthMonth "1"
+                                                   ))
+                                     :body-encoding "UTF-8"
+                                     :content-type :json})
+                        print-body
+                        :status)))))
+    )
+  )
+
 (deftest test-20*
   (time
    (let [r (-> *system* :docsite-router :routes)
@@ -243,10 +320,9 @@
          access_token (atom "")]
 
      (testing ::account/create
-       (let [api-id ::account/create
-             path (bidi/path-for r api-id)]
-         (println (format "http://localhost:%s%s?access_token=%s&market=%s"  port path 123 1234))
-         (is (= 201  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path 123 1234)
+       (let [path (get-path ::account/create)
+             access_token (access-token-application)]
+         (is (= 201  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path access_token 1234)
                                         {:throw-exceptions false
                                          :body (json/generate-string
                                                 (assoc new-account
@@ -260,8 +336,7 @@
                             :status)))))
 
      (testing ::oauth/token-resource-owner
-       (let [api-id ::oauth/token-resource-owner
-             path (bidi/path-for r api-id)]
+       (let [path (get-path ::oauth/token-resource-owner) ]
 
          ;; body conform :token-refresh-token schema
          (is (= 201 (-> @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
@@ -336,10 +411,11 @@
                               ]
                           r)
                         :status)))))
-     (println @access_token)
+
+     ;;     (println @access_token)
+
      (testing ::card/get-cards
-       (let [api-id ::card/get-cards
-             path (bidi/path-for r api-id)]
+       (let [path (get-path ::card/get-cards)]
          (is (= 201 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path 123)
                                    {:throw-exceptions false
                                     :body-encoding "UTF-8"
@@ -347,8 +423,7 @@
                         :status)))))
 
      (testing ::card/register-physical
-       (let [api-id ::card/register-physical
-             path (bidi/path-for r api-id)]
+       (let [path (get-path ::card/register-physical)]
          (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
          (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
                                     {:throw-exceptions false
@@ -362,8 +437,7 @@
                         :status)))))
 
      (testing ::card/register-digital-cards
-       (let [api-id ::card/register-digital-cards
-             path (bidi/path-for r api-id)]
+       (let [path (get-path ::card/register-digital-cards)]
          (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
          (is (= 201 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
                                     {:throw-exceptions false
@@ -392,14 +466,12 @@
                                                 :amount 15
                                                 :paymentMethodId "1234567"
                                                 :sessionId ""
-                                                }
-                                               )
+                                                })
                                        :content-type :json})
                         :status)))))
 
      (testing ::payment/methods
-       (let [api-id ::payment/methods
-             path (bidi/path-for r api-id)]
+       (let [path (get-path ::payment/methods)]
          (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
          (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path 123)
                                    {:throw-exceptions false
@@ -427,8 +499,7 @@
                    )]
            (is (= status 201))
            (is (.contains (slurp body) "paymentMethodId"))
-           )
-         ))
+           )))
 
      (testing ::payment/method-detail
        (let [api-id ::payment/method-detail
@@ -471,6 +542,15 @@
            )
          ))
 
+     (testing ::profile/me
+       (let [api-id ::profile/me
+             path (bidi/path-for r api-id)]
+         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
+                        :status)))))
+
      (testing ::social-profile/account
        (let [api-id ::social-profile/account
              path (bidi/path-for r api-id)]
@@ -485,7 +565,8 @@
      (testing ::login/validate-password
        (let [api-id ::login/validate-password
              path (bidi/path-for r api-id)]
-         (println "@access_token" @access_token)
+         (println "@access_token" (json/generate-string
+                                           (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password new-account))))
          (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
                                    {:throw-exceptions false
                                     :body-encoding "UTF-8"
