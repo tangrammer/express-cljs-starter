@@ -78,7 +78,7 @@
                                  (fn [mimi-res]
                                    (let [data-account  (get-in ctx [:parameters :body])
                                          res (create-account-mongo! data-account mimi-res user-store crypto)]
-                                     (>201 ctx res))))
+                                     (>201 ctx (dissoc  res :password)))))
                                 (d/catch clojure.lang.ExceptionInfo
                                     (fn [exception-info]
                                       (domain-exception ctx (ex-data exception-info))))
@@ -96,12 +96,15 @@
                :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                :response (fn [ctx]
-                           (log/info "*******" )
                            (try
-                             (>201 ctx (get-in ctx [:authentication "default"]))
+                             (let [res (get-in ctx [:authentication "default"])]
+                               (>201 ctx #_{:subMarket "US"
+                                          :exId "????"
+                                          :firstName "API Test",
+                                          :lastName "User1",
+                                          :partner false} res))
                              (catch Exception e
                                (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
-
 
        (merge (common-resource :account))
        (merge (access-control* authenticator authorizer {:get scopes/user})))))
