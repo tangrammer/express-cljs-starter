@@ -48,7 +48,7 @@
 
 (defn new-dev-system
   "Create a development system"
-  ([] (new-dev-system #{:+mock-store}))
+  ([] (new-dev-system #{:+mock-mimi :mock-store}))
   ([opts]  (new-dev-system opts (config :dev)))
   ([opts config]
    (component/system-using
