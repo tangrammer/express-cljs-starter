@@ -10,8 +10,8 @@
 
  :auth {:secret-key #or [#env REBUJITO_AUTH_SECRET_KEY "fake-secret-key"]}
 
- :api {:key "6368f6919ad04192ecb9a8cc4bf9"
-       :secret "5fcf0bb6b0738aeaadec934cbb10c68b1140ab494a466e79f9a66d679edb72d5"}
+ :api {:key   "w8tnxd8h2wns43cfdgmt793j"
+       :secret "KDRSRVqKHp5TkKvJJhN7RYkE"}
 
  :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
         :token #profile {:dev "fake-token"
