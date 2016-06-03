@@ -30,7 +30,7 @@
                                                (assoc :id ::login/forgot-password))]
         ["me" [
                ["" (-> (account/me store mimi user-store authorizer authenticator)
-                       (assoc :id ::account/get-user))]
+                       (assoc :id ::account/me))]
                ["/login/validate-password" (-> (login/validate-password user-store crypto authorizer authenticator)
                                                (assoc :id ::login/validate-password))]
                ["/profile"  (-> (profile/me store mimi user-store authorizer authenticator)

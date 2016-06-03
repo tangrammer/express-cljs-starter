@@ -340,13 +340,13 @@
 ;; we need to create an user to test this one
 (deftest test-get-user
   (time
-   (testing ::account/get-user
+   (testing ::account/me
      (let [account-data #_(g/generate (:post account/schema)) (assoc (new-account-sb)
                                                                      :birthDay "1"
                                                                      :birthMonth "1")
            account (create-account  account-data)
            port (-> *system*  :webserver :port)
-           path (get-path ::account/get-user)
+           path (get-path ::account/me)
            access_token (access-token-user (:emailAddress account-data)(:password account-data))]
        (pprint account)
        (println access_token)
