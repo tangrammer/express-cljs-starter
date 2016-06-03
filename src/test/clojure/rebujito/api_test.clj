@@ -145,16 +145,16 @@
          ;; :grant_type "password"
          (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
                                     {:throw-exceptions false
-                                     :body (json/generate-string
-                                            (assoc (g/generate (-> oauth/schema :token-resource-owner))
-                                                   :grant_type "password"
-                                                   :client_id (:key (api-config))
-                                                   :client_secret (:secret (api-config))
-                                                   :username (:emailAddress new-account)
-                                                   :password (:password new-account)
-                                                   ))
+                                     :form-params
+                                     (assoc (g/generate (-> oauth/schema :token-resource-owner))
+                                            :grant_type "password"
+                                            :client_id (:key (api-config))
+                                            :client_secret (:secret (api-config))
+                                            :username (:emailAddress new-account)
+                                            :password (:password new-account)
+                                            )
                                      :body-encoding "UTF-8"
-                                     :content-type :json})
+                                     :content-type :application/x-www-form-urlencoded})
                               body (-> r :body bs/to-string (json/parse-string true))
                               _ (println body)
 

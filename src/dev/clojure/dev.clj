@@ -3,6 +3,7 @@
   not be included in a production build of the application."
   (:import [java.util Locale])
   (:require
+   [manifold.stream :as s]
    [rebujito.api.resources.account :as ac]
    [schema-generators.generators :as g]
    [rebujito.api.sig :as sig]
@@ -22,7 +23,7 @@
     [manifold.deferred :as d]
     [plumbing.core :refer (fnk defnk)]
     [bidi.bidi :as bidi]
-    [schema.core :as s]
+    [schema.core :as schema]
     [taoensso.timbre :as log :refer (trace debug info warn error)]
     [rebujito.config :refer [config]]
     [monger.core :as mg]
@@ -32,6 +33,7 @@
 
 ;; reloaded fns
 
+(declare check-mobile-user)
 
 (defonce
   ^{:docstring "A Var containing an object representing the application under development."}
@@ -47,7 +49,7 @@
   (alter-system! (constantly val)))
 
 (defn start-system! []
-  (s/with-fn-validation
+  (schema/with-fn-validation
     (alter-system! component/start)))
 
 (defn stop-system! []
@@ -78,6 +80,7 @@
   []
   (init)
   (start)
+  (check-mobile-user)
   :ready)
 
 (defn reset
@@ -88,7 +91,7 @@
 
 ;; validation
 (defmacro validate [& body]
-  `(s/with-fn-validation ~@body))
+  `(schema/with-fn-validation ~@body))
 
 ;; open swagger in browser
 (defn open-app
@@ -118,15 +121,17 @@
   (p/insert! (-> system :api-client-store) data)
   )
 
-(defn find [id]
+(defn find* [id]
   (p/find (-> system :api-client-store) id)
   )
 
 (comment )
 
-(defn find-all []
-  (p/find (-> system :api-client-store))
-  )
+(defn find-all
+  ([]
+   (find-all :api-client-store))
+  ([store-kw]
+   (p/find (-> system store-kw))))
 
 
 (defn check-mobile-user []
@@ -134,10 +139,11 @@
               (merge
                {:emailAddress "stephan+starbucks_fr_02@mediamonks.com" :password "#myPassword01"}))]
     (if-let [res (first (p/find (-> system :user-store) (select-keys u [:email]) ))]
-      (str "exists" res)
-      (ac/create-account-mongo! u (-> (str (rand-int 1000000))
-                                                 vector
-                                                 (conj :mock-mimi))
-                                (-> system :user-store) (:crypto system)))
+      (println (str "default mobile user exists in db"  #_res))
+      (do (ac/create-account-mongo! u (-> (str (rand-int 1000000))
+                                          vector
+                                          (conj :mock-mimi))
+                                    (-> system :user-store) (:crypto system))
+        (println "inserting default mobile user in db => " u)))
     )
   )

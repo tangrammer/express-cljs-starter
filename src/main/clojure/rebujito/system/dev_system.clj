@@ -48,13 +48,16 @@
 
 (defn new-dev-system
   "Create a development system"
-  ([] (new-dev-system #{:+mock-mimi :mock-store}))
+  ([] (new-dev-system #{:+mock-mimi :+mock-store}))
   ([opts]  (new-dev-system opts (config :dev)))
   ([opts config]
    (component/system-using
     ((apply comp
             (map #(% config) (remove nil? (for [mod opts] (get-in mod-defs [:system-mods mod])))))
-     (new-system-map config))
+     (assoc (new-system-map config)
+            ;; removing collections in mongo db dev
+            :user-store (rebujito.mongo/new-user-store (:auth config) true)
+            :api-client-store (rebujito.mongo/new-api-key-store (:auth config) true)))
     ((apply comp
             (map #(% config) (remove nil? (for [mod opts] (get-in mod-defs [:dependency-mods mod])))))
      (new-dependency-map)))))

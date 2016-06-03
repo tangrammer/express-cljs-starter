@@ -32,14 +32,19 @@
           (str "Not ready to db-find using: " (type data)))))
 
 
-(defrecord MongoStorage [db-conn collection secret-key]
+(defrecord MongoStorage [db-conn collection secret-key ephemeral?]
   component/Lifecycle
   (start [this]
-    (assoc this
-           :db (:db db-conn)
-           :collection (if (keyword? collection)
-                         (name collection)
-                         collection)))
+    (let [c (assoc this
+                   :db (:db db-conn)
+                   :collection (if (keyword? collection)
+                                 (name collection)
+                                 collection))]
+      (when ephemeral?
+        (println "DEV ENV removing data from collection: " (:collection c))
+        (mc/remove (:db c) (:collection c)))
+      c
+      ))
   (stop [this] this)
 
   protocols/MutableStorage
@@ -58,15 +63,21 @@
   )
 
 
-(defn new-user-store [auth-data]
-  (map->MongoStorage {:collection :users
-                     :secret-key (:secret-key auth-data)
-                     }))
+(defn new-user-store
+  ([auth-data]
+   (new-user-store auth-data false))
+  ([auth-data ephemeral?]
+   (map->MongoStorage {:collection :users
+                       :secret-key (:secret-key auth-data)
+                       :ephemeral?  ephemeral?})))
 
-(defn new-api-key-store [auth-data]
-  (map->MongoStorage {:collection :api-keys
-                     :secret-key (:secret-key auth-data)
-                     }))
+(defn new-api-key-store
+  ([auth-data]
+   (new-api-key-store auth-data false))
+  ([auth-data ephemeral?]
+   (map->MongoStorage {:collection :api-keys
+                       :secret-key (:secret-key auth-data)
+                       :ephemeral?  ephemeral?})))
 
 (defn- find-map-by-id [mutable-storage id]
   (mc/find-map-by-id (:db mutable-storage) (:collection mutable-storage) id))
