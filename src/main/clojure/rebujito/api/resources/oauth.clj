@@ -112,17 +112,20 @@
   ;                     (p/post-token-resource-owner store))))}}}
   (>201 ctx (p/grant authorizer {} #{scopes/application})))
 
+(defn check-value [map key value]
+  (let [map (clojure.walk/keywordize-keys map)]
+    (= ((keyword key) map) value)))
 
 (defn token-resource-owner [store user-store authorizer crypto api-client-store]
   (resource
    (-> {:methods
         {:post {:parameters {:query {:sig String}
                              :body (s/conditional
-                                    #(= (:grant_type %) "client_credentials")
+                                    #(= (check-value % :grant_type "client_credentials"))
                                     (-> schema :token-client-credentials)
-                                    #(= (:grant_type %) "password")
+                                    #(= (check-value % :grant_type "password"))
                                     (-> schema :token-resource-owner)
-                                    #(= (:grant_type %) "refresh_token")
+                                    #(= (check-value % :grant_type "refresh_token"))
                                     (-> schema :token-refresh-token))}
 
                 :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
