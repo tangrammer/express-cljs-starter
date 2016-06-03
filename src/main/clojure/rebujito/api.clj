@@ -29,7 +29,9 @@
         ["oauth/token" (-> (oauth/token-resource-owner store user-store authorizer crypto api-client-store)
                            (assoc :id ::oauth/token-resource-owner))]
         ["login/forgot-password" (-> (login/forgot-password authorizer mailer authorizer authenticator)
-                                               (assoc :id ::login/forgot-password))]
+                                     (assoc :id ::login/forgot-password))]
+        ["devices/register" (-> (devices/register store authorizer authenticator)
+                                        (assoc :id ::devices/register))]
         ["me" [
                ["" (-> (account/me store mimi user-store authorizer authenticator)
                        (assoc :id ::account/me))]
@@ -66,7 +68,7 @@
                 ]
 
                ["/devices/register" (-> (devices/register store authorizer authenticator)
-                                        (assoc :id ::devices/register))]
+                                        (assoc :id ::devices/me/register))]
 
                ["/paymentmethods" [["" (-> (payment/methods store payment-gateway)
                                            (assoc :id ::payment/methods))]

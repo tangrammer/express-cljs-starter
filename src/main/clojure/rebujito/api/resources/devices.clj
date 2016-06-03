@@ -24,12 +24,12 @@
        {:post {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
                                     (s/optional-key :ignore) String}
-                            ;:body (:post schema)
+                            :body s/Any
                             }
                :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
-              :response (fn [ctx]
-                          (>202 ctx ""))}}}
+               :response (fn [ctx]
+                           (>202 ctx [""]))}}}
 
-      (merge (common-resource :me/devices))
+      (merge (common-resource :devices))
       (merge {:access-control {}}))))
