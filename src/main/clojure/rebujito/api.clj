@@ -17,9 +17,9 @@
 
 (defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
   ["/" [["health" (resource (-> {:methods
-        {:get {:consumes [{:media-type #{"application/json"}
-                            :charset "UTF-8"}]
-               :response (read-string (slurp (clojure.java.io/resource "VERSION.edn"))) }}}
+                                 {:get {:consumes [{:media-type #{"application/json"}
+                                                    :charset "UTF-8"}]
+                                        :response (read-string (slurp (clojure.java.io/resource "VERSION.edn"))) }}}
                                 (merge (util/common-resource :meta))
                                 (merge {:access-control {}})) )]
         ["account/create" (-> (account/create store mimi user-store crypto authenticator authorizer)
@@ -29,7 +29,7 @@
         ["login/forgot-password" (-> (login/forgot-password authorizer mailer authorizer authenticator)
                                                (assoc :id ::login/forgot-password))]
         ["me" [
-               ["" (-> (account/get-user store mimi user-store authorizer authenticator)
+               ["" (-> (account/me store mimi user-store authorizer authenticator)
                        (assoc :id ::account/get-user))]
                ["/login/validate-password" (-> (login/validate-password user-store crypto authorizer authenticator)
                                                (assoc :id ::login/validate-password))]

@@ -87,7 +87,7 @@
        (merge (common-resource :account))
        (merge (access-control* authenticator authorizer {:post :rebujito.scopes/application})))))
 
-(defn get-user [store mimi user-store authorizer authenticator]
+(defn me [store mimi user-store authorizer authenticator]
   (resource
    (-> {:methods
         {:get {:parameters {:query {:access_token String
