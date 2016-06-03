@@ -11,7 +11,9 @@
 
 (defn rewards-response [mimi]
   (let [d* (d/deferred)]
-    (d/success! d* (merge rebujito.store.mocks/me-rewards (p/rewards mimi {})))))
+    (d/future (d/success! d* (merge rebujito.store.mocks/me-rewards (p/rewards mimi {}))))
+    d*
+    ))
 
 (defn me-rewards [store mimi user-store authorizer authenticator]
  (resource
