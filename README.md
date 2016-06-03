@@ -1,4 +1,6 @@
 # rebujito
+<img src="https://raw.githubusercontent.com/naartjie/rebujito/master/src/main/resources/rebujito.jpg?token=AAsqtc4zNpTssdFZabxNOVPc9i2JEFuiks5XWnqzwA%3D%3D" width="250">
+
 A clojure starbucks api ([wiki](https://github.com/naartjie/rebujito/wiki)).
 
 # config files
