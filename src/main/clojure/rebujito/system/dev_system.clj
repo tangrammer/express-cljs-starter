@@ -18,6 +18,14 @@
       (fn [system-map]
         (-> system-map
             (assoc :store (new-mock-store)))))
+    :+ephemeral-db
+    (fn [config]
+      (println "using :+ephemeral-db to start mongo with no data inside")
+      (fn [system-map]
+        (-> system-map
+            (assoc
+            :user-store (rebujito.mongo/new-user-store (:auth config) true)
+            :api-client-store (rebujito.mongo/new-api-key-store (:auth config) true)))))
     :+mock-mimi
     (fn [config]
       (println "using :+mock-mimi profile in dev-system")
@@ -33,31 +41,28 @@
    :dependency-mods
    {:+mock-store (fn [config]
                    (fn [dependency-map]
-                     (println "using :mock-store  in dependency dev-system")
+;                     (println "using :mock-store  in dependency dev-system")
                      dependency-map))
     :+mock-mimi (fn [config]
                    (fn [dependency-map]
-                     (println "using :mock-mimi  in dependency dev-system")
+ ;                    (println "using :mock-mimi  in dependency dev-system")
                      dependency-map))
     :+mock-payment-gateway (fn [config]
                     (fn [dependency-map]
-                        (println "using :mock-payment-gateway  in dependency dev-system")
+  ;                      (println "using :mock-payment-gateway  in dependency dev-system")
                         dependency-map))}})
 
 
 
 (defn new-dev-system
   "Create a development system"
-  ([] (new-dev-system #{:+mock-mimi :+mock-store}))
+  ([] (new-dev-system #{:+mock-mimi :+mock-store :+ephemeral-db}))
   ([opts]  (new-dev-system opts (config :dev)))
   ([opts config]
    (component/system-using
     ((apply comp
             (map #(% config) (remove nil? (for [mod opts] (get-in mod-defs [:system-mods mod])))))
-     (assoc (new-system-map config)
-            ;; removing collections in mongo db dev
-            :user-store (rebujito.mongo/new-user-store (:auth config) true)
-            :api-client-store (rebujito.mongo/new-api-key-store (:auth config) true)))
+     (new-system-map config))
     ((apply comp
             (map #(% config) (remove nil? (for [mod opts] (get-in mod-defs [:dependency-mods mod])))))
      (new-dependency-map)))))
