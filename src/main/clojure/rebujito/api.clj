@@ -28,7 +28,7 @@
                               (assoc :id ::account/create))]
         ["oauth/token" (-> (oauth/token-resource-owner store user-store authorizer crypto api-client-store)
                            (assoc :id ::oauth/token-resource-owner))]
-        ["login/forgot-password" (-> (login/forgot-password authorizer mailer authorizer authenticator)
+        ["login/forgot-password" (-> (login/forgot-password mailer authorizer authenticator)
                                      (assoc :id ::login/forgot-password))]
         ["devices/register" (-> (devices/register store authorizer authenticator)
                                         (assoc :id ::devices/register))]

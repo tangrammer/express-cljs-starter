@@ -13,8 +13,10 @@
    [yada.resource :refer [resource]]))
 
 (def schema {:post {
-                    (s/optional-key :userName) String
+
+;                    (s/optional-key :userName) String
                     :addressLine1 String
+                    :addressLine2 String
                     :birthDay (s/conditional number? s/Int :else s/Str)
                     :birthMonth (s/conditional number? s/Int :else s/Str)
                     :city String
@@ -27,6 +29,9 @@
                     :postalCode String
                     :receiveStarbucksEmailCommunications Boolean
                     :registrationSource String
+                    (s/optional-key :createDigitalCard) Boolean
+                    (s/optional-key :market) String
+;                    s/Keyword s/Any
                     }})
 
 (def CreateAccountMimiMapping

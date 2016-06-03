@@ -1,5 +1,6 @@
 (ns rebujito.api-test
   (:require
+   [buddy.core.nonce :as nonce]
    [buddy.sign.util :refer (to-timestamp)]
    [rebujito.api.sig :as api-sig]
    [rebujito.api.time :as api-time]
@@ -27,6 +28,7 @@
    [schema.core :as s]
    [manifold.deferred :as d]
    [rebujito.logging :as log-levels]
+   [buddy.core.codecs :refer (bytes->hex)]
    [taoensso.timbre :as log]
    [rebujito.system.dev-system :as dev]
    ))
@@ -80,12 +82,21 @@
     :scope "test_scope"}))
 
 
+(defn generate-random [n]
+  (-> (nonce/random-bytes n)
+      (bytes->hex)
+      )
+  )
+
+
+
 (defn new-account-sb []
 {:countrySubdivision "aa",
  :registrationSource "aa",
  :addressLine1 "zz",
+ :addressLine2 "yy",
  :password "real-secret",
- :emailAddress "hola@hola.com",
+ :emailAddress (format  "%s@hola.com" (generate-random 6)),
  :city "Sevilla",
  :firstName "Juan",
  :birthDay "13",
@@ -94,7 +105,8 @@
  :receiveStarbucksEmailCommunications true,
  :postalCode "41003",
  :country "Spain"
- :userName "juan"}
+; :userName "juan"
+ }
   )
 
 
@@ -377,21 +389,22 @@
          sig (new-sig)
          access_token (atom "")]
 
+
      (testing ::account/create
        (let [path (get-path ::account/create)
              access_token (access-token-application)]
          (is (= 201  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path access_token 1234)
-                                        {:throw-exceptions false
-                                         :body (json/generate-string
-                                                (assoc new-account
-                                                       ;; string or int should both work here
-                                                       :birthDay "1"
-                                                       :birthMonth 1
-                                                       ))
-                                         :body-encoding "UTF-8"
-                                         :content-type :json})
+                                     {:throw-exceptions false
+                                      :body (json/generate-string
+                                             (assoc new-account
+                                                    ;; string or int should both work here
+                                                    :birthDay "1"
+                                                    :birthMonth 1
+                                                    ))
+                                      :body-encoding "UTF-8"
+                                      :content-type :json})
                          print-body
-                            :status)))))
+                         :status)))))
 
      (testing ::oauth/token-resource-owner
        (let [path (get-path ::oauth/token-resource-owner) ]
@@ -408,25 +421,25 @@
 
                                      :body-encoding "UTF-8"
                                      :content-type :x-www-form-urlencoded})
-          ;;              print-body
+                        ;;              print-body
                         :status)))
 
          ;; body conform :token-resource-owner schema
          ;; :grant_type "password"
          (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
-                                    {:throw-exceptions false
-                                     :form-params
-                                     (assoc (g/generate (-> oauth/schema :token-resource-owner))
-                                            :grant_type "password"
-                                            :client_id (:key (api-config))
-                                            :client_secret (:secret (api-config))
-                                            :username (:emailAddress new-account)
-                                            :password (:password new-account)
-                                            )
-                                     :body-encoding "UTF-8"
-                                     :content-type :x-www-form-urlencoded})
+                                            {:throw-exceptions false
+                                             :form-params
+                                             (assoc (g/generate (-> oauth/schema :token-resource-owner))
+                                                    :grant_type "password"
+                                                    :client_id (:key (api-config))
+                                                    :client_secret (:secret (api-config))
+                                                    :username (:emailAddress new-account)
+                                                    :password (:password new-account)
+                                                    )
+                                             :body-encoding "UTF-8"
+                                             :content-type :x-www-form-urlencoded})
                               body (-> r :body bs/to-string (json/parse-string true))
-            ;;                  _ (println body)
+                              ;;                  _ (println body)
 
                               ]
                           (reset! access_token (:access_token body))
@@ -446,13 +459,11 @@
                                              :body-encoding "UTF-8"
                                              :content-type :x-www-form-urlencoded})
                               body (-> r :body bs/to-string (json/parse-string true))
-              ;;                _ (println body)
+                              ;;                _ (println body)
 
                               ]
                           r)
                         :status)))))
-
-     ;;     (println @access_token)
 
      (testing ::devices/register
        (let [path (get-path ::devices/register)]
@@ -467,7 +478,7 @@
 
      (testing ::card/get-cards
        (let [path (get-path ::card/get-cards)]
-         (is (= 201 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path 123)
+         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path 123)
                                    {:throw-exceptions false
                                     :body-encoding "UTF-8"
                                     :content-type :json})
@@ -510,16 +521,16 @@
              path (bidi/path-for r api-id :card-id 123)]
          (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
          (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                      {:throw-exceptions false
-                                       :body-encoding "UTF-8"
-                                       :body (json/generate-string
-                                               {
-                                                :amount 15
-                                                :paymentMethodId "1234567"
-                                                :sessionId ""
-                                                })
-                                       :content-type :json})
-                        :status)))))
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :body (json/generate-string
+                                           {
+                                            :amount 15
+                                            :paymentMethodId "1234567"
+                                            :sessionId ""
+                                            })
+                                    :content-type :json})
+                       :status)))))
 
      (testing ::payment/methods
        (let [path (get-path ::payment/methods)]
@@ -534,18 +545,18 @@
                                {:throw-exceptions false
                                 :body-encoding "UTF-8"
                                 :body (json/generate-string
-                                        {
-                                         :expirationYear 2018
-                                         :billingAddressId "string"
-                                         :accountNumber "4000000000000002"
-                                         :default "false"
-                                         :nickname "string"
-                                         :paymentType "visa"
-                                         :cvn "12345"
-                                         :fullName "string"
-                                         :expirationMonth 11
-                                         }
-                                        )
+                                       {
+                                        :expirationYear 2018
+                                        :billingAddressId "string"
+                                        :accountNumber "4000000000000002"
+                                        :default "false"
+                                        :nickname "string"
+                                        :paymentType "visa"
+                                        :cvn "12345"
+                                        :fullName "string"
+                                        :expirationMonth 11
+                                        }
+                                       )
                                 :content-type :json})
                    )]
            (is (= status 201))
@@ -564,16 +575,16 @@
 
          ;; can't test until we stop stubbing, needs real token ID
          #_(is (= 200 (-> @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                   {:throw-exceptions false
-                                    :body-encoding "UTF-8"
-                                    :content-type :json})
-                        :status)))
+                                        {:throw-exceptions false
+                                         :body-encoding "UTF-8"
+                                         :content-type :json})
+                          :status)))
 
          #_(let [{:keys [status body]}
-               (-> @(http/put (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                               {:throw-exceptions false
-                                :body-encoding "UTF-8"
-                                :body (json/generate-string
+                 (-> @(http/put (format "http://localhost:%s%s?access_token=%s"  port path 123)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :body (json/generate-string
                                         {
                                          :expirationYear 2018
                                          :billingAddressId "string"
@@ -586,11 +597,11 @@
                                          :expirationMonth 11
                                          }
                                         )
-                                :content-type :json})
-                   )]
-           (is (= status 200))
-           (is (.contains (slurp body) "paymentMethodId"))
-           )
+                                 :content-type :json})
+                     )]
+             (is (= status 200))
+             (is (.contains (slurp body) "paymentMethodId"))
+             )
          ))
 
      (testing ::profile/me
@@ -617,30 +628,41 @@
        (let [api-id ::login/validate-password
              path (bidi/path-for r api-id)]
          (println "@access_token" (json/generate-string
-                                           (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password new-account))))
+                                   (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password new-account))))
          (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
-                                   {:throw-exceptions false
-                                    :body-encoding "UTF-8"
-                                    :body (json/generate-string
-                                           (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password new-account)))
-                                    :content-type :json})
+                                    {:throw-exceptions false
+                                     :body-encoding "UTF-8"
+                                     :body (json/generate-string
+                                            (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password new-account)))
+                                     :content-type :json})
                         print-body
                         :status)))
 
          ))
      (testing ::login/forgot-password
        (let [api-id ::login/forgot-password
-             path (bidi/path-for r api-id)]
-         (println "@access_token" @access_token)
-         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
-                                   {:throw-exceptions false
-                                    :body-encoding "UTF-8"
-                                    :body (json/generate-string
-                                           (select-keys new-account (keys (-> login/schema :forgot-password :post))))
-                                    :content-type :json})
-                        print-body
-                        :status)))
+             path (bidi/path-for r api-id)
+                                        ;       access_token (access-token-user (:emailAddress account-data) (:password account-data))
+             ]
+         (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+                         {:throw-exceptions false
+                          :body-encoding "UTF-8"
+                          :body (json/generate-string
+                                 (select-keys new-account (keys (-> login/schema :forgot-password :post))))
+                          :content-type :json})
+             print-body
+             :status)
+         #_(is (= 200 ))
 
          ))
 
+
+
+
+
      )))
+
+
+(comment
+  account-data (new-account-sb)
+  new-account (create-account account-data))

@@ -14,7 +14,7 @@
              :validate-password {:post {(s/optional-key :encoded) Boolean
                                         :password String}}})
 
-(defn forgot-password [authorizer mailer  authorizer authenticator ]
+(defn forgot-password [mailer authorizer authenticator ]
   (resource
    (-> {:methods
         {:post {:parameters {:query {:access_token String}
