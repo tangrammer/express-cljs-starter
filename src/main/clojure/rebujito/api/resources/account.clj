@@ -17,8 +17,8 @@
 ;                    (s/optional-key :userName) String
                     :addressLine1 String
                     :addressLine2 String
-                    :birthDay (s/conditional number? s/Int :else s/Str)
-                    :birthMonth (s/conditional number? s/Int :else s/Str)
+                    :birthDay (s/conditional number? Long :else String)
+                    :birthMonth (s/conditional number? Long :else String)
                     :city String
                     :country String
                     :countrySubdivision String
@@ -38,8 +38,8 @@
   {mim/CreateAccountSchema
    (fn [x]
      {
-      :birth {:dayOfMonth  (:birthDay x) ;; (:birthDay x) ;; 'YYYY-MM-DD'
-              :month       (:birthMonth x)}
+      :birth {:dayOfMonth  (str (:birthDay x)) ;; (:birthDay x) ;; 'YYYY-MM-DD'
+              :month       (str (:birthMonth x))}
       :city (:city x)
       :email (:emailAddress x)
       :firstname (:firstName x)
