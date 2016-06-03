@@ -54,14 +54,24 @@
     400 (>400 ctx body)
     500 (>500 ctx body)))
 
-(defn create-account-mongo! [data-account mimi-res user-store crypto]
-  (let [mimi-id (first mimi-res)
-        mongo-id (p/generate-id user-store mimi-id)
-        mongo-account-data (-> data-account
-                               (assoc :_id mongo-id)
-                               (assoc :password (p/sign crypto (:password data-account)) )
-                               )]
-    (p/get-and-insert! user-store mongo-account-data)))
+(defn create-account-mongo! [data-account user-store crypto]
+  (fn [mimi-res]
+    (let [d* (d/deferred)
+          mimi-id (first mimi-res)
+          mongo-id (p/generate-id user-store mimi-id)
+          mongo-account-data (-> data-account
+                                 (assoc :_id mongo-id)
+                                 (assoc :password (p/sign crypto (:password data-account)) ))
+
+          ]
+      (if (first (p/find user-store (select-keys mongo-account-data [:emailAddress]) ))
+          (d/error! d* (ex-info (str "API ERROR!")
+                                {:type :api
+                                 :status 400
+                                 :body  "Email address is not unique" }))
+          (d/success! d* (p/get-and-insert! user-store mongo-account-data)))
+      d*
+      )))
 
 (defn create [store mimi user-store crypto authenticator authorizer]
   (resource
@@ -75,10 +85,9 @@
                 :response (fn [ctx]
                             (-> (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))
                                 (d/chain
-                                 (fn [mimi-res]
-                                   (let [data-account  (get-in ctx [:parameters :body])
-                                         res (create-account-mongo! data-account mimi-res user-store crypto)]
-                                     (>201 ctx (dissoc  res :password)))))
+                                 (create-account-mongo! (get-in ctx [:parameters :body])  user-store crypto)
+                                 (fn [mongo-res]
+                                   (>201 ctx (dissoc  mongo-res :password))))
                                 (d/catch clojure.lang.ExceptionInfo
                                     (fn [exception-info]
                                       (domain-exception ctx (ex-data exception-info))))

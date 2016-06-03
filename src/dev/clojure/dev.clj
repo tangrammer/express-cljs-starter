@@ -135,15 +135,19 @@
 
 
 (defn check-mobile-user []
-  (let [u (-> (g/generate (ac/schema :post))
-              (merge
-               {:emailAddress "stephan+starbucks_fr_02@mediamonks.com" :password "#myPassword01"}))]
-    (if-let [res (first (p/find (-> system :user-store) (select-keys u [:email]) ))]
-      (println (str "default mobile user exists in db"  #_res))
-      (do (ac/create-account-mongo! u (-> (str (rand-int 1000000))
-                                          vector
-                                          (conj :mock-mimi))
-                                    (-> system :user-store) (:crypto system))
-        (println "inserting default mobile user in db => " u)))
+  (try
+    (let [u (-> (g/generate (ac/schema :post))
+               (merge
+                {:emailAddress "stephan+starbucks_fr_02@mediamonks.com" :password "#myPassword01"}))]
+     (if-let [res (first (p/find (-> system :user-store) (select-keys u [:emailAddress]) ))]
+       (println (str "default mobile user exists in db"  #_res))
+       (do ((ac/create-account-mongo! u (-> system :user-store) (:crypto system)) (-> (str (rand-int 1000000))
+                                                                                      vector
+                                                                                      (conj :mock-mimi)))
+           (println "inserting default mobile user in db => " u)))
+     )
+    (catch Exception e (do (println (.getMessage e))
+                           (check-mobile-user)
+                           ))
     )
   )
