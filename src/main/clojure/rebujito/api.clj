@@ -35,6 +35,8 @@
         ["me" [
                ["" (-> (account/me store mimi user-store authorizer authenticator)
                        (assoc :id ::account/me))]
+               ["/logout/"  (-> (login/logout user-store authorizer authenticator)
+                                (assoc :id ::login/logout))]
                ["/login/validate-password" (-> (login/validate-password user-store crypto authorizer authenticator)
                                                (assoc :id ::login/validate-password))]
                ["/profile"  (-> (profile/me store mimi user-store authorizer authenticator)
