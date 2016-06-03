@@ -36,6 +36,9 @@
 (defn >201 [ctx body]
   (>base ctx 201 body))
 
+(defn >202 [ctx body]
+  (>base ctx 202 body))
+
 (defn >200 [ctx body]
   (>base ctx 200 body))
 

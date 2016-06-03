@@ -16,6 +16,7 @@
    [rebujito.api.resources.profile :as profile]
    [rebujito.api.resources.card :as card]
    [rebujito.api.resources.oauth :as oauth]
+   [rebujito.api.resources.devices :as devices]
    [rebujito.api.resources.login :as login]
    [rebujito.store.mocks :as mocks]
    [rebujito.api.resources.payment :as payment]
@@ -452,6 +453,17 @@
                         :status)))))
 
      ;;     (println @access_token)
+
+     (testing ::devices/register
+       (let [path (get-path ::devices/register)]
+         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+         (is (= 202 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
+                                    {:throw-exceptions false
+                                     :body-encoding "UTF-8"
+                                     :body (json/generate-string (g/generate (-> devices/schema :post )))
+                                     :content-type :json})
+                        print-body
+                        :status)))))
 
      (testing ::card/get-cards
        (let [path (get-path ::card/get-cards)]

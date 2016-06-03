@@ -9,6 +9,7 @@
      [payment :as payment]
      [account :as account]
      [card :as card]
+     [devices :as devices]
      [login :as login]
      [oauth :as oauth]
      [profile :as profile]
@@ -62,7 +63,8 @@
                  ]
                 ]
 
-
+               ["/devices/register" (-> (devices/register store authorizer authenticator)
+                                        (assoc :id ::devices/register))]
 
                ["/paymentmethods" [["" (-> (payment/methods store payment-gateway)
                                            (assoc :id ::payment/methods))]
