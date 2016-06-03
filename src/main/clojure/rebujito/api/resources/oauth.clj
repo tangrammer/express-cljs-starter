@@ -120,13 +120,15 @@
   (resource
    (-> {:methods
         {:post {:parameters {:query {:sig String}
-                             :body (s/conditional
-                                    #(= (check-value % :grant_type "client_credentials"))
-                                    (-> schema :token-client-credentials)
-                                    #(= (check-value % :grant_type "password"))
-                                    (-> schema :token-resource-owner)
-                                    #(= (check-value % :grant_type "refresh_token"))
-                                    (-> schema :token-refresh-token))}
+                            :body s/Any}
+                           ; TODO: doesn't work with x-www-form-urlencoded
+                            ;  :body (s/conditional
+                            ;         #(= (check-value % :grant_type "client_credentials"))
+                            ;         (-> schema :token-client-credentials)
+                            ;         #(= (check-value % :grant_type "password"))
+                            ;         (-> schema :token-resource-owner)
+                            ;         #(= (check-value % :grant_type "refresh_token"))
+                            ;         (-> schema :token-refresh-token))}
 
                 :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
                             :charset "UTF-8"}]
