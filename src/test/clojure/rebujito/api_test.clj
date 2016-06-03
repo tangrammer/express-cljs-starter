@@ -90,7 +90,7 @@
  :birthDay "13",
  :birthMonth "06",
  :lastName "Ruz",
- :receiveStarbucksEmailCommunications "ok",
+ :receiveStarbucksEmailCommunications true,
  :postalCode "41003",
  :country "Spain"
  :userName "juan"}

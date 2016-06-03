@@ -25,7 +25,7 @@
                     :lastName String
                     :password String
                     :postalCode String
-                    :receiveStarbucksEmailCommunications String
+                    :receiveStarbucksEmailCommunications Boolean
                     :registrationSource String
                     }})
 

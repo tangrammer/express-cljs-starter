@@ -163,7 +163,7 @@
    \"lastName\": \"Sons\",
    \"password\": \"jsonPa$$w0rd2\",
    \"postalCode\": \"V6B 3A6\",
-   \"receiveStarbucksEmailCommunications\": \"\",
+   \"receiveStarbucksEmailCommunications\": false,
    \"registrationSource\": \"myMobileApp\"
 }"
      (json/parse-string true)))
