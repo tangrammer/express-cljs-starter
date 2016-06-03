@@ -117,10 +117,11 @@
                                                                        :status (:status ex)
                                                                        :body (:body ex)}))))))
       d*))
-  
+
   (load-card [this data]
     (assoc mocks/mimi-card :target-environment :prod))
-  )
+  (rewards [this data]
+    {"currentLevel" "Gold"}))
 
 (defrecord MockMimi [base-url token]
   component/Lifecycle
@@ -146,7 +147,8 @@
       d*))
   (load-card [this data]
     (assoc mocks/mimi-card :target-environment :dev))
-  )
+  (rewards [this data]
+    {"currentLevel" "Green"}))
 
 (defn new-prod-mimi [mimi-config]
   (map->ProdMimi mimi-config))

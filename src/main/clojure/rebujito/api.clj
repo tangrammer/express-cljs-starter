@@ -12,6 +12,7 @@
      [login :as login]
      [oauth :as oauth]
      [profile :as profile]
+     [rewards :as rewards]
      [social-profile :as social-profile]
      ]))
 
@@ -35,6 +36,8 @@
                                                (assoc :id ::login/validate-password))]
                ["/profile"  (-> (profile/me store mimi user-store authorizer authenticator)
                                   (assoc :id ::profile/me))]
+               ["/rewards" (-> (rewards/me-rewards store mimi user-store authorizer authenticator)
+                                  (assoc :id ::profile/me-rewards))]
                ["/cards"
                 [
                  ["" (-> (card/get-cards store)

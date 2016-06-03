@@ -22,6 +22,7 @@
   (create-account [this data])
   (register-physical-card [this data])
   (load-card [this data])
+  (rewards [this data])
   )
 
 (defprotocol Encrypter
