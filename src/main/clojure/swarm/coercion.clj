@@ -1,5 +1,6 @@
 ;; utils about schema coercion
-(ns swarm.coercion)
+(ns swarm.coercion
+  (:import [schema.utils ErrorContainer]))
 
 
 (defn throw-coercer-exceptions
