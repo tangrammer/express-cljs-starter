@@ -128,7 +128,7 @@
                                     #(check-value % :grant_type "refresh_token")
                                     (-> schema :token-refresh-token))}
 
-                :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
+                :consumes [{:media-type #{"application/x-www-form-urlencoded"}
                             :charset "UTF-8"}]
 
                 :response (fn [ctx]
