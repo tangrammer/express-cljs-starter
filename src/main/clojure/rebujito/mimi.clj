@@ -12,8 +12,7 @@
    [taoensso.timbre :as log]))
 
 (def errors {:create-account {"111000" [400 "Username is already taken" "Account Management Service returns error that user name is already taken"]
-                              "111001" [400"Unknown error occured" "Account Management Service returns error
-"]
+                              "111001" [400"Unknown error occured" "Account Management Service returns error"]
                               "111005" [400 "Email address too long. Must be 50 characters or less." ""]
                               "111008" [400 "Please supply an email address" "Missing emailAddress attribute."]
                               "111009" [400 "Please supply a registration source" "Missing registration source attribute."]
