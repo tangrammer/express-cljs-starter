@@ -1,4 +1,5 @@
 {
+  "service": "mimi",
   "version": "@@__VERSION__@@",
   "built": "@@__BUILT__@@"
 }
