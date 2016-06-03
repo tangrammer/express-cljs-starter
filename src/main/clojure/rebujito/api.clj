@@ -43,7 +43,9 @@
                 [
                  ["" (-> (card/get-cards store)
                          (assoc :id ::card/get-cards))]
-
+                 ["/history"
+                  (-> (card/history store)
+                      (assoc :id ::card/history))]
                  ["/register"
                   (-> (card/register-physical store mimi user-store)
                       (assoc :id ::card/register-physical))]

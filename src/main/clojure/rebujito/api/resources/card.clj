@@ -120,3 +120,21 @@
 
     (merge (common-resource :me/cards))
     (merge access-control))))
+
+
+(defn history [store]
+  (resource
+   (->
+    {:methods
+     {:get {:parameters {:query {:access_token String
+                                  (s/optional-key :limit) String
+                                  (s/optional-key :offset) String
+                                  }}
+             :consumes [{:media-type #{"application/json"}
+                         :charset "UTF-8"}]
+
+             :response (fn [ctx]
+                         (>200 ctx ["temp response to fit mobile request"]))}}}
+
+    (merge (common-resource :me/cards))
+    (merge access-control))))
