@@ -1,20 +1,27 @@
 (ns rebujito.api
   (:require
     [com.stuartsierra.component :as component]
-
     [schema.core :as s]
-    [yada.yada :refer [handler]]
-    [rebujito.api.resources.payment :as payment]
-    [rebujito.api.resources.login :as login]
-    [rebujito.api.resources.profile :as profile]
-    [rebujito.api.resources.oauth :as oauth]
-    [rebujito.api.resources.account :as account]
-    [rebujito.api.resources.card :as card]
-
-    [rebujito.api.resources.social-profile :as social-profile]))
+    [yada.resource :refer (resource)]
+    [rebujito.api
+     [util :as util]]
+    [rebujito.api.resources
+     [payment :as payment]
+     [account :as account]
+     [card :as card]
+     [login :as login]
+     [oauth :as oauth]
+     [profile :as profile]
+     [social-profile :as social-profile]
+     ]))
 
 (defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
-  ["/" [["health" (handler (clojure.java.io/resource "VERSION.edn"))]
+  ["/" [["health" (resource (-> {:methods
+        {:get {:consumes [{:media-type #{"application/json"}
+                            :charset "UTF-8"}]
+               :response (read-string (slurp (clojure.java.io/resource "VERSION.edn"))) }}}
+                                (merge (util/common-resource :meta))
+                                (merge {:access-control {}})) )]
         ["account/create" (-> (account/create store mimi user-store crypto authenticator authorizer)
                               (assoc :id ::account/create))]
         ["oauth/token" (-> (oauth/token-resource-owner store user-store authorizer crypto api-client-store)
