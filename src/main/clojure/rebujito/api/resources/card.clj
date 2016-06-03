@@ -24,7 +24,7 @@
 
                            "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request.
 "])
-                           (>201 ctx [(p/get-cards store)])))}}}
+                           (>200 ctx [(p/get-cards store)])))}}}
 
     (merge (common-resource :me/cards))
     (merge access-control))))
