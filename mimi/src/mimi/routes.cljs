@@ -11,6 +11,7 @@
 (def moment (nodejs/require "moment"))
 
 (def app-version (nodejs/require "../../VERSION.json"))
+(def service (.-service app-version))
 (def version (.-version app-version))
 (def built (.-built app-version))
 
@@ -30,7 +31,7 @@
 
 (.use app (.unless (jwt #js {:secret config/jwt-secret}) #js {:path #js ["/mimi/health"]}))
 
-(.get app "/mimi/health" #(.json %2 #js {:status "ok" :version version :built built}))
+(.get app "/mimi/health" #(.json %2 #js {:service service :version version :built built}))
 
 (defn micros-transform [payload]
   (merge
