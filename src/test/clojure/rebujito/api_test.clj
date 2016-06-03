@@ -98,10 +98,10 @@
  :password "real-secret",
  :emailAddress (format  "%s@hola.com" (generate-random 6)),
  :city "Sevilla",
- :firstName "Juan",
+ :firstName (format  "Juan-%s" (generate-random 6))
  :birthDay "13",
  :birthMonth "06",
- :lastName "Ruz",
+ :lastName (format  "Ruz-%s" (generate-random 6))
  :receiveStarbucksEmailCommunications true,
  :postalCode "41003",
  :country "Spain"
@@ -347,17 +347,14 @@
                           r)
                         :status)))
 
-         ))))
-
-
-     )
+         )))))
 
 (deftest test-get-user
   (time
    (testing ::account/me
-     (let [account-data #_(g/generate (:post account/schema)) (assoc (new-account-sb)
-                                                                     :birthDay "1"
-                                                                     :birthMonth "1")
+     (let [account-data  (assoc (new-account-sb)
+                                :birthDay "1"
+                                :birthMonth "1")
            account (create-account  account-data)
            port (-> *system*  :webserver :port)
            path (get-path ::account/me)
@@ -663,6 +660,12 @@
      )))
 
 
-(comment
-  account-data (new-account-sb)
-  new-account (create-account account-data))
+#_(deftest account-me
+  (testing "account-me"
+    (let [account-data (new-account-sb)
+          new-account (create-account account-data)]
+      (println ">>>>>/////" (access-token-user (:emailAddress account-data) (:password account-data)))
+
+      )
+    )
+  )

@@ -112,11 +112,10 @@
                :response (fn [ctx]
                            (try
                              (let [res (get-in ctx [:authentication "default"])]
-                               (>201 ctx #_{:subMarket "US"
-                                          :exId "????"
-                                          :firstName "API Test",
-                                          :lastName "User1",
-                                          :partner false} res))
+                               (>201 ctx (merge (select-keys res [:firstName :lastName ])
+                                                {:subMarket "US"
+                                                 :exId "????"
+                                                 :partner false})))
                              (catch Exception e
                                (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 
