@@ -9,8 +9,13 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
+(defn translate-mimi-rewards [rewards-response]
+  {:currentLevel (-> rewards-response :tier :name)
+   :dateRetrieved (.toString (java.time.Instant/now))})
+
 (defn rewards-response [mimi]
   (d/chain (p/rewards mimi {})
+   translate-mimi-rewards
    #(merge rebujito.store.mocks/me-rewards %)))
 
 (defn me-rewards [store mimi user-store authorizer authenticator]
