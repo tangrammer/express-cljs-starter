@@ -9,6 +9,22 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
+ (def rewards-program {:programName "My Starbucks Rewards"
+                       :numberOfTiers 2
+                       :countryCodes ["ZA"]
+                       :tierInfos [{:tierNumber 1
+                                    :tierLevelName "Green"
+                                    :tierPointsEntryThreshold 0
+                                    :tierPointsExitThreshold 300
+                                    :tierPointsReevaluationThreshold 0
+                                    :tierPointsFreeItemThreshold 100}
+                                   {:tierNumber 2
+                                    :tierLevelName "Gold"
+                                    :tierPointsEntryThreshold 300
+                                    :tierPointsExitThreshold nil
+                                    :tierPointsReevaluationThreshold 300
+                                    :tierPointsFreeItemThreshold 100}]})
+
 (defn translate-mimi-rewards [rewards-response]
   {:currentLevel (-> rewards-response :tier :name)
    :dateRetrieved (.toString (java.time.Instant/now))
@@ -25,7 +41,10 @@
 (defn rewards-response [mimi]
   (d/chain (p/rewards mimi {})
    translate-mimi-rewards
-   #(merge rebujito.store.mocks/me-rewards %)))
+   #(merge
+     rebujito.store.mocks/me-rewards
+     {:rewardsProgram rewards-program}
+     %)))
 
 (defn me-rewards [store mimi user-store authorizer authenticator]
  (resource
