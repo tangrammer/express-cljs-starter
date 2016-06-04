@@ -11,7 +11,16 @@
 
 (defn translate-mimi-rewards [rewards-response]
   {:currentLevel (-> rewards-response :tier :name)
-   :dateRetrieved (.toString (java.time.Instant/now))})
+   :dateRetrieved (.toString (java.time.Instant/now))
+   :pointsTotal (-> rewards-response :tier :balance)
+   :pointsNeededForNextLevel (-> rewards-response :tier :pointsUntilNextTier)
+  ;  :nextLevel nil
+  ;  :reevaluationDate nil
+  ;  :pointsNeededForNextFreeReward 0
+  ;  :pointsNeededForReevaluation 0
+  ;  :cardHolderSinceDate nil
+  ;  :pointsEarnedTowardNextFreeReward 0
+  })
 
 (defn rewards-response [mimi]
   (d/chain (p/rewards mimi {})
