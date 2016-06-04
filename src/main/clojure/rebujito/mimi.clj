@@ -142,7 +142,8 @@
                                                  :throw-exceptions true
                                                  :form-params data})]
           (log/info body)
-          (d/success! d* {"currentLevel" (-> body :tier :name)}))
+          (d/success! d* {:currentLevel (-> body :tier :name)
+                          :dateRetrieved (.toString (java.time.Instant/now))}))
         (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
                                               (d/error! d* (ex-info (str "error!!!" (:status ex))
                                                                     {:type :mimi
