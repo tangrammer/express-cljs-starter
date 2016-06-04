@@ -7,8 +7,6 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(defn rewards-response [mimi]
-  (merge rebujito.store.mocks/me-rewards (p/rewards mimi {})))
 
 (defn me-rewards [store mimi user-store authorizer authenticator]
  (resource
@@ -20,7 +18,7 @@
                            :charset "UTF-8"}]
               :response (fn [ctx]
                           (try
-                            (>200 ctx (rewards-response mimi))
+                            (>200 ctx (p/rewards mimi {}))
                             (catch Exception e
                               (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 

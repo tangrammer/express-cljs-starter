@@ -105,17 +105,24 @@
                                  :accept :json
                                  :as :json
                                  }
-                    )
-
-]
+                    )]
             (log/info status body)
             (d/success! d* (-> [:success]
                                (conj :prod-mimi))))
+
           (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
+                                                (log/error (.getMessage e))
                                                 (d/error! d* (ex-info (str "error!!!" (:status ex))
                                                                       {:type :mimi
                                                                        :status (:status ex)
-                                                                       :body (:body ex)}))))))
+                                                                       :body (:body ex)}))))
+
+          (catch Exception e (let [ex (ex-data e)]
+                               (d/error! d* (ex-info (str "error!!!" 500)
+                                                     {:type :mimi
+                                                      :status 500
+                                                      :body (.getMessage e)}))))
+          ))
       d*))
 
   (load-card [this data]
