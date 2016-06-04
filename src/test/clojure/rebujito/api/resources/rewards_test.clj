@@ -19,5 +19,4 @@
       (is (string? (translated :dateRetrieved)))
       (is (= (translated :pointsTotal) (-> mimi-response :tier :balance)))
       (is (= (translated :pointsTotal) 362))
-      (is (= (translated :pointsNeededForNextLevel) (-> mimi-response :tier :pointsUntilNextTier)))
-  )))
+      (is (= (translated :pointsNeededForNextLevel) (-> mimi-response :tier :pointsUntilNextTier))))))
