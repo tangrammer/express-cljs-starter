@@ -2,6 +2,7 @@
   (:require
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
+   [rebujito.api.time :as t]
    [rebujito.api.util :refer :all]
    [rebujito.api.resources :refer (domain-exception)]
    [cheshire.core :as json]
@@ -32,14 +33,15 @@
 
 (defn translate-mimi-rewards [rewards-response]
   (let [tier-name (-> rewards-response :tier :name)
-        points-total (-> rewards-response :tier :balance)]
+        tier-date (-> rewards-response :tier :date)
+        points-balance (-> rewards-response :tier :balance)]
     {:currentLevel tier-name
      :dateRetrieved (.toString (java.time.Instant/now))
-     :pointsTotal points-total
+     :pointsTotal points-balance
      :pointsNeededForNextLevel (-> rewards-response :tier :pointsUntilNextTier)
      :nextLevel (if (= tier-name "Green") "Gold" nil)
-     :pointsNeededForNextFreeReward (points-needed-for-next-reward points-total)
-  ;  :reevaluationDate nil
+     :pointsNeededForNextFreeReward (points-needed-for-next-reward points-balance)
+     :reevaluationDate (t/one-year-from tier-date)
   ;  :pointsNeededForReevaluation 0
   ;  :cardHolderSinceDate nil
   ;  :pointsEarnedTowardNextFreeReward 0
