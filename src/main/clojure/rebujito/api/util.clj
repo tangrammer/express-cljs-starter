@@ -69,7 +69,7 @@
 (defmethod yada.security/verify :jwt
   [ctx {:keys [verify]}]
   (let [token (get-in ctx [:parameters :query :access_token])]
-    (log/info ">>>>> token" token)
+    (log/debug ">>>>> token" token)
     (verify token)))
 
 (def access-control
@@ -80,7 +80,6 @@
 ;; (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"])
 ;; (>404 ctx ["Not Found" "Account Profile with given userId was not found."])
 (defmethod yada.authorization/validate :rebujito [ctx credentials authorization]
-  (log/info "credentials scope"  (set (map keyword (:scope credentials))))
   (if-let [methods (:methods authorization)]
     (let [pred (get-in authorization [:methods (:method ctx)])]
       (if (yada.authorization/allowed? pred ctx (set (map keyword (:scope credentials))))
