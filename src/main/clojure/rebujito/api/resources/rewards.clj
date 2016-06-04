@@ -10,10 +10,8 @@
    [yada.resource :refer [resource]]))
 
 (defn rewards-response [mimi]
-  (let [d* (d/deferred)]
-    (d/future (d/success! d* (merge rebujito.store.mocks/me-rewards (p/rewards mimi {}))))
-    d*
-    ))
+  (d/chain (p/rewards mimi {})
+   #(merge rebujito.store.mocks/me-rewards %)))
 
 (defn me-rewards [store mimi user-store authorizer authenticator]
  (resource
