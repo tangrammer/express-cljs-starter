@@ -1,5 +1,5 @@
 (ns rebujito.api.resources.rewards-test
-  (:require [rebujito.api.resources.rewards :refer [translate-mimi-rewards]]
+  (:require [rebujito.api.resources.rewards :refer [translate-mimi-rewards points-needed-for-next-reward]]
             [clojure.test :refer :all]))
 
 (def mimi-response {:programs
@@ -20,3 +20,19 @@
       (is (= (translated :pointsTotal) (-> mimi-response :tier :balance)))
       (is (= (translated :pointsTotal) 362))
       (is (= (translated :pointsNeededForNextLevel) (-> mimi-response :tier :pointsUntilNextTier))))))
+
+(deftest points-needed-test
+  (testing "that shit"
+    (is (= 100
+      (points-needed-for-next-reward 0)
+      (points-needed-for-next-reward 100)))
+    (is (= 1
+      (points-needed-for-next-reward 99)
+      (points-needed-for-next-reward 199)
+      (points-needed-for-next-reward 499)))
+    (is (= 50
+      (points-needed-for-next-reward 50)
+      (points-needed-for-next-reward 150)))
+    (is (= 49
+      (points-needed-for-next-reward 51)
+      (points-needed-for-next-reward 151)))))

@@ -9,34 +9,41 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
- (def rewards-program {:programName "My Starbucks Rewards"
-                       :numberOfTiers 2
-                       :countryCodes ["ZA"]
-                       :tierInfos [{:tierNumber 1
-                                    :tierLevelName "Green"
-                                    :tierPointsEntryThreshold 0
-                                    :tierPointsExitThreshold 300
-                                    :tierPointsReevaluationThreshold 0
-                                    :tierPointsFreeItemThreshold 100}
-                                   {:tierNumber 2
-                                    :tierLevelName "Gold"
-                                    :tierPointsEntryThreshold 300
-                                    :tierPointsExitThreshold nil
-                                    :tierPointsReevaluationThreshold 300
-                                    :tierPointsFreeItemThreshold 100}]})
+(def reward-every-x-points 100)
+(def gold-threshold 300)
+(def rewards-program {:programName "My Starbucks Rewards"
+                      :numberOfTiers 2
+                      :countryCodes ["ZA"]
+                      :tierInfos [{:tierNumber 1
+                                  :tierLevelName "Green"
+                                  :tierPointsEntryThreshold 0
+                                  :tierPointsExitThreshold gold-threshold
+                                  :tierPointsReevaluationThreshold 0
+                                  :tierPointsFreeItemThreshold reward-every-x-points}
+                                  {:tierNumber 2
+                                  :tierLevelName "Gold"
+                                  :tierPointsEntryThreshold gold-threshold
+                                  :tierPointsExitThreshold nil
+                                  :tierPointsReevaluationThreshold gold-threshold
+                                  :tierPointsFreeItemThreshold reward-every-x-points}]})
+
+(defn points-needed-for-next-reward [points-now]
+  (- reward-every-x-points (mod points-now reward-every-x-points)))
 
 (defn translate-mimi-rewards [rewards-response]
-  {:currentLevel (-> rewards-response :tier :name)
-   :dateRetrieved (.toString (java.time.Instant/now))
-   :pointsTotal (-> rewards-response :tier :balance)
-   :pointsNeededForNextLevel (-> rewards-response :tier :pointsUntilNextTier)
-  ;  :nextLevel nil
+  (let [tier-name (-> rewards-response :tier :name)
+        points-total (-> rewards-response :tier :balance)]
+    {:currentLevel tier-name
+     :dateRetrieved (.toString (java.time.Instant/now))
+     :pointsTotal points-total
+     :pointsNeededForNextLevel (-> rewards-response :tier :pointsUntilNextTier)
+     :nextLevel (if (= tier-name "Green") "Gold" nil)
+     :pointsNeededForNextFreeReward (points-needed-for-next-reward points-total)
   ;  :reevaluationDate nil
-  ;  :pointsNeededForNextFreeReward 0
   ;  :pointsNeededForReevaluation 0
   ;  :cardHolderSinceDate nil
   ;  :pointsEarnedTowardNextFreeReward 0
-  })
+  }))
 
 (defn rewards-response [mimi]
   (d/chain (p/rewards mimi {})
