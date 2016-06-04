@@ -17,8 +17,8 @@
 ;                    (s/optional-key :userName) String
                     :addressLine1 String
                     :addressLine2 String
-                    :birthDay (s/conditional number? Long :else String)
-                    :birthMonth (s/conditional number? Long :else String)
+                    :birthDay (s/conditional number? Integer :else String)
+                    :birthMonth (s/conditional number? Integer :else String)
                     :city String
                     :country String
                     :countrySubdivision String
