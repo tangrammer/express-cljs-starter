@@ -129,6 +129,7 @@
   (rewards [this data]
     (log/info data)
     (let [d* (d/deferred)
+          ; TODO: use real card-number
           card-number "9623570900002"]
       (d/future
       (try
@@ -177,6 +178,7 @@
   (load-card [this data]
     (assoc mocks/mimi-card :target-environment :dev))
   (rewards [this data]
+    ; TODO: mock the response, don't hit mimi
     (log/info data)
     (let [d* (d/deferred)
           card-number "9623570900002"]
