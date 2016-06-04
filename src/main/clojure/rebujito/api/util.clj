@@ -112,3 +112,13 @@
                                      (p/read-token authenticator token))}
                           {:authorization {:scheme :rebujito
                                            :methods  authorization}})})
+
+(defn authenticated-user [ctx]
+  (get-in ctx [:authentication "default"]))
+
+
+(defn generate-user-data [readed-jwt]
+  (merge (select-keys readed-jwt [:firstName :lastName :emailAddress])
+         {:subMarket "FR"
+          :exId "93A985A0-12E2-42B6-A995-AA701358BD47"
+          :partner false}))

@@ -2,7 +2,7 @@
   (:require
    [manifold.deferred :as d]
    [taoensso.timbre :as log]
-   [rebujito.api.util :refer :all]
+   [rebujito.api.util :as util]
    [rebujito.mimi :as mim]
    [rebujito.scopes :as scopes]
    [rebujito.protocols :as p]
@@ -56,8 +56,8 @@
 
 (defmethod domain-exception :mimi [ctx {:keys [status body]}]
   (condp = status
-    400 (>400 ctx body)
-    500 (>500 ctx body)))
+    400 (util/>400 ctx body)
+    500 (util/>500 ctx body)))
 
 (defn create-account-mongo! [data-account user-store crypto]
   (fn [mimi-res]
@@ -92,14 +92,14 @@
                                 (d/chain
                                  (create-account-mongo! (get-in ctx [:parameters :body])  user-store crypto)
                                  (fn [mongo-res]
-                                   (>201 ctx (dissoc  mongo-res :password))))
+                                   (util/>201 ctx (dissoc  mongo-res :password))))
                                 (d/catch clojure.lang.ExceptionInfo
                                     (fn [exception-info]
                                       (domain-exception ctx (ex-data exception-info))))
                                 (d/catch Exception
-                                    #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))}}}
-       (merge (common-resource :account))
-       (merge (access-control* authenticator authorizer {:post :rebujito.scopes/application})))))
+                                    #(util/>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))}}}
+       (merge (util/common-resource :account))
+       (merge (util/access-control* authenticator authorizer {:post :rebujito.scopes/application})))))
 
 (defn me [store mimi user-store authorizer authenticator]
   (resource
@@ -111,13 +111,10 @@
                             :charset "UTF-8"}]
                :response (fn [ctx]
                            (try
-                             (let [res (get-in ctx [:authentication "default"])]
-                               (>201 ctx (merge (select-keys res [:firstName :lastName ])
-                                                {:subMarket "US"
-                                                 :exId "????"
-                                                 :partner false})))
+                             (let [auth-user (util/authenticated-user ctx)]
+                               (util/>201 ctx (util/generate-user-data auth-user)))
                              (catch Exception e
-                               (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
+                               (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 
-       (merge (common-resource :account))
-       (merge (access-control* authenticator authorizer {:get scopes/user})))))
+       (merge (util/common-resource :account))
+       (merge (util/access-control* authenticator authorizer {:get scopes/user})))))

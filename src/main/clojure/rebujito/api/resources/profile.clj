@@ -2,7 +2,7 @@
   (:require
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
-   [rebujito.api.util :refer :all]
+   [rebujito.api.util :as util]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
@@ -21,10 +21,15 @@
                             :charset "UTF-8"}]
                :response (fn [ctx]
                            (try
-                             (>200 ctx (p/get-profile store))
+                             (let [auth-user (util/authenticated-user ctx)
+                                   user-data (util/generate-user-data auth-user)
+                                   profile-data (-> (p/get-profile store)
+                                                    (merge {:user user-data}))
+                                   ]
+                               (util/>200 ctx profile-data))
                              (catch Exception e
-                               (>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
+                               (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 
 
-       (merge (common-resource :profile))
-       (merge (access-control* authenticator authorizer {:get scopes/user})))))
+       (merge (util/common-resource :profile))
+       (merge (util/access-control* authenticator authorizer {:get scopes/user})))))
