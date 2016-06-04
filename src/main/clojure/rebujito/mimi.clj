@@ -128,7 +128,7 @@
   (load-card [this data]
     (assoc mocks/mimi-card :target-environment :prod))
   (rewards [this data]
-    {"currentLevel" "Gold"}))
+    (merge rebujito.store.mocks/me-rewards {"currentLevel" "Gold"})))
 
 (defrecord MockMimi [base-url token]
   component/Lifecycle
@@ -155,7 +155,7 @@
   (load-card [this data]
     (assoc mocks/mimi-card :target-environment :dev))
   (rewards [this data]
-    {"currentLevel" "Green"}))
+    (merge rebujito.store.mocks/me-rewards {"currentLevel" "Green"})))
 
 (defn new-prod-mimi [mimi-config]
   (map->ProdMimi mimi-config))
