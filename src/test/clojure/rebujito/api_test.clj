@@ -57,7 +57,7 @@
         (catch Exception e (do (println (str "caught exception: " (.getMessage e)))
                                (throw e)))))))
 
-(use-fixtures :each (system-fixture #{:+mock-mimi}))
+(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
 
 (defn api-config []
   (-> (config :test) :api))
