@@ -837,6 +837,7 @@
 
   true))
 
+
 (def me-rewards (json/parse-string
   "{
    \"currentLevel\":\"Gold\",
@@ -1082,5 +1083,5 @@
          \"source\":\"Unknown\"
       }
    ]
-}"
+}" true
 ))
