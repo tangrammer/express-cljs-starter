@@ -1,5 +1,5 @@
 (ns rebujito.api.resources.rewards-test
-  (:require [rebujito.api.resources.rewards :refer [translate-mimi-rewards points-needed-for-next-reward]]
+  (:require [rebujito.api.resources.rewards :refer :all]
             [clojure.test :refer :all]))
 
 (def mimi-response {:programs
@@ -36,3 +36,13 @@
     (is (= 49
       (points-needed-for-next-reward 51)
       (points-needed-for-next-reward 151)))))
+
+(deftest points-needed-for-reevaluation-test
+  (testing "re-evaluation rules: how many more points do you need to stay on this tier"
+    (is (= 0 (points-needed-for-reevaluation 0)))
+    (is (= 0 (points-needed-for-reevaluation 299)))
+    (is (= 300 (points-needed-for-reevaluation 300)))
+    (is (= 299 (points-needed-for-reevaluation 301)))
+    (is (= 1 (points-needed-for-reevaluation 599)))
+    (is (= 0 (points-needed-for-reevaluation 600)))
+    (is (= 0 (points-needed-for-reevaluation 601)))))

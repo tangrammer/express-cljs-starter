@@ -31,6 +31,14 @@
 (defn points-needed-for-next-reward [points-now]
   (- reward-every-x-points (mod points-now reward-every-x-points)))
 
+(defn points-earned-toward-next-free-reward [points-now]
+  (- reward-every-x-points (points-needed-for-next-reward points-now)))
+
+(defn points-needed-for-reevaluation [points-now]
+  (if (>= points-now gold-threshold)
+    (max 0 (- (* 2 gold-threshold) points-now))
+    0))
+
 (defn translate-mimi-rewards [rewards-response]
   (let [tier-name (-> rewards-response :tier :name)
         tier-date (-> rewards-response :tier :date)
@@ -42,9 +50,11 @@
      :nextLevel (if (= tier-name "Green") "Gold" nil)
      :pointsNeededForNextFreeReward (points-needed-for-next-reward points-balance)
      :reevaluationDate (t/one-year-from tier-date)
-  ;  :pointsNeededForReevaluation 0
-  ;  :cardHolderSinceDate nil
-  ;  :pointsEarnedTowardNextFreeReward 0
+     :pointsNeededForReevaluation (points-needed-for-reevaluation points-balance)
+     :pointsEarnedTowardNextFreeReward (points-earned-toward-next-free-reward points-balance)
+
+     ;; TODO the unknowns
+     :cardHolderSinceDate nil
   }))
 
 (defn rewards-response [mimi]
