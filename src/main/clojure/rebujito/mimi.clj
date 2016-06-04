@@ -127,7 +127,30 @@
   (load-card [this data]
     (assoc mocks/mimi-card :target-environment :prod))
   (rewards [this data]
-    (merge rebujito.store.mocks/me-rewards {"currentLevel" "Gold"})))
+    (log/info data)
+    (let [d* (d/deferred)
+          card-number "9623570900002"]
+      (d/future
+      (try
+        (let [{:keys [status body]} (http-c/get (format "%s/account/%s/balances" base-url card-number)
+                                                {:headers {"Authorization" (format "Bearer %s" token)}
+                                                 :insecure? true
+                                                 :content-type :json
+                                                 :accept :json
+                                                 :as :json
+                                                 :throw-exceptions true
+                                                 :form-params data})]
+          (log/info body)
+          (d/success! d* {"currentLevel" (-> body :tier :name)}))
+        (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
+                                              (d/error! d* (ex-info (str "error!!!" (:status ex))
+                                                                    {:type :mimi
+                                                                      :status (:status ex)
+                                                                      :body (:body ex)}))))
+        (catch Exception e (d/error! d* e))
+        ))
+      d*))
+ )
 
 (defrecord MockMimi [base-url token]
   component/Lifecycle
@@ -154,7 +177,30 @@
   (load-card [this data]
     (assoc mocks/mimi-card :target-environment :dev))
   (rewards [this data]
-    (merge rebujito.store.mocks/me-rewards {"currentLevel" "Green"})))
+    (log/info data)
+    (let [d* (d/deferred)
+          card-number "9623570900002"]
+      (d/future
+        (try
+          (let [{:keys [status body]} (http-c/get (format "%s/account/%s/balances" base-url card-number)
+                                                  {:headers {"Authorization" (format "Bearer %s" token)}
+                                                   :insecure? true
+                                                   :content-type :json
+                                                   :accept :json
+                                                   :as :json
+                                                   :throw-exceptions true
+                                                   :form-params data})]
+            (log/info body)
+            (d/success! d* {"currentLevel" (-> body :tier :name)}))
+          (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
+                                                (d/error! d* (ex-info (str "error!!!" (:status ex))
+                                                                      {:type :mimi
+                                                                        :status (:status ex)
+                                                                        :body (:body ex)}))))
+          (catch Exception e (d/error! d* e))
+          ))
+      d*))
+  )
 
 (defn new-prod-mimi [mimi-config]
   (map->ProdMimi mimi-config))

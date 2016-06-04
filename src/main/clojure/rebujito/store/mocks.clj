@@ -837,10 +837,8 @@
 
   true))
 
-
 (def me-rewards (json/parse-string
   "{
-   \"currentLevel\":\"Gold\",
    \"nextLevel\":null,
    \"reevaluationDate\":\"2014-11-09T23:59:59.0000000Z\",
    \"pointsTotal\":101,
