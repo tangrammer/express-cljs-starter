@@ -1,22 +1,21 @@
 {:cookie-name "rebujito-cookie"
 
- :env-type #profile {:dev :dev
-                     :test :test
-                     :prod :prod}
+ :env-type #profile {:dev :dev :test :test :prod :prod}
 
  :yada {:base-url #profile {:prod "/starbucks/api/v1"
                             :default "/starbucks/v1"}
-        :port #or [#env REBUJITO_YADA_PORT 3000]}
+        :port #or [#env REBUJITO_YADA_PORT #profile {:prod 3023
+                                                     :default 3000}]}
 
- :auth {:secret-key #or [#env REBUJITO_AUTH_SECRET_KEY "fake-secret-key"]}
+ :auth {:secret-key #or [#env REBUJITO_AUTH_SECRET_KEY #profile {:prod nil
+                                                                 :default "fake-key"}]}
+
+ :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
+        :token #or [#env REBUJITO_MIMI_TOKEN #profile {:prod nil
+                                                       :default "fake-token"}]}
 
  :api {:key "w8tnxd8h2wns43cfdgmt793j"
        :secret "KDRSRVqKHp5TkKvJJhN7RYkE"}
-
- :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
-        :token #profile {:dev "fake-token"
-                         :test #env REBUJITO_MIMI_TOKEN
-                         :prod #env REBUJITO_MIMI_TOKEN}}
 
  :mongo {:host "localhost"
          :port 27017
