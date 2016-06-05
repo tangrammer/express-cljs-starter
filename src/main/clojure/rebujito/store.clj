@@ -5,9 +5,6 @@
    [com.stuartsierra.component  :as component]
    [rebujito.store.mocks :as mocks]))
 
-
-
-
 (defrecord ProdStore []
   component/Lifecycle
   (start [this]
@@ -34,7 +31,6 @@
       (assoc mocks/me-profile :target-environment :prod))
   )
 
-
 (defrecord MockStore []
   component/Lifecycle
   (start [this]
@@ -59,11 +55,7 @@
     (assoc mocks/post-refresh-token :target-environment :dev))
   (get-profile [this]
       (assoc mocks/me-profile :target-environment :dev))
-
   )
-
-
-
 
 (defn new-prod-store []
   (map->ProdStore {}))
