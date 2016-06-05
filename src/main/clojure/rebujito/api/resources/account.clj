@@ -12,13 +12,10 @@
    [schema.coerce :as sc]
    [yada.resource :refer [resource]]))
 
-(def schema {:post {
-
-;                    (s/optional-key :userName) String
-                    :addressLine1 String
+(def schema {:post {:addressLine1 String
                     :addressLine2 String
-                    :birthDay (s/conditional number? Long :else String)
-                    :birthMonth (s/conditional number? Long :else String)
+                    :birthDay (s/conditional number? Integer :else String)
+                    :birthMonth (s/conditional number? Integer :else String)
                     :city String
                     :country String
                     :countrySubdivision String
@@ -31,22 +28,18 @@
                     :registrationSource String
                     (s/optional-key :createDigitalCard) Boolean
                     (s/optional-key :market) String
-;                    s/Keyword s/Any
                     }})
 
 (def CreateAccountMimiMapping
   {mim/CreateAccountSchema
    (fn [x]
      {
-      :birth {:dayOfMonth  (str (:birthDay x)) ;; (:birthDay x) ;; 'YYYY-MM-DD'
+      :birth {:dayOfMonth  (str (:birthDay x))
               :month       (str (:birthMonth x))}
       :city (:city x)
       :email (:emailAddress x)
       :firstname (:firstName x)
-           ;:gender "male"
       :lastname (:lastName x)
-           ;:mobile "String"
-           ;:password (:password x)
       :postalcode (:postalCode x)
       :region (:countrySubdivision x)
       })})

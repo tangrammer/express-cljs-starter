@@ -72,13 +72,11 @@
   (fn [ctx store user-store authorizer crypto api-client-store]
     (keyword (-> ctx :parameters :body :grant_type))))
 
-(defmethod get-token :client_credentials
-  ; http://bit.ly/1sLcJZO
+(defmethod get-token :client_credentials ; docs -> http://bit.ly/1sLcJZO
   [ctx store user-store authorizer crypto api-client-store]
   (>201 ctx (p/grant authorizer {} #{scopes/application})))
 
-(defmethod get-token :password
-  ; http://bit.ly/1sLd3YB
+(defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
   [ctx store user-store authorizer crypto api-client-store]
   (->
    (deferred-find-client api-client-store
@@ -104,13 +102,11 @@
       (d/catch Exception
           #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))
 
-(defmethod get-token :refresh_token
-  ; http://bit.ly/1sLcWfw
+(defmethod get-token :refresh_token ; docs -> http://bit.ly/1sLcWfw
+  ; TODO verify refresh token #39
+  ; https://github.com/naartjie/rebujito/issues/39
   [ctx store user-store authorizer crypto api-client-store]
-  ;         #_(>200 ctx (when (get-in ctx [:parameters :body :refresh_token])
-  ;                     (p/post-refresh-token store)
-  ;                     (p/post-token-resource-owner store))))}}}
-  (>201 ctx (p/grant authorizer {} #{scopes/application})))
+  (>201 ctx (p/grant authorizer {} #{scopes/application scopes/user})))
 
 (defn check-value [map key value]
   (let [map (clojure.walk/keywordize-keys map)]

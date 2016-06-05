@@ -60,7 +60,7 @@
                :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
                :response (fn [ctx]
-                           (>200 ctx ["logout temp/mock response"]))}}}
+                           (>200 ctx {:status "ok"}))}}}
 
       (merge (common-resource :me/login))
       (merge {:access-control {}}))))
