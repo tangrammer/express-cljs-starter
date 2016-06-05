@@ -1,8 +1,8 @@
 {:cookie-name "rebujito-cookie"
 
- :env-type  #profile {:dev :dev
-                      :test :test
-                      :prod :prod}
+ :env-type #profile {:dev :dev
+                     :test :test
+                     :prod :prod}
 
  :yada {:base-url #profile {:prod "/starbucks/api/v1"
                             :default "/starbucks/v1"}
@@ -10,7 +10,7 @@
 
  :auth {:secret-key #or [#env REBUJITO_AUTH_SECRET_KEY "fake-secret-key"]}
 
- :api {:key   "w8tnxd8h2wns43cfdgmt793j"
+ :api {:key "w8tnxd8h2wns43cfdgmt793j"
        :secret "KDRSRVqKHp5TkKvJJhN7RYkE"}
 
  :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
@@ -20,9 +20,7 @@
 
  :mongo {:host "localhost"
          :port 27017
-         :database "rebujito"
-         #_:user #_{:username "juan"
-                    :password "juan"}}
+         :database "rebujito"}
 
  :payment-gateway {:paygate {:paygateId "10011064270"
                              :paygatePassword "test"
