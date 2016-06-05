@@ -1,8 +1,14 @@
-{:cookie-name "rebujito-cookie"
+{
+ :app-config {:sub-market #profile {:prod "ZA"
+                                    :test "FR"
+                                    :dev "FR"
+                                    :default "FR"}}
+ :cookie-name "rebujito-cookie"
 
  :env-type #profile {:dev :dev :test :test :prod :prod}
 
  :yada {:base-url #profile {:prod "/starbucks/api/v1"
+                            :test "/starbucks/v1"
                             :default "/starbucks/v1"}
         :port #or [#env REBUJITO_YADA_PORT #profile {:prod 3023
                                                      :default 3000}]}

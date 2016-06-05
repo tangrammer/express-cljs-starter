@@ -94,7 +94,7 @@
        (merge (util/common-resource :account))
        (merge (util/access-control* authenticator authorizer {:post :rebujito.scopes/application})))))
 
-(defn me [store mimi user-store authorizer authenticator]
+(defn me [store mimi user-store authorizer authenticator app-config]
   (resource
    (-> {:methods
         {:get {:parameters {:query {:access_token String
@@ -104,7 +104,7 @@
                             :charset "UTF-8"}]
                :response (fn [ctx]
                            (try
-                             (let [auth-user (util/authenticated-user ctx)]
+                             (let [auth-user (util/authenticated-user ctx (:sub-market app-config))]
                                (util/>201 ctx (util/generate-user-data auth-user)))
                              (catch Exception e
                                (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}

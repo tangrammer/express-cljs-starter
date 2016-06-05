@@ -66,7 +66,7 @@
 
                   :payment-gateway (payment-gateway/new-prod-payment-gateway (-> config  :payment-gateway :paygate))
 
-                  :api (api/new-api-component)
+                  :api (api/new-api-component (:app-config config))
 
                   :yada (wh/handler (:yada config))
 

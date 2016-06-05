@@ -115,8 +115,8 @@
   (get-in ctx [:authentication "default"]))
 
 
-(defn generate-user-data [readed-jwt]
+(defn generate-user-data [readed-jwt sub-market]
   (merge (select-keys readed-jwt [:firstName :lastName :emailAddress])
-         {:subMarket "ZA"
+         {:subMarket sub-market
           :exId nil
           :partner false}))

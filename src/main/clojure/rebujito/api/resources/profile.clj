@@ -11,7 +11,7 @@
 
 (def schema {:put {:accountImageUrl String}})
 
-(defn me [store mimi user-store authorizer authenticator]
+(defn me [store mimi user-store authorizer authenticator app-config]
   (resource
    (-> {:methods
         {:get {:parameters {:query {:access_token String
@@ -22,7 +22,7 @@
                :response (fn [ctx]
                            (try
                              (let [auth-user (util/authenticated-user ctx)
-                                   user-data (util/generate-user-data auth-user)
+                                   user-data (util/generate-user-data auth-user (:sub-market app-config))
                                    profile-data (-> (p/get-profile store)
                                                     (merge {:user user-data})
                                                     (merge {:rewardsSummary @(p/rewards mimi {})}))]

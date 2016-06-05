@@ -17,7 +17,7 @@
      [social-profile :as social-profile]
      ]))
 
-(defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
+(defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config]
   ["/" [["health" (resource (-> {:methods
                                  {:get {:consumes [{:media-type #{"application/json"}
                                                     :charset "UTF-8"}]
@@ -33,13 +33,13 @@
         ["devices/register" (-> (devices/register store authorizer authenticator)
                                         (assoc :id ::devices/register))]
         ["me" [
-               ["" (-> (account/me store mimi user-store authorizer authenticator)
+               ["" (-> (account/me store mimi user-store authorizer authenticator app-config)
                        (assoc :id ::account/me))]
                ["/logout/"  (-> (login/logout user-store authorizer authenticator)
                                 (assoc :id ::login/logout))]
                ["/login/validate-password" (-> (login/validate-password user-store crypto authorizer authenticator)
                                                (assoc :id ::login/validate-password))]
-               ["/profile"  (-> (profile/me store mimi user-store authorizer authenticator)
+               ["/profile"  (-> (profile/me store mimi user-store authorizer authenticator app-config)
                                   (assoc :id ::profile/me))]
                ["/rewards" (-> (rewards/me-rewards store mimi user-store authorizer authenticator)
                                   (assoc :id ::profile/me-rewards))]
@@ -81,12 +81,12 @@
                ]]]]
   )
 
-(s/defrecord ApiComponent [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
+(s/defrecord ApiComponent [app-config store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (api store mimi  user-store authorizer crypto authenticator payment-gateway api-client-store mailer)))
+    (assoc component :routes (api store mimi  user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config)))
   (stop [component]
         component))
 
-(defn new-api-component []
-  (map->ApiComponent {}))
+(defn new-api-component [app-config]
+  (map->ApiComponent {:app-config app-config}))
