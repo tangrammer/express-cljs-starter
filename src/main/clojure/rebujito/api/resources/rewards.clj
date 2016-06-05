@@ -63,7 +63,8 @@
    #(merge
      rebujito.store.mocks/me-rewards
      {:rewardsProgram rewards-program}
-     {:coupons []}
+     {:coupons []
+      :myTiers []}
      %)))
 
 (defn me-rewards [store mimi user-store authorizer authenticator]

@@ -130,7 +130,9 @@
     (log/info data)
     (let [d* (d/deferred)
           ; TODO: use real card-number
-          card-number "9623570900002"]
+          ; card-number "9623570800099"
+          card-number "9623570900002"
+          ]
       (d/future
       (try
         (let [{:keys [status body]} (http-c/get (format "%s/account/%s/balances" base-url card-number)
@@ -181,7 +183,9 @@
     ; TODO: mock the response, don't hit mimi
     (log/info data)
     (let [d* (d/deferred)
-          card-number "9623570900002"]
+          ; card-number "9623570800099"
+          card-number "9623570900002"
+          ]
       (d/future
         (try
           (let [{:keys [status body]} (http-c/get (format "%s/account/%s/balances" base-url card-number)

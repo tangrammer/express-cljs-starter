@@ -7,7 +7,16 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-
+(def response {
+               :rewardsSummary {}
+               :addresses []
+               :socialProfile {}
+               :paymentMethods []
+               :favoriteStores []
+               :devices []
+               :tippingPreferences {}
+               :starbucksCards []})
+              ; dissoc :target-environment))
 
 (def schema {:put {:accountImageUrl String}})
 
