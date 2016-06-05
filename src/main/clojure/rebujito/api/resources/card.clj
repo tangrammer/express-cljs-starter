@@ -114,6 +114,11 @@
     (merge (common-resource :me/cards))
     (merge access-control))))
 
+(def empty-history {:paging {:total 0
+                             :offset 0
+                             :limit 10
+                             :returned 0}
+                    :historyItems []})
 
 (defn history [store]
   (resource
@@ -127,7 +132,7 @@
                          :charset "UTF-8"}]
 
              :response (fn [ctx]
-                         (>200 ctx ["temp response to fit mobile request"]))}}}
+                         (>200 ctx empty-history))}}}
 
     (merge (common-resource :me/cards))
     (merge access-control))))
