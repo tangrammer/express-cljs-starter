@@ -1,9 +1,7 @@
 (ns rebujito.api.util
   (:require [manifold.deferred :as d]
-                                        ;            [yada.interceptors :as i]
             [rebujito.protocols :as p]
             [manifold.stream :as stream]
- ;           [yada.security :as sec]
             [byte-streams :as bs]
             [yada.handler :as yh]
             [taoensso.timbre :as log]))
