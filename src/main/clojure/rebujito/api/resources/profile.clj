@@ -7,16 +7,14 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(def response {
-               :rewardsSummary {}
-               :addresses []
-               :socialProfile {}
-               :paymentMethods []
-               :favoriteStores []
-               :devices []
-               :tippingPreferences {}
-               :starbucksCards []})
-              ; dissoc :target-environment))
+(def response-overrides {:rewardsSummary {}
+                         :addresses []
+                         :socialProfile {}
+                         :paymentMethods []
+                         :favoriteStores []
+                         :devices []
+                         :tippingPreferences {}
+                         :starbucksCards []})
 
 (def schema {:put {:accountImageUrl String}})
 
@@ -34,7 +32,9 @@
                                    user-data (util/generate-user-data auth-user (:sub-market app-config))
                                    profile-data (-> (p/get-profile store)
                                                     (merge {:user user-data})
-                                                    (merge {:rewardsSummary @(p/rewards mimi {})}))]
+                                                    (merge {:rewardsSummary @(p/rewards mimi {})})
+                                                    (merge response-overrides)
+                                                    (dissoc :target-environment))]
                                (util/>200 ctx profile-data))
                              (catch Exception e
                                (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
