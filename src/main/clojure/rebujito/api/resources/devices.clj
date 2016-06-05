@@ -29,7 +29,7 @@
                :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
                :response (fn [ctx]
-                           (>202 ctx [""]))}}}
+                           (>202 ctx nil))}}}
 
       (merge (common-resource :devices))
       (merge {:access-control {}}))))

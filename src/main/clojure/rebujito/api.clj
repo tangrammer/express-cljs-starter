@@ -44,8 +44,7 @@
                ["/rewards" (-> (rewards/me-rewards store mimi user-store authorizer authenticator)
                                   (assoc :id ::profile/me-rewards))]
                ["/cards"
-                [
-                 ["" (-> (card/get-cards store)
+                [["" (-> (card/get-cards store)
                          (assoc :id ::card/get-cards))]
                  ["/history"
                   (-> (card/history store)

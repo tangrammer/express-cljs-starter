@@ -9,8 +9,6 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-
-
 (defn get-cards [store]
   (resource
    (->
@@ -21,14 +19,12 @@
 
              :response (fn [ctx]
                          (condp = (get-in ctx [:parameters :query :access_token])
-
-                           "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request.
-"])
-                           (>200 ctx [(p/get-cards store)])))}}}
+                           "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
+                          ;  (>200 ctx [(p/get-cards store)])))}}}
+                           (>200 ctx [])))}}}
 
     (merge (common-resource :me/cards))
     (merge access-control))))
-
 
 (defn unregister [store]
   (resource
@@ -41,14 +37,11 @@
 
                :response (fn [ctx]
                            (condp = (get-in ctx [:parameters :query :access_token])
-
-                             "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
-                             "403" (>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object.
-"])
-                             "121032" (>403 ctx ["Card is reported lost or stolen" "
-"])
+                             "500"    (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
+                             "403"    (>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object."])
+                             "121032" (>403 ctx ["Card is reported lost or stolen" ""])
                              "121037" (>403 ctx ["Card is closed." ""])
-                             "404" (>404 ctx ["Not Found" "Resource was not found"])
+                             "404"    (>404 ctx ["Not Found" "Resource was not found"])
                              "121018" (>400 ctx ["Cannot unregister a digital card that has a balance greater than zero." "Only zero balance digital cards can be unregistered"])
                              (>200 ctx ["OK" "Success"])))}}}
 
@@ -93,7 +86,7 @@
                              "121030" (>400 ctx ["Card is inactive." "Card has never been activated at the POS. Only the in-store POS can activate physical cards because it requires money to be loaded with the act of activation."])
 
                              "121030" (>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object."])
-                             "403" (>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object."])
+                             "403"    (>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object."])
                              "121032" (>403 ctx ["Card is reported lost or stolen." ""])
                              "121037" (>403 ctx ["Card is stolen." ""])
                              "122000" (>403 ctx ["Card is already registered.." "Card number and pin are already registered to user."])
@@ -121,6 +114,11 @@
     (merge (common-resource :me/cards))
     (merge access-control))))
 
+(def empty-history {:paging {:total 0
+                             :offset 0
+                             :limit 10
+                             :returned 0}
+                    :historyItems []})
 
 (defn history [store]
   (resource
@@ -134,7 +132,7 @@
                          :charset "UTF-8"}]
 
              :response (fn [ctx]
-                         (>200 ctx ["temp response to fit mobile request"]))}}}
+                         (>200 ctx empty-history))}}}
 
     (merge (common-resource :me/cards))
     (merge access-control))))
