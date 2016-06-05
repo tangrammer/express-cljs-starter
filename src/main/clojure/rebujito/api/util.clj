@@ -7,7 +7,7 @@
             [taoensso.timbre :as log]))
 
 (defn >base [ctx status body]
-  (log/info "base response >>>> " status body)
+;  (log/info "base response >>>> " status body)
   (-> ctx :response (assoc :status status)
       (assoc :body body)))
 
