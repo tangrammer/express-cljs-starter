@@ -25,7 +25,7 @@
                                    user-data (util/generate-user-data auth-user)
                                    profile-data (-> (p/get-profile store)
                                                     (merge {:user user-data})
-                                                    (merge {:rewardsSummary (p/rewards mimi {})}))]
+                                                    (merge {:rewardsSummary @(p/rewards mimi {})}))]
                                (util/>200 ctx profile-data))
                              (catch Exception e
                                (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
