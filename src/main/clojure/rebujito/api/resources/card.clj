@@ -16,13 +16,10 @@
      {:get {:parameters {:query {:access_token String}}
              :consumes [{:media-type #{"application/json"}
                          :charset "UTF-8"}]
-
              :response (fn [ctx]
-                         (condp = (get-in ctx [:parameters :query :access_token])
-                           "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
-                          ;  (>200 ctx [(p/get-cards store)])))}}}
-                           (>200 ctx [])))}}}
-
+                        ; TODO
+                        ;  (>200 ctx [(p/get-cards store)])
+                         (>200 ctx []))}}}
     (merge (common-resource :me/cards))
     (merge access-control))))
 
