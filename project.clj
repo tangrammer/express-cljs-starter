@@ -2,6 +2,7 @@
   :description "starbucks api"
   :url "https://github.com/naartjie/rebujito"
   :license {:name "Proprietary"}
+
   :resource-paths ["src/main/resources"]
   :source-paths ["src/main/clojure"]
   :test-paths ["src/test/clojure"]
@@ -16,7 +17,6 @@
                  [ring/ring-core "1.4.0"]
                  [yada "1.1.6" :exclusions [bidi org.clojure/clojurescript buddy/buddy-sign]]
 
-
                  ;; optional http client
                  ;; https://www.lvh.io/posts/https-requests-with-client-certificates-in-clojure.html
                  [http-kit "2.1.19"]
@@ -25,18 +25,16 @@
                  [clj-http "3.1.0"]
 
                  ;; security libs
-
                  [buddy "0.13.0" :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor com.taoensso/encore com.fasterxml.jackson.core/jackson-core]]
+
                  ;; components / modular
                  [com.stuartsierra/component "0.3.1"]
                  [juxt.modular/aleph "0.1.4"]
                  [juxt.modular/bidi "0.9.5"]
                  [juxt.modular/ring "0.5.3"]
 
+                 ;; mongo
                  [com.novemberain/monger "3.0.1"]
-
-
-
 
                  ;; data / data manipulation
                  [cheshire "5.6.1"]
@@ -44,10 +42,8 @@
                  [org.clojure/data.xml "0.0.8"]
                  [com.github.kyleburton/clj-xpath "1.4.3"]
 
-
                  ;; config loader
                  [aero "1.0.0-beta3"]
-
 
                  [potemkin "0.4.3" :exclusions [riddley]]
                  [prismatic/plumbing "0.5.3" :exclusions [prismatic/schema]]
@@ -64,7 +60,6 @@
 
                  ;; logging + profiling
                  [org.slf4j/slf4j-api "1.7.21"]
-
                  [com.taoensso/timbre "4.1.4" :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor com.fasterxml.jackson.core/jackson-core]]
                  [com.fzakaria/slf4j-timbre "0.3.1" :exclusions [com.taoensso/timbre junit]]
                  [org.slf4j/jcl-over-slf4j "1.7.21"]
@@ -78,17 +73,16 @@
                  ;; explicit deps to avoid conflicts
                  [clj-time "0.11.0"]
                  [org.clojure/tools.reader "1.0.0-beta1"]]
+
   :pedantic? :abort
 
   :uberjar-name "rebujito.jar"
   :plugins [[lein-ring "0.9.7"]]
 
-
   :profiles {:uberjar {:main       ring.rebujito
                        :aot        :all}
 
-             :dev     {:dependencies   [;[cider/cider-nrepl "0.10.1" :exclusions [org.clojure/tools.nrepl]]
-                                        [org.clojure/tools.nrepl "0.2.12"]
+             :dev     {:dependencies   [[org.clojure/tools.nrepl "0.2.12"]
                                         [org.clojure/tools.namespace "0.2.11"]]
                        :main user
                        :resource-paths ["src/main/resources" "src/test/resources"]
