@@ -60,8 +60,7 @@
   (stop [this] this)
   protocols/Mimi
   (create-account [this data]
-    (log/info (format "%s/account" base-url))
-    (log/info data)
+    (log/info (format "%s/account" base-url) data)
 ;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
       (d/future
@@ -75,17 +74,18 @@
                                                     :throw-exceptions true
                                                     :form-params data})]
             (log/info body)
-            (d/success! d* (-> body
-                               :customerId
-                               vector
-                               (conj :prod-mimi))))
+            (d/success! d* (-> body :customerId vector (conj :prod-mimi))))
           (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
                                                 (d/error! d* (ex-info (str "error!!!" (:status ex))
                                                                       {:type :mimi
                                                                        :status (:status ex)
                                                                        :body (:body ex)}))))
-          (catch Exception e (d/error! d* e))
-          ))
+          (catch Exception e (do
+                               (println (.printStackTrace e))
+                               (d/error! d* (ex-info (str "error!!!" 500)
+                                                     {:type :mimi
+                                                      :status 500
+                                                      :body (.getMessage e)}))))))
       d*))
   (register-physical-card [this data]
     (log/info (format "%s/account/card" base-url))
