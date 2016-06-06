@@ -30,7 +30,7 @@
                            (try
                              (let [auth-user (util/authenticated-user ctx)
                                    user-data (util/generate-user-data auth-user (:sub-market app-config))
-                                   profile-data (-> (p/get-profile store)
+                                   profile-data (-> @(p/get-deferred-profile store)
                                                     (merge {:user user-data})
                                                     (merge {:rewardsSummary @(p/rewards mimi {})})
                                                     (merge response-overrides)

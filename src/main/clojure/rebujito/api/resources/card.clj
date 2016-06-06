@@ -65,7 +65,7 @@
 
                                (d/chain
                                 (fn [mimi-res]
-                                  (util/>200 ctx (assoc (p/get-card store {}) :cardNumber cardNumber))))
+                                  (util/>200 ctx (assoc @(p/get-deferred-card store {}) :cardNumber cardNumber))))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data  exception-info))))
@@ -134,26 +134,6 @@
     (merge (util/common-resource :me/cards))
     (merge util/access-control))))
 
-(defn load-profile-data-deferred [store]
-  (let [d* (d/deferred)]
-    (if-let [profile-data (p/get-profile store)]
-      (d/success! d* profile-data)
-      (d/error! d* (ex-info (str "API ERROR!")
-                            {:type :api
-                             :status 404
-                             :body  ["Profile Not Found"]})))
-    d*))
-
-(defn load-card-data-deferred [store card-id]
-  (let [d* (d/deferred)]
-    (if-let [card-data (p/get-card store {:cardNumber card-id})]
-      (d/success! d* card-data)
-      (d/error! d* (ex-info (str "API ERROR!")
-                            {:type :api
-                             :status 404
-                             :body ["Card Not Found"]})))
-    d*))
-
 (defn load-payment-method-data-deferred [store payment-method-id]
   (let [d* (d/deferred)]
     (if-let [payment-method-data (p/get-payment-method-detail store payment-method-id)]
@@ -208,8 +188,8 @@
                              :charset "UTF-8"}]
                  :response (fn [ctx]
                              (->
-                              (d/let-flow [profile-data (load-profile-data-deferred store)
-                                           card-data (load-card-data-deferred store (-> ctx :parameters :body :card-id))
+                              (d/let-flow [profile-data (p/get-deferred-profile store)
+                                           card-data (p/get-deferred-card store (-> ctx :parameters :body :card-id))
                                            payment-method-data (load-payment-method-data-deferred store (-> ctx :parameters :body :paymentMethodId))]
 
                                (d/chain

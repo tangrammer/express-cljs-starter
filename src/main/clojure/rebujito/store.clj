@@ -1,5 +1,6 @@
 (ns rebujito.store
   (:require
+   [manifold.deferred :as d]
    [taoensso.timbre :as log]
    [rebujito.protocols :as protocols]
    [com.stuartsierra.component  :as component]
@@ -13,8 +14,15 @@
   protocols/Store
   (get-cards [this]
     (assoc mocks/card :target-environment :prod))
-  (get-card [this data]
-    (assoc mocks/card :target-environment :prod))
+  (get-deferred-card [this data]
+    (let [d* (d/deferred)]
+      (if-let [card-data (assoc mocks/card :target-environment :prod)]
+        (d/success! d* card-data)
+        (d/error! d* (ex-info (str "STORE ERROR!")
+                              {:type :store
+                               :status 404
+                               :body ["Card Not Found"]})))
+      d*))
   (get-payment-method-detail [this data]
     (assoc mocks/get-payment-method-detail :target-environment :prod))
   (put-payment-method-detail [this data]
@@ -27,9 +35,15 @@
     (assoc mocks/post-token-resource-owner :target-environment :prod))
   (post-refresh-token [this]
     (assoc mocks/post-refresh-token :target-environment :prod))
-  (get-profile [this]
-      (assoc mocks/me-profile :target-environment :prod))
-  )
+  (get-deferred-profile [this]
+    (let [d* (d/deferred)]
+      (if-let [profile-data (assoc mocks/me-profile :target-environment :prod)]
+        (d/success! d* profile-data)
+        (d/error! d* (ex-info (str "STORE ERROR!")
+                              {:type :store
+                               :status 404
+                               :body  ["Profile Not Found"]})))
+      d*)))
 
 (defrecord MockStore []
   component/Lifecycle
@@ -39,8 +53,15 @@
   protocols/Store
   (get-cards [this]
     (assoc mocks/card :target-environment :dev))
-  (get-card [this data]
-    (assoc mocks/card :target-environment :dev))
+  (get-deferred-card [this data]
+    (let [d* (d/deferred)]
+      (if-let [card-data (assoc mocks/card :target-environment :dev)]
+        (d/success! d* card-data)
+        (d/error! d* (ex-info (str "STORE ERROR!")
+                              {:type :store
+                               :status 404
+                               :body ["Card Not Found"]})))
+      d*))
   (get-payment-method-detail [this data]
     (assoc mocks/get-payment-method-detail :target-environment :dev))
   (put-payment-method-detail [this data]
@@ -53,9 +74,15 @@
     (assoc mocks/post-token-resource-owner  :target-environment :dev))
   (post-refresh-token [this]
     (assoc mocks/post-refresh-token :target-environment :dev))
-  (get-profile [this]
-      (assoc mocks/me-profile :target-environment :dev))
-  )
+  (get-deferred-profile [this]
+    (let [d* (d/deferred)]
+      (if-let [profile-data (assoc mocks/me-profile :target-environment :dev)]
+        (d/success! d* profile-data)
+        (d/error! d* (ex-info (str "STORE ERROR!")
+                              {:type :store
+                               :status 404
+                               :body  ["Profile Not Found"]})))
+      d*)))
 
 (defn new-prod-store []
   (map->ProdStore {}))
