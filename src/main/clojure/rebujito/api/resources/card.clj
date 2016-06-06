@@ -134,9 +134,6 @@
     (merge (util/common-resource :me/cards))
     (merge util/access-control))))
 
-
-
-
 (defn load-profile-data-deferred [store]
   (let [d* (d/deferred)]
     (if-let [profile-data (p/get-profile store)]
@@ -189,8 +186,7 @@
   (fn [payment-data]
     (let [d* (d/deferred)]
       (if-let [mimi-card-data (p/load-card mimi {:cardId (-> card-data :cardNumber)
-                                            :amount (-> payment-data :amount)})]
-
+                                                 :amount (-> payment-data :amount)})]
         (d/success! d* mimi-card-data)
         (d/error! d* (ex-info (str "API MIMI ERROR")
                               {:type :api
@@ -212,21 +208,20 @@
                              :charset "UTF-8"}]
                  :response (fn [ctx]
                              (->
-                              (d/zip (load-profile-data-deferred store)
-                                     (load-card-data-deferred store (-> ctx :parameters :body :card-id))
-                                     (load-payment-method-data-deferred store (-> ctx :parameters :body :paymentMethodId)))
-                              (d/chain
-                               (fn [[profile-data card-data payment-method-data]]
-                                 (-> (execute-payment-deferred payment-gateway profile-data card-data payment-method-data (-> ctx :parameters :body :amount))
+                              (d/let-flow [profile-data (load-profile-data-deferred store)
+                                           card-data (load-card-data-deferred store (-> ctx :parameters :body :card-id))
+                                           payment-method-data (load-payment-method-data-deferred store (-> ctx :parameters :body :paymentMethodId))]
 
-                                     (d/chain
-                                      (load-card-mimi-deferred mimi card-data)
-                                      (fn [mimi-card-data]
-                                        (util/>200 ctx {:cardId nil
-                                               :balance 416.02
-                                               :balanceDate "2014-03-03T20:17:51.4329837Z"
-                                               :balanceCurrencyCode "ZAR"
-                                               :cardNumber "7777064158671182"}))))))
+                               (d/chain
+                                (-> (execute-payment-deferred payment-gateway profile-data card-data payment-method-data (-> ctx :parameters :body :amount))
+                                    (d/chain
+                                     (load-card-mimi-deferred mimi card-data)
+                                     (fn [mimi-card-data]
+                                       (util/>200 ctx {:cardId nil
+                                                       :balance 416.02
+                                                       :balanceDate "2014-03-03T20:17:51.4329837Z"
+                                                       :balanceCurrencyCode "ZAR"
+                                                       :cardNumber "7777064158671182"}))))))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
                                     (domain-exception ctx (ex-data exception-info))))))}}}
