@@ -18,16 +18,15 @@
 
  :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
         :token #or [#env REBUJITO_MIMI_TOKEN #profile {:prod nil
-                                                       :default "fake-token"}]}
+                                                       :default "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwbGF5ZXIiOiJyZWJ1aml0byIsImlhdCI6MTQ2MzY0NDUzN30.BmEuE_A993H2SYe9yEoIv7I81a_ZTsmZ-gAhQWsWBBY"}]}
 
  :api {:key "w8tnxd8h2wns43cfdgmt793j"
        :secret "KDRSRVqKHp5TkKvJJhN7RYkE"}
 
  :mongo {:host "localhost"
          :port 27017
-         :database #profile {:prod "rebujito"
-                             :test "rebujito-test"
-                             :dev "rebujito"}}
+         :database #profile {:default "rebujito"
+                             :test "rebujito-test"}}
 
  :payment-gateway {:paygate {:paygateId "10011064270"
                              :paygatePassword "test"
