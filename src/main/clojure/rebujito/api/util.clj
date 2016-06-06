@@ -16,11 +16,13 @@
 
 (defn >400* [ctx body]
   (log/error "ERROR >>>> " body)
-  (d/error-deferred (ex-info body {:status 400})))
+  (>base ctx 400 [body])
+;;  (d/error-deferred (ex-info  body {}))
+  )
 
 (defn >500* [ctx body]
   (log/error "ERROR>>>>>" body)
-  (d/error-deferred (ex-info body {:status 500})))
+  (d/error-deferred (ex-info body {})))
 
 (defn >404 [ctx body]
   (>base ctx 404 body))
