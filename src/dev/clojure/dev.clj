@@ -68,7 +68,6 @@
   []
   (start-system!))
 
-
 (defn stop
   "Stops the system if it is currently running, updates the Var
   #'system."
@@ -105,34 +104,25 @@
 
 (defn set-env! [& env]
   (alter-var-root #'env/env (constantly (set env))))
+
 (defn generate-random [n]
   (-> (nonce/random-bytes n)
-      (bytes->hex)
-      )
-  )
-
-(generate-random 32)
-
+      (bytes->hex)))
 
 (defn insert-new-api-key [who]
   (p/get-and-insert! (-> system :api-client-store) {"secret" (generate-random 32) "who" who}))
 
 (defn insert [data]
-  (p/insert! (-> system :api-client-store) data)
-  )
+  (p/insert! (-> system :api-client-store) data))
 
 (defn find* [id]
-  (p/find (-> system :api-client-store) id)
-  )
-
-(comment )
+  (p/find (-> system :api-client-store) id))
 
 (defn find-all
   ([]
    (find-all :api-client-store))
   ([store-kw]
    (p/find (-> system store-kw))))
-
 
 (defn check-mobile-user []
   (try
@@ -144,10 +134,6 @@
        (do ((ac/create-account-mongo! u (-> system :user-store) (:crypto system)) (-> (str (rand-int 1000000))
                                                                                       vector
                                                                                       (conj :mock-mimi)))
-           (println "inserting default mobile user in db => " u)))
-     )
+           (println "inserting default mobile user in db => " u))))
     (catch Exception e (do (println (.getMessage e))
-                           (check-mobile-user)
-                           ))
-    )
-  )
+                           (check-mobile-user)))))
