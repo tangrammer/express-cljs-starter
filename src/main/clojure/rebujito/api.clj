@@ -7,6 +7,7 @@
      [util :as util]]
     [rebujito.api.resources
      [payment :as payment]
+     [addresses :as addresses]
      [account :as account]
      [card :as card]
      [devices :as devices]
@@ -35,6 +36,8 @@
         ["me" [
                ["" (-> (account/me store mimi user-store authorizer authenticator app-config)
                        (assoc :id ::account/me))]
+               ["/addresses"  (-> (addresses/create user-store authorizer authenticator)
+                                (assoc :id ::addresses/create))]
                ["/logout/"  (-> (login/logout user-store authorizer authenticator)
                                 (assoc :id ::login/logout))]
                ["/login/validate-password" (-> (login/validate-password user-store crypto authorizer authenticator)

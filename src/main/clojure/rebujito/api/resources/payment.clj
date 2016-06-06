@@ -117,7 +117,9 @@
 (def schema {:methods {:post {:expirationYear Long
                               :billingAddressId String
                               :accountNumber String
-                              :default String
+                              (s/optional-key :default) String
+                              (s/optional-key :isDefault) Boolean
+                              (s/optional-key :isTemporary) Boolean
                               :nickname String
                               :paymentType String
                               :cvn String
@@ -235,6 +237,6 @@
                                          (>404 ctx ["Payment Method Not Found"])))
                                      (>404 ctx ["Card Not Found"])))
                                  (>404 ctx ["Profile Not Found"]))))}}}
-        
+
         (merge (common-resource :me/cards))
         (merge access-control))))
