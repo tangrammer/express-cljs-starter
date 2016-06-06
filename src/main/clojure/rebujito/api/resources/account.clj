@@ -52,6 +52,7 @@
     400 (util/>400 ctx body)
     500 (util/>500 ctx body)))
 
+
 (defn create-account-mongo! [data-account user-store crypto]
   (fn [mimi-res]
     (let [d* (d/deferred)
@@ -59,17 +60,20 @@
           mongo-id (p/generate-id user-store mimi-id)
           mongo-account-data (-> data-account
                                  (assoc :_id mongo-id)
-                                 (assoc :password (p/sign crypto (:password data-account)) ))
+                                 (assoc :password (p/sign crypto (:password data-account)) ))]
+      (d/success! d* (p/get-and-insert! user-store mongo-account-data))
+      d*)))
 
-          ]
-      (if (first (p/find user-store (select-keys mongo-account-data [:emailAddress]) ))
-          (d/error! d* (ex-info (str "API ERROR!")
-                                {:type :api
-                                 :status 400
-                                 :body  "Email address is not unique" }))
-          (d/success! d* (p/get-and-insert! user-store mongo-account-data)))
-      d*
-      )))
+(defn check-account-mongo [data-account user-store]
+  (let [d* (d/deferred)]
+    (log/info "check-account-mongo" data-account)
+    (if (first (p/find user-store data-account))
+      (d/error! d* (ex-info (str "API ERROR!")
+                            {:type :api
+                             :status 400
+                             :body  (format  "Email address %s is not unique" (:emailAddress data-account))}))
+      (d/success! d* "email doesn't exist in mongo"))
+    d*))
 
 (defn create [store mimi user-store crypto authenticator authorizer]
   (resource
@@ -81,16 +85,19 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
-                            (-> (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))
-                                (d/chain
-                                 (create-account-mongo! (get-in ctx [:parameters :body])  user-store crypto)
-                                 (fn [mongo-res]
-                                   (util/>201 ctx (dissoc  mongo-res :password))))
-                                (d/catch clojure.lang.ExceptionInfo
-                                    (fn [exception-info]
-                                      (domain-exception ctx (ex-data exception-info))))
-                                (d/catch Exception
-                                    #(util/>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))}}}
+                            (->
+                             (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
+                             (d/chain
+                              (fn [mongo-res]
+                                (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body]))))
+                              (create-account-mongo! (get-in ctx [:parameters :body])  user-store crypto)
+                              (fn [mongo-res]
+                                (util/>201 ctx (dissoc  mongo-res :password))))
+                             (d/catch clojure.lang.ExceptionInfo
+                                 (fn [exception-info]
+                                   (domain-exception ctx (ex-data exception-info))))
+                             #_(d/catch Exception
+                                 #(util/>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))}}}
        (merge (util/common-resource :account))
        (merge (util/access-control* authenticator authorizer {:post :rebujito.scopes/application})))))
 
