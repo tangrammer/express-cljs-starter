@@ -202,41 +202,32 @@
                              :charset "UTF-8"}]
                  :response (fn [ctx]
                              ;get the user
-                             (let [profileData (p/get-profile store)]
-                               (if profileData
-                                 ; get the card
-                                 (let [cardData (p/get-card store {:cardNumber (-> ctx :parameters :body :card-id)})]
-                                   (if cardData
-                                     ; get the payment method
-                                     (let [paymentMethodData (p/get-payment-method-detail store (-> ctx :parameters :body :paymentMethodId))]
-                                       (if paymentMethodData
-                                         ; make the payment
-                                         (let [paymentData (p/execute-payment payment-gateway {:firstName (-> profileData :user :firstName)
-                                                                                               :lastName (-> profileData :user :lastName)
-                                                                                               :emailAddress (-> profileData :user :email)
-                                                                                               :routingNumber (-> paymentMethodData :routingNumber)
-                                                                                               :cvn (-> paymentMethodData :cvn)
-                                                                                               :transactionId "12345"
-                                                                                               :currency (-> cardData :balanceCurrencyCode)
-                                                                                               :amount (-> ctx :parameters :body :amount)
-                                                                                               })]
-                                           (if paymentData
-                                             ; load card with credit via mimi
-                                             (let [mimiData (p/load-card mimi {:cardId (-> cardData :cardNumber)
-                                                                               :amount (-> paymentData :amount)})]
-                                               (if mimiData
-                                                 ; return balance
-                                                 (>200 ctx {:cardId nil
-                                                            :balance 416.02
-                                                            :balanceDate "2014-03-03T20:17:51.4329837Z"
-                                                            :balanceCurrencyCode "ZAR"
-                                                            :cardNumber "7777064158671182"
-                                                            })
-                                                 (>500 ctx ["An unexpected error occurred debiting the card."])))
-                                             (>500 ctx ["An unexpected error occurred processing the payment."])))
-                                         (>404 ctx ["Payment Method Not Found"])))
-                                     (>404 ctx ["Card Not Found"])))
-                                 (>404 ctx ["Profile Not Found"]))))}}}
+                             (if-let [profileData (p/get-profile store)]
+                               (if-let [cardData (p/get-card store {:cardNumber (-> ctx :parameters :body :card-id)})]
+                                 (if-let [paymentMethodData (p/get-payment-method-detail store (-> ctx :parameters :body :paymentMethodId))]
+                                   (if-let [paymentData (p/execute-payment payment-gateway {:firstName (-> profileData :user :firstName)
+                                                                                         :lastName (-> profileData :user :lastName)
+                                                                                         :emailAddress (-> profileData :user :email)
+                                                                                         :routingNumber (-> paymentMethodData :routingNumber)
+                                                                                         :cvn (-> paymentMethodData :cvn)
+                                                                                         :transactionId "12345"
+                                                                                         :currency (-> cardData :balanceCurrencyCode)
+                                                                                         :amount (-> ctx :parameters :body :amount)
+                                                                                         })]
+                                     (if-let [mimiData (p/load-card mimi {:cardId (-> cardData :cardNumber)
+                                                                       :amount (-> paymentData :amount)})]
+                                        ; return balance
+                                       (>200 ctx {:cardId nil
+                                                  :balance 416.02
+                                                  :balanceDate "2014-03-03T20:17:51.4329837Z"
+                                                  :balanceCurrencyCode "ZAR"
+                                                  :cardNumber "7777064158671182"
+                                                  })
+                                       (>500 ctx ["An unexpected error occurred debiting the card."]))
+                                     (>500 ctx ["An unexpected error occurred processing the payment."]))
+                                   (>404 ctx ["Payment Method Not Found"]))
+                                 (>404 ctx ["Card Not Found"]))
+                               (>404 ctx ["Profile Not Found"])))}}}
 
         (merge (common-resource :me/cards))
         (merge access-control))))
