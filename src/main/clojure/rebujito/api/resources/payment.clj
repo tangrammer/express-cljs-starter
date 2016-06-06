@@ -1,9 +1,11 @@
 (ns rebujito.api.resources.payment
   (:refer-clojure :exclude [methods])
   (:require
+   [manifold.deferred :as d]
    [taoensso.timbre :as log]
    [rebujito.protocols :as p]
-   [rebujito.api.util :refer :all]
+   [rebujito.api.util :as util]
+   [rebujito.api.resources :refer (domain-exception)]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
@@ -21,8 +23,8 @@
                         (let [paymentMethod (p/get-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
                           (println "paymentMethod" paymentMethod)
                           (if paymentMethod
-                            (>200 ctx paymentMethod)
-                            (>404 ctx ["Not Found"]))))}
+                            (util/>200 ctx paymentMethod)
+                            (util/>404 ctx ["Not Found"]))))}
 
       :delete {:parameters {:query {:access_token String}
                             :path {:payment-method-id String}}
@@ -34,9 +36,9 @@
                              (println "paymentMethod" paymentMethod)
                              (if paymentMethod
                                (if (p/delete-card-token payment-gateway {:cardToken (-> paymentMethod :routingNumber)})
-                                 (>200 ctx ["OK" "Success"])
-                                 (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."]))
-                               (>404 ctx ["Not Found"]))))}
+                                 (util/>200 ctx ["OK" "Success"])
+                                 (util/>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."]))
+                               (util/>404 ctx ["Not Found"]))))}
 
       :put {:parameters {:query {:access_token String}
                          :path {:payment-method-id String}
@@ -92,7 +94,7 @@
                                           ; ignore errors
                                           (println e)))
                                       ; return result
-                                      (>200 ctx {
+                                      (util/>200 ctx {
                                                  :fullName (-> updatedPaymentMethod :fullName)
                                                  :billingAddressId (-> updatedPaymentMethod :billingAddressId)
                                                  :accountNumber (-> updatedPaymentMethod :accountNumber)
@@ -108,11 +110,11 @@
                                                  :bankName (-> updatedPaymentMethod :bankName)
                                                  :routingNumber (-> updatedPaymentMethod :routingNumber)
                                                  }))
-                                    (>500 ctx ["An unexpected error occurred processing the request."])))))
-                            (>404 ctx ["Not Found"]))))}}}
+                                    (util/>500 ctx ["An unexpected error occurred processing the request."])))))
+                            (util/>404 ctx ["Not Found"]))))}}}
 
-    (merge (common-resource "me/payment-methods/{payment-method-id}"))
-    (merge access-control))))
+    (merge (util/common-resource "me/payment-methods/{payment-method-id}"))
+    (merge util/access-control))))
 
 (def schema {:methods {:post {:expirationYear Long
                               :billingAddressId String
@@ -136,8 +138,8 @@
                                                               (let [paymentMethods (p/get-payment-method store)]
                                                                 (println "paymentMethods" paymentMethods)
                                                                 (if paymentMethods
-                                                                  (>200 ctx paymentMethods)
-                                                                  (>500 ctx ["An unexpected error occurred processing the request."]))))}
+                                                                  (util/>200 ctx paymentMethods)
+                                                                  (util/>500 ctx ["An unexpected error occurred processing the request."]))))}
 
                                             :post {:parameters {:query {:access_token String}
                                                                 :body (-> schema :methods :post)}
@@ -169,7 +171,7 @@
                                                                                                                   })]
                                                                      (println "newPaymentMethod" newPaymentMethod)
                                                                      (if newPaymentMethod
-                                                                       (>201 ctx {
+                                                                       (util/>201 ctx {
                                                                                   :fullName (-> newPaymentMethod :fullName)
                                                                                   :billingAddressId (-> newPaymentMethod :billingAddressId)
                                                                                   :accountNumber (-> newPaymentMethod :accountNumber)
@@ -185,49 +187,6 @@
                                                                                   :bankName (-> newPaymentMethod :bankName)
                                                                                   :routingNumber (-> newPaymentMethod :routingNumber)
                                                                                   })
-                                                                       (>500 ctx ["An unexpected error occurred processing the request."]))))))}}}
-                                          (merge (common-resource :me/payment-methods))
-                                          (merge access-control))))
-
-(defn reload [store payment-gateway mimi]
-  (resource
-    (-> {:methods
-         {:post {:parameters {:query {:access_token String}
-                              :path {:card-id String}
-                              :body {:amount Long
-                                     :paymentMethodId String
-                                     :sessionId String
-                                     }}
-                 :consumes [{:media-type #{"application/json"}
-                             :charset "UTF-8"}]
-                 :response (fn [ctx]
-                             ;get the user
-                             (if-let [profileData (p/get-profile store)]
-                               (if-let [cardData (p/get-card store {:cardNumber (-> ctx :parameters :body :card-id)})]
-                                 (if-let [paymentMethodData (p/get-payment-method-detail store (-> ctx :parameters :body :paymentMethodId))]
-                                   (if-let [paymentData (p/execute-payment payment-gateway {:firstName (-> profileData :user :firstName)
-                                                                                         :lastName (-> profileData :user :lastName)
-                                                                                         :emailAddress (-> profileData :user :email)
-                                                                                         :routingNumber (-> paymentMethodData :routingNumber)
-                                                                                         :cvn (-> paymentMethodData :cvn)
-                                                                                         :transactionId "12345"
-                                                                                         :currency (-> cardData :balanceCurrencyCode)
-                                                                                         :amount (-> ctx :parameters :body :amount)
-                                                                                         })]
-                                     (if-let [mimiData (p/load-card mimi {:cardId (-> cardData :cardNumber)
-                                                                       :amount (-> paymentData :amount)})]
-                                        ; return balance
-                                       (>200 ctx {:cardId nil
-                                                  :balance 416.02
-                                                  :balanceDate "2014-03-03T20:17:51.4329837Z"
-                                                  :balanceCurrencyCode "ZAR"
-                                                  :cardNumber "7777064158671182"
-                                                  })
-                                       (>500 ctx ["An unexpected error occurred debiting the card."]))
-                                     (>500 ctx ["An unexpected error occurred processing the payment."]))
-                                   (>404 ctx ["Payment Method Not Found"]))
-                                 (>404 ctx ["Card Not Found"]))
-                               (>404 ctx ["Profile Not Found"])))}}}
-
-        (merge (common-resource :me/cards))
-        (merge access-control))))
+                                                                       (util/>500 ctx ["An unexpected error occurred processing the request."]))))))}}}
+                                          (merge (util/common-resource :me/payment-methods))
+                                          (merge util/access-control))))

@@ -502,8 +502,8 @@
                                        :content-type :json})
                         :status)))))
 
-     (testing ::payment/reload
-       (let [api-id ::payment/reload
+     (testing ::card/reload
+       (let [api-id ::card/reload
              path (bidi/path-for r api-id :card-id 123)]
          ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
          (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
@@ -666,7 +666,9 @@
                :headers {"Authorization" (format "Bearer %s" (:token (:mimi (config :prod))))}
                :form-params {:birth {:dayOfMonth "7", :month "10"}, :city "Zaandam", :email "juanito@uno.com", :firstname "Juanito", :lastname "Bezoe", :postalcode "1506ZL", :region "Android"}
                :body-encoding "UTF-8"
-               :content-type :json}))
+               :content-type :json})
+
+         )
 
 
 (comment (let [{:keys [status body]} (http-c/get (format "https://api.swarmloyalty.co.za/mimi/starbucks/account/%s/balances"  "9623570900002")

@@ -3,7 +3,7 @@
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.protocols :as p]
-   [rebujito.api.util :refer :all]
+   [rebujito.api.util :as util]
    [rebujito.mongo :as mongo]
    [cheshire.core :as json]
    [schema.core :as s]
@@ -19,9 +19,9 @@
              :response (fn [ctx]
                         ; TODO
                         ;  (>200 ctx [(p/get-cards store)])
-                         (>200 ctx []))}}}
-    (merge (common-resource :me/cards))
-    (merge access-control))))
+                         (util/>200 ctx []))}}}
+    (merge (util/common-resource :me/cards))
+    (merge util/access-control))))
 
 (defn unregister [store]
   (resource
@@ -34,16 +34,16 @@
 
                :response (fn [ctx]
                            (condp = (get-in ctx [:parameters :query :access_token])
-                             "500"    (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
-                             "403"    (>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object."])
-                             "121032" (>403 ctx ["Card is reported lost or stolen" ""])
-                             "121037" (>403 ctx ["Card is closed." ""])
-                             "404"    (>404 ctx ["Not Found" "Resource was not found"])
-                             "121018" (>400 ctx ["Cannot unregister a digital card that has a balance greater than zero." "Only zero balance digital cards can be unregistered"])
-                             (>200 ctx ["OK" "Success"])))}}}
+                             "500"    (util/>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
+                             "403"    (util/>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object."])
+                             "121032" (util/>403 ctx ["Card is reported lost or stolen" ""])
+                             "121037" (util/>403 ctx ["Card is closed." ""])
+                             "404"    (util/>404 ctx ["Not Found" "Resource was not found"])
+                             "121018" (util/>400 ctx ["Cannot unregister a digital card that has a balance greater than zero." "Only zero balance digital cards can be unregistered"])
+                             (util/>200 ctx ["OK" "Success"])))}}}
 
-    (merge (common-resource :me/cards))
-    (merge access-control))))
+    (merge (util/common-resource :me/cards))
+    (merge util/access-control))))
 
 (def schema {:post {:register-physical {:cardNumber String
                                         :pin String}}})
@@ -65,12 +65,12 @@
 
                                (d/chain
                                 (fn [mimi-res]
-                                  (>200 ctx (assoc (p/get-card store {}) :cardNumber cardNumber))))
+                                  (util/>200 ctx (assoc (p/get-card store {}) :cardNumber cardNumber))))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data  exception-info))))
                                (d/catch Exception
-                                   #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))
+                                   #(util/>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))
 
                          #_(condp = (get-in ctx [:parameters :query :access_token])
                              "121000" (>400 ctx ["No request supplied." "Request was malformed"])
@@ -91,8 +91,8 @@
                              "500" (>500 ctx ["Internal Server Error :( "])
                              (>200 ctx (p/get-cards store))))}}}
 
-    (merge (common-resource :me/cards))
-    (merge access-control))))
+    (merge (util/common-resource :me/cards))
+    (merge util/access-control))))
 
 (defn register-digital-cards [store]
   (resource
@@ -104,12 +104,12 @@
 
              :response (fn [ctx]
                          (condp = (get-in ctx [:parameters :query :access_token])
-                           "400" (>400 ctx ["No registration address on file. Registration address must already exist for user."])
-                           "500" (>500 ctx ["Internal Server Error :( "])
-                           (>201 ctx (p/get-cards store))))}}}
+                           "400" (util/>400 ctx ["No registration address on file. Registration address must already exist for user."])
+                           "500" (util/>500 ctx ["Internal Server Error :( "])
+                           (util/>201 ctx (p/get-cards store))))}}}
 
-    (merge (common-resource :me/cards))
-    (merge access-control))))
+    (merge (util/common-resource :me/cards))
+    (merge util/access-control))))
 
 (def empty-history {:paging {:total 0
                              :offset 0
@@ -129,7 +129,107 @@
                          :charset "UTF-8"}]
 
              :response (fn [ctx]
-                         (>200 ctx empty-history))}}}
+                         (util/>200 ctx empty-history))}}}
 
-    (merge (common-resource :me/cards))
-    (merge access-control))))
+    (merge (util/common-resource :me/cards))
+    (merge util/access-control))))
+
+
+
+
+(defn load-profile-data-deferred [store]
+  (let [d* (d/deferred)]
+    (if-let [profile-data (p/get-profile store)]
+      (d/success! d* profile-data)
+      (d/error! d* (ex-info (str "API ERROR!")
+                            {:type :api
+                             :status 404
+                             :body  ["Profile Not Found"]})))
+    d*))
+
+(defn load-card-data-deferred [store card-id]
+  (let [d* (d/deferred)]
+    (if-let [card-data (p/get-card store {:cardNumber card-id})]
+      (d/success! d* card-data)
+      (d/error! d* (ex-info (str "API ERROR!")
+                            {:type :api
+                             :status 404
+                             :body ["Card Not Found"]})))
+    d*))
+
+(defn load-payment-method-data-deferred [store payment-method-id]
+  (let [d* (d/deferred)]
+    (if-let [payment-method-data (p/get-payment-method-detail store payment-method-id)]
+      (d/success! d* payment-method-data)
+      (d/error! d* (ex-info (str "API ERROR!")
+                            {:type :api
+                             :status 404
+                             :body ["Payment Method Not Found"]})))
+    d*))
+
+(defn execute-payment-deferred [payment-gateway profile-data card-data payment-method-data amount]
+  (let [d* (d/deferred)]
+    (if-let [payment-data (p/execute-payment payment-gateway {:firstName (-> profile-data :user :firstName)
+                                                              :lastName (-> profile-data :user :lastName)
+                                                              :emailAddress (-> profile-data :user :email)
+                                                              :routingNumber (-> payment-method-data :routingNumber)
+                                                              :cvn (-> payment-method-data :cvn)
+                                                              :transactionId "12345"
+                                                              :currency (-> card-data :balanceCurrencyCode)
+                                                              :amount amount
+                                                              })]
+      (d/success! d* payment-data)
+      (d/error! d* (ex-info (str "API GATEWAY ERROR!")
+                            {:type :api
+                             :status 500
+                             :body ["An unexpected error occurred processing the payment."]})))
+    d*))
+
+(defn load-card-mimi-deferred [mimi card-data]
+  (fn [payment-data]
+    (let [d* (d/deferred)]
+      (if-let [mimi-card-data (p/load-card mimi {:cardId (-> card-data :cardNumber)
+                                            :amount (-> payment-data :amount)})]
+
+        (d/success! d* mimi-card-data)
+        (d/error! d* (ex-info (str "API MIMI ERROR")
+                              {:type :api
+                               :status 500
+                               :body ["An unexpected error occurred debiting the card."]})))
+      d*))
+  )
+
+(defn reload [store payment-gateway mimi]
+  (resource
+    (-> {:methods
+         {:post {:parameters {:query {:access_token String}
+                              :path {:card-id String}
+                              :body {:amount Long
+                                     :paymentMethodId String
+                                     :sessionId String
+                                     }}
+                 :consumes [{:media-type #{"application/json"}
+                             :charset "UTF-8"}]
+                 :response (fn [ctx]
+                             (->
+                              (d/zip (load-profile-data-deferred store)
+                                     (load-card-data-deferred store (-> ctx :parameters :body :card-id))
+                                     (load-payment-method-data-deferred store (-> ctx :parameters :body :paymentMethodId)))
+                              (d/chain
+                               (fn [[profile-data card-data payment-method-data]]
+                                 (-> (execute-payment-deferred payment-gateway profile-data card-data payment-method-data (-> ctx :parameters :body :amount))
+
+                                     (d/chain
+                                      (load-card-mimi-deferred mimi card-data)
+                                      (fn [mimi-card-data]
+                                        (util/>200 ctx {:cardId nil
+                                               :balance 416.02
+                                               :balanceDate "2014-03-03T20:17:51.4329837Z"
+                                               :balanceCurrencyCode "ZAR"
+                                               :cardNumber "7777064158671182"}))))))
+                              (d/catch clojure.lang.ExceptionInfo
+                                  (fn [exception-info]
+                                    (domain-exception ctx (ex-data exception-info))))))}}}
+
+        (merge (util/common-resource :me/cards))
+        (merge util/access-control))))
