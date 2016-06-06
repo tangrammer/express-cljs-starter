@@ -25,7 +25,9 @@
 
  :mongo {:host "localhost"
          :port 27017
-         :database "rebujito"}
+         :database #profile {:prod "rebujito"
+                             :test "rebujito-test"
+                             :dev "rebujito-dev"}}
 
  :payment-gateway {:paygate {:paygateId "10011064270"
                              :paygatePassword "test"
