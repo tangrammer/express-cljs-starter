@@ -95,9 +95,7 @@
                                 (util/>201 ctx (dissoc  mongo-res :password))))
                              (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]
-                                   (domain-exception ctx (ex-data exception-info))))
-                             #_(d/catch Exception
-                                 #(util/>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))}}}
+                                   (domain-exception ctx (ex-data exception-info))))))}}}
        (merge (util/common-resource :account))
        (merge (util/access-control* authenticator authorizer {:post :rebujito.scopes/application})))))
 

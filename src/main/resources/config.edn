@@ -27,7 +27,7 @@
          :port 27017
          :database #profile {:prod "rebujito"
                              :test "rebujito-test"
-                             :dev "rebujito-dev"}}
+                             :dev "rebujito"}}
 
  :payment-gateway {:paygate {:paygateId "10011064270"
                              :paygatePassword "test"
