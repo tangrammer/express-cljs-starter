@@ -19,6 +19,7 @@
 
 
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
+
 (deftest payment-resource
   (testing ::payment/methods
     (let [port (-> *system*  :webserver :port)]

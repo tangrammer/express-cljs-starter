@@ -35,7 +35,14 @@
   (put-payment-method-detail [this data]
     (assoc mocks/put-payment-method-detail :target-environment :prod))
   (post-payment-method [this data]
-    (assoc mocks/post-payment-method :target-environment :prod))
+    (let [d* (d/deferred)]
+      (if-let [payment-method-data  (assoc mocks/post-payment-method :target-environment :prod)]
+        (d/success! d* payment-method-data)
+        (d/error! d* (ex-info (str "API ERROR!")
+                              {:type :store
+                               :status 500
+                               :body ["post-payment-method Error "]})))
+      d*))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
   (post-token-resource-owner [this]
@@ -81,7 +88,14 @@
   (put-payment-method-detail [this data]
     (assoc mocks/put-payment-method-detail :target-environment :dev))
   (post-payment-method [this data]
-    (assoc mocks/post-payment-method :target-environment :dev))
+    (let [d* (d/deferred)]
+      (if-let [payment-method-data  (assoc mocks/post-payment-method :target-environment :dev)]
+        (d/success! d* payment-method-data)
+        (d/error! d* (ex-info (str "API ERROR!")
+                              {:type :store
+                               :status 500
+                               :body ["post-payment-method Error "]})))
+      d*))
   (get-payment-method [this]
     (mapv #(assoc % :target-environment :dev) mocks/get-payment-method))
   (post-token-resource-owner [this]

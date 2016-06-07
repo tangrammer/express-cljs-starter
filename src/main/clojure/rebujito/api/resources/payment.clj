@@ -146,46 +146,44 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
-                            (let [request (get-in ctx [:parameters :body])
-                                        ; Create the token at the gateway
-                                  {:keys [card-token]} @(p/create-card-token payment-gateway
-                                                                           {:cardNumber (-> request :accountNumber)
-                                                                            :expirationMonth (-> request :expirationMonth)
-                                                                            :expirationYear (-> request :expirationYear)
-                                                                            :cvn (-> request :cvn)})]
-                              (if card-token
+                            (-> (d/let-flow [request (get-in ctx [:parameters :body])
+                                             card-token (p/create-card-token payment-gateway
+                                                                             {:cardNumber (-> request :accountNumber)
+                                                                              :expirationMonth (-> request :expirationMonth)
+                                                                              :expirationYear (-> request :expirationYear)
+                                                                              :cvn (-> request :cvn)})
+                                             new-payment-method (p/post-payment-method
+                                                                 store
+                                                                 {:nickName (-> request :nickName)
+                                                                  :paymentType (-> request :paymentType)
+                                                                  :fullName (-> request :fullName)
+                                                                  :default (-> request :default)
+                                                                  :accountNumber "****************"
+                                                                  :accountNumberLastFour "****"
+                                                                  :cvn (-> request :cvn)
+                                                                  :expirationMonth (-> request :expirationMonth)
+                                                                  :expirationYear (-> request :expirationYear)
+                                                                  :billingAddressId (-> request :billingAddressId)
+                                                                  :routingNumber (:card-token card-token)
+                                                                  })]
                                         ; Create a new payment method with the Token
-                                (let [newPaymentMethod (p/post-payment-method store
-                                                                              {:nickName (-> request :nickName)
-                                                                               :paymentType (-> request :paymentType)
-                                                                               :fullName (-> request :fullName)
-                                                                               :default (-> request :default)
-                                                                               :accountNumber "****************"
-                                                                               :accountNumberLastFour "****"
-                                                                               :cvn (-> request :cvn)
-                                                                               :expirationMonth (-> request :expirationMonth)
-                                                                               :expirationYear (-> request :expirationYear)
-                                                                               :billingAddressId (-> request :billingAddressId)
-                                                                               :routingNumber card-token
-                                                                               })]
-                                  (println "newPaymentMethod" newPaymentMethod)
-                                  (if newPaymentMethod
-                                    (util/>201 ctx {
-                                                    :fullName (-> newPaymentMethod :fullName)
-                                                    :billingAddressId (-> newPaymentMethod :billingAddressId)
-                                                    :accountNumber (-> newPaymentMethod :accountNumber)
-                                                    :default (-> newPaymentMethod :default)
-                                                    :paymentMethodId (-> newPaymentMethod :paymentMethodId)
-                                                    :nickname (-> newPaymentMethod :nickname)
-                                                    :paymentType (-> newPaymentMethod :paymentType)
-                                                    :accountNumberLastFour (-> newPaymentMethod :accountNumberLastFour)
-                                                    :cvn (-> newPaymentMethod :cvn)
-                                                    :expirationYear (-> newPaymentMethod :expirationYear)
-                                                    :expirationMonth (-> newPaymentMethod :expirationMonth)
-                                                    :isTemporary (-> newPaymentMethod :isTemporary)
-                                                    :bankName (-> newPaymentMethod :bankName)
-                                                    :routingNumber (-> newPaymentMethod :routingNumber)
-                                                    })
-                                    (util/>500 ctx ["An unexpected error occurred processing the request."]))))))}}}
+                                            (util/>201 ctx {:fullName (-> new-payment-method :fullName)
+                                                            :billingAddressId (-> new-payment-method :billingAddressId)
+                                                            :accountNumber (-> new-payment-method :accountNumber)
+                                                            :default (-> new-payment-method :default)
+                                                            :paymentMethodId (-> new-payment-method :paymentMethodId)
+                                                            :nickname (-> new-payment-method :nickname)
+                                                            :paymentType (-> new-payment-method :paymentType)
+                                                            :accountNumberLastFour (-> new-payment-method :accountNumberLastFour)
+                                                            :cvn (-> new-payment-method :cvn)
+                                                            :expirationYear (-> new-payment-method :expirationYear)
+                                                            :expirationMonth (-> new-payment-method :expirationMonth)
+                                                            :isTemporary (-> new-payment-method :isTemporary)
+                                                            :bankName (-> new-payment-method :bankName)
+                                                            :routingNumber (-> new-payment-method :routingNumber)
+                                                            }))
+                                (d/catch clojure.lang.ExceptionInfo
+                                    (fn [exception-info]
+                                      (domain-exception ctx (ex-data exception-info))))))}}}
        (merge (util/common-resource :me/payment-methods))
        (merge util/access-control))))
