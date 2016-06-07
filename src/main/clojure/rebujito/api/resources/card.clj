@@ -134,8 +134,6 @@
     (merge (util/common-resource :me/cards))
     (merge util/access-control))))
 
-
-
 (defn execute-payment-deferred [payment-gateway profile-data card-data payment-method-data amount]
   (let [d* (d/deferred)]
     (if-let [payment-data (p/execute-payment payment-gateway {:firstName (-> profile-data :user :firstName)
@@ -154,18 +152,7 @@
                              :body ["An unexpected error occurred processing the payment."]})))
     d*))
 
-(defn load-card-mimi-deferred [mimi card-data]
-  (fn [payment-data]
-    (let [d* (d/deferred)]
-      (if-let [mimi-card-data (p/load-card mimi {:cardId (-> card-data :cardNumber)
-                                                 :amount (-> payment-data :amount)})]
-        (d/success! d* mimi-card-data)
-        (d/error! d* (ex-info (str "API MIMI ERROR")
-                              {:type :api
-                               :status 500
-                               :body ["An unexpected error occurred debiting the card."]})))
-      d*))
-  )
+
 
 (defn reload [store payment-gateway mimi]
   (resource
@@ -187,7 +174,8 @@
                                (d/chain
                                 (-> (execute-payment-deferred payment-gateway profile-data card-data payment-method-data (-> ctx :parameters :body :amount))
                                     (d/chain
-                                     (load-card-mimi-deferred mimi card-data)
+                                     (fn [payment-data]
+                                       (p/load-card mimi (-> ctx :parameters :body :card-id) (-> ctx :parameters :body :amount)))
                                      (fn [mimi-card-data]
                                        (util/>200 ctx {:cardId nil
                                                        :balance 416.02

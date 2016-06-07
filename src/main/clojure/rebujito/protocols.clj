@@ -21,7 +21,7 @@
 (defprotocol Mimi
   (create-account [this data])
   (register-physical-card [this data])
-  (load-card [this data])
+  (load-card [this card-id amount])
   (rewards [this data])
   )
 
