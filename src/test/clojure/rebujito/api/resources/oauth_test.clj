@@ -20,35 +20,35 @@
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
 
 (deftest access-token-application*
-  (testing "access resource protected with application role"
-    (testing ::account/create
-      (let [path (get-path ::account/create)
-            port (-> *system*  :webserver :port)
-            access_token (access-token-application)
-            new-account (g/generate (:post account/schema))
-            url (format "http://localhost:%s%s?access_token=%s&market=%s"  port path access_token 1234)]
+  "access resource protected with application role"
+  (testing ::account/create
+    (let [path (get-path ::account/create)
+          port (-> *system*  :webserver :port)
+          access_token (access-token-application)
+          new-account (g/generate (:post account/schema))
+          url (format "http://localhost:%s%s?access_token=%s&market=%s"  port path access_token 1234)]
 
-        (is (= 201  (-> @(http/post url
-                                    {:throw-exceptions false
-                                     :body (json/generate-string
-                                            (assoc new-account
-                                                   :birthDay "1"
-                                                   :birthMonth "1"
-                                                   ))
-                                     :body-encoding "UTF-8"
-                                     :content-type :json})
-;;                        print-body
-                        :status)))
-        (is (= 401  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path "wrong_access_token" 1234)
-                                    {:throw-exceptions false
-                                     :form-params (assoc new-account
-                                                        :birthDay "1"
-                                                        :birthMonth "1")
-                                     :body-encoding "UTF-8"
-                                     :content-type :application/x-www-form-urlencoded})
-;;                        print-body
-                        :status)))))
-    )
+      (is (= 201  (-> @(http/post url
+                                  {:throw-exceptions false
+                                   :body (json/generate-string
+                                          (assoc new-account
+                                                 :birthDay "1"
+                                                 :birthMonth "1"
+                                                 ))
+                                   :body-encoding "UTF-8"
+                                   :content-type :json})
+                      ;;                        print-body
+                      :status)))
+      (is (= 401  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path "wrong_access_token" 1234)
+                                  {:throw-exceptions false
+                                   :form-params (assoc new-account
+                                                       :birthDay "1"
+                                                       :birthMonth "1")
+                                   :body-encoding "UTF-8"
+                                   :content-type :application/x-www-form-urlencoded})
+                      ;;                        print-body
+                      :status)))))
+
   )
 
 (deftest test-token

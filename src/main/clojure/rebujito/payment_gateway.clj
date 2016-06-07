@@ -27,23 +27,32 @@
                       (throw (ex-info "500" "Paygate Not Available"))
                       ))))
   (create-card-token [this data]
-    (log/debug data)
-    @(http-k/post (-> this :url)
-                 {:body (velocity/render "paygate/create-card-token.vm"
-                                         :paygateId (-> this :paygateId)
-                                         :paygatePassword (-> this :paygatePassword)
-                                         :cardNumber (-> data :cardNumber)
-                                         :expirationMonth (-> data :expirationMonth)
-                                         :expirationYear (-> data :expirationYear))}
-                  (fn [{:keys [status body error]}]
-                    (log/debug status error body)
-                    (if (or error (not= 200 status) (not (.contains body "CardVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
-                      nil
-                      (let [response (xp/xml->doc body)
-                            cardToken (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
-                        (if (and (not-empty cardToken) (first cardToken))
-                          {:cardToken (first cardToken)}
-                          nil))))))
+    (let [d* (d/deferred)]
+      (log/debug data)
+      (http-k/post (-> this :url)
+                    {:body (velocity/render "paygate/create-card-token.vm"
+                                            :paygateId (-> this :paygateId)
+                                            :paygatePassword (-> this :paygatePassword)
+                                            :cardNumber (-> data :cardNumber)
+                                            :expirationMonth (-> data :expirationMonth)
+                                            :expirationYear (-> data :expirationYear))}
+                    (fn [{:keys [status body error]}]
+                      (log/debug status error body)
+                      (if (or error (not= 200 status) (not (.contains body "CardVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
+                        (d/error! d* (ex-info (str "error!!!" 500)
+                                              {:type :payment-gateway
+                                               :status 500
+                                               :body ["paygate/create-card-token" status error body]}))
+                        (let [response (xp/xml->doc body)
+                              card-token (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
+                          (if (and (not-empty card-token) (first card-token))
+
+                            (d/success! d* {:card-token (first card-token)})
+                            (d/error! d* (ex-info (str "error!!!" 500)
+                                                  {:type :payment-gateway
+                                                   :status 500
+                                                   :body ["paygate/create-card-token NULL card-token" status error body]})))))))
+      d*))
   (delete-card-token [this data]
     (log/debug data)
     @(http-k/post (-> this :url)

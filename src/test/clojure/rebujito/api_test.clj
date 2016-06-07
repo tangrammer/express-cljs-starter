@@ -290,36 +290,6 @@
                                     :content-type :json})
                        :status)))))
 
-     (testing ::payment/methods
-       (let [path (get-path ::payment/methods)]
-         ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                   {:throw-exceptions false
-                                    :body-encoding "UTF-8"
-                                    :content-type :json})
-                        :status)))
-         (let [{:keys [status body]}
-               (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                               {:throw-exceptions false
-                                :body-encoding "UTF-8"
-                                :body (json/generate-string
-                                       {
-                                        :expirationYear 2018
-                                        :billingAddressId "string"
-                                        :accountNumber "4000000000000002"
-                                        :default "false"
-                                        :nickname "string"
-                                        :paymentType "visa"
-                                        :cvn "12345"
-                                        :fullName "string"
-                                        :expirationMonth 11
-                                        }
-                                       )
-                                :content-type :json})
-                   )]
-           (is (= status 201))
-           (is (.contains (slurp body) "paymentMethodId"))
-           )))
 
      (testing ::payment/method-detail
        (let [api-id ::payment/method-detail
