@@ -1,5 +1,6 @@
 (ns rebujito.api.resources.rewards-test
   (:require [rebujito.api.resources.rewards :refer :all]
+            [rebujito.base-test :refer (system-fixture *system*)]
             [clojure.test :refer :all]))
 
 (def mimi-response {:programs

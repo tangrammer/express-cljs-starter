@@ -3,7 +3,7 @@
    [rebujito.config :refer (config)]
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
-   [rebujito.api-test :refer (system-fixture *system*)]
+   [rebujito.base-test :refer (system-fixture *system*)]
    [clojure.test :refer :all]
    [rebujito.mongo :refer (generate-account-id id>mimi-id)]))
 

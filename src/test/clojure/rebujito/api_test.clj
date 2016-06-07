@@ -1,85 +1,51 @@
 (ns rebujito.api-test
   (:require
-   [buddy.core.nonce :as nonce]
-   [buddy.sign.util :refer (to-timestamp)]
-   [rebujito.api.sig :as api-sig]
-   [rebujito.api.time :as api-time]
+
    [aleph.http :as http]
-   [org.httpkit.client :as http-k]
-   [clj-http.client :as http-c]
    [bidi.bidi :as bidi]
    [byte-streams :as bs]
    [cheshire.core :as json]
+   [clj-http.client :as http-c]
    [clojure.pprint :refer (pprint)]
    [clojure.test :refer :all]
-   [com.stuartsierra.component :as component]
-   [rebujito.api.resources.account :as account]
-   [rebujito.api.resources.profile :as profile]
-   [rebujito.api.resources.card :as card]
-   [rebujito.api.resources.oauth :as oauth]
-   [rebujito.api.resources.devices :as devices]
-   [rebujito.api.resources.login :as login]
-   [rebujito.store.mocks :as mocks]
-   [rebujito.api.resources.payment :as payment]
-   [rebujito.api.resources.social-profile :as social-profile]
+   [manifold.deferred :as d]
+   [org.httpkit.client :as http-k]
+   [rebujito.base-test :refer (system-fixture *system* api-config new-account-sb
+                                              new-sig get-path access-token-application
+                                              access-token-user)]
+   [rebujito.api.resources
+    [account :as account]
+    [card :as card]
+    [devices :as devices]
+    [login :as login]
+    [oauth :as oauth]
+    [payment :as payment]
+    [profile :as profile]
+    [social-profile :as social-profile]]
+
+   [rebujito.api.sig :as api-sig]
+   [rebujito.api.time :as api-time]
    [rebujito.config :refer (config)]
+   [rebujito.logging :as log-levels]
+   [rebujito.store.mocks :as mocks]
    [rebujito.system :refer (new-production-system)]
    [schema-generators.generators :as g]
    [schema.core :as s]
-   [manifold.deferred :as d]
-   [rebujito.logging :as log-levels]
-   [buddy.core.codecs :refer (bytes->hex)]
    [taoensso.timbre :as log]
-   [rebujito.system.dev-system :as dev]
+
    ))
 
 (log/set-config! log-levels/timbre-info-config)
 
-(def ^:dynamic *system* nil)
-
-(defmacro with-system [system & body]
-  `(let [s# (component/start ~system)]
-     (try
-       (binding [*system* s#] ~@body)
-       (finally
-         (component/stop s#)))))
-
-(defn system-fixture [config-env]
-  (fn[f]
-    (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port]
-                                                               (comp inc (fn [s]
-                                                                           (if (= String (type s))
-                                                                             (read-string s)
-                                                                             s) )))))
-      (try
-        (s/with-fn-validation
-          (f))
-        (catch Exception e (do (println (str "caught exception: " (.getMessage e)))
-                               (throw e)))))))
 
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
 
-(defn api-config []
-  (-> (config :test) :api))
-
-(defn new-sig []
-  (let [{:keys [key secret]} (api-config)
-        t (api-time/now)]
-;;    (println ">>>>" (to-timestamp t))
-    (api-sig/new-sig t key secret)))
-
-(defn get-path [kw]
-  (let [r (-> *system* :docsite-router :routes)
-        sig (new-sig)
-        api-id kw]
-    (bidi/path-for r api-id)))
 
 
 
 (defn print-body [c]
   (log/info ">>>>> ****"(-> c :body bs/to-string))
-  c
-  )
+  c)
 
 (defn oauth-login-data []
   (let [{:keys [key secret]} (api-config)]
@@ -90,110 +56,7 @@
     :password "real-secret",
     :scope "test_scope"}))
 
-(defn generate-random [n]
-  (-> (nonce/random-bytes n)
-      (bytes->hex)
-      )
-  )
 
-(defn new-account-sb []
-{:countrySubdivision "aa",
- :registrationSource "aa",
- :addressLine1 "zz",
- :addressLine2 "yy",
- :password "real-secret",
- :emailAddress (format  "%s@hola.com" (generate-random 6)),
- :city "Sevilla",
- :firstName (format  "Juan-%s" (generate-random 6))
- :birthDay "13",
- :birthMonth "06",
- :lastName (format  "Ruz-%s" (generate-random 6))
- :receiveStarbucksEmailCommunications true,
- :postalCode "41003",
- :country "Spain"
-; :userName "juan"
- }
-  )
-
-(defn access-token-application []
-  (let [r (-> *system* :docsite-router :routes)
-        port (-> *system*  :webserver :port)
-        new-account (g/generate (:post account/schema))
-        new-account (new-account-sb)
-        sig (new-sig)
-        access_token (atom "")]
-
-    (let [api-id ::oauth/token-resource-owner
-          path (bidi/path-for r api-id)]
- ;     (println r api-id path)
-      ;; :grant_type ""client_credentials""
-      (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
-                                         {:throw-exceptions false
-                                          :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
-                                                 :grant_type "client_credentials"
-                                                 :client_id (:key (api-config))
-                                                 :client_secret (:secret (api-config)))
-                                          :body-encoding "UTF-8"
-                                          :content-type :application/x-www-form-urlencoded})
-                           body (-> r :body bs/to-string (json/parse-string true))
- ;                          _ (println body)
-                           ]
-                       (reset! access_token (:access_token body))
-                       r)
-                     :status)))
-      )
-    @access_token))
-
-(defn access-token-user [username password]
-  (let [r (-> *system* :docsite-router :routes)
-        port (-> *system*  :webserver :port)
-        sig (new-sig)
-        access_token (atom "")]
-
-    (let [api-id ::oauth/token-resource-owner
-          path (bidi/path-for r api-id)]
-
-      (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
-                              {:throw-exceptions false
-                               :form-params
-                               (assoc (g/generate (-> oauth/schema :token-resource-owner))
-                                      :grant_type "password"
-                                      :client_id (:key (api-config))
-                                      :client_secret (:secret (api-config))
-                                      :username username
-                                      :password password
-                                      )
-                               :body-encoding "UTF-8"
-                               :content-type :x-www-form-urlencoded})
-                body (-> r :body bs/to-string (json/parse-string true))
-                ;;                  _ (println body)
-
-                ]
-            (reset! access_token (:access_token body))
-;;            (println "\n >>>> password access_token "@access_token "\n")
-            r)
-          :status)
-
-      )
-    @access_token))
-
-
-(defn create-account [account-data]
-  (let [port (-> *system*  :webserver :port)
-        path (get-path ::account/create)
-        access_token (access-token-application)]
-    (let [res @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path access_token 1234)
-                          {:throw-exceptions false
-                           :body  (json/generate-string account-data)
-                           :body-encoding "UTF-8"
-                           :content-type :json})]
-      res
-      (is (= 201 (:status res) ))
-;;      (println "account-create====>>>" (json/parse-string (bs/to-string (:body res)) true))
-      (json/parse-string (bs/to-string (:body res)) true)
-      )
-)
-  )
 
 
 (deftest test-20*

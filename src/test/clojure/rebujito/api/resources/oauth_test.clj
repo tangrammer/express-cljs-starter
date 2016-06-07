@@ -7,8 +7,9 @@
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
-   [rebujito.api-test :refer (system-fixture *system* get-path access-token-application
-                                             access-token-user new-account-sb create-account new-sig print-body api-config)]
+   [rebujito.api-test :refer (print-body)]
+   [rebujito.base-test :refer (system-fixture *system* *user-access-token*
+                                              *user-account-data* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
     [account :as account]
@@ -219,50 +220,31 @@
                          r)
                        :status)))))))
 
-(deftest test-create-account
-  (testing "create-account-only"
-    (create-account  (assoc (new-account-sb)
-                            :birthDay "1"
-                            :birthMonth "1"))))
+
 
 (deftest test-get-user
   (time
    (testing ::account/me
-     (let [account-data  (assoc (new-account-sb)
-                                :birthDay "1"
-                                :birthMonth "1")
-           account (create-account  account-data)
-           port (-> *system*  :webserver :port)
-           path (get-path ::account/me)
-           access_token (access-token-user (:emailAddress account-data)(:password account-data))]
-;;       (pprint account)
-;;       (println "access-token:::" access_token)
+     (let [port (-> *system*  :webserver :port)
+           path (get-path ::account/me)]
 
-
-       (is (= 201  (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path access_token)
+       (is (= 201  (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :content-type :json})
 ;;                      print-body
                        :status)))
 
-       (println access_token)
+
      (testing ::login/validate-password
        (let [path (get-path ::login/validate-password)]
-         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path access_token)
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :body (json/generate-string
-                                            (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password account-data)))
+                                            (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password *user-account-data*)))
                                      :content-type :json})
-                        print-body
+;                        print-body
                         :status)))
 
-         ))
-
-       )
-
-     )
-
-
-   ))
+         ))))))

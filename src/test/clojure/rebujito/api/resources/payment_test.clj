@@ -7,8 +7,8 @@
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
-   [rebujito.api-test :refer (system-fixture *system* get-path access-token-application
-                                             access-token-user new-account-sb create-account new-sig print-body api-config)]
+   [rebujito.api-test :refer (print-body)]
+   [rebujito.base-test :refer (system-fixture *system* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
     [payment :as payment]
