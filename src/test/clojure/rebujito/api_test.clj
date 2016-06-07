@@ -10,7 +10,7 @@
    [clojure.test :refer :all]
    [manifold.deferred :as d]
    [org.httpkit.client :as http-k]
-   [rebujito.base-test :refer (system-fixture *system* api-config new-account-sb
+   [rebujito.base-test :refer (system-fixture *system* api-config new-account-sb *app-access-token* *user-account-data* *user-access-token*
                                               new-sig get-path access-token-application
                                               access-token-user)]
    [rebujito.api.resources
@@ -56,34 +56,10 @@
     :password "real-secret",
     :scope "test_scope"}))
 
-
-
-
 (deftest test-20*
   (time
    (let [r (-> *system* :docsite-router :routes)
-         port (-> *system*  :webserver :port)
-         new-account (g/generate (:post account/schema))
-         new-account (new-account-sb)
-         sig (new-sig)
-         access_token (atom "")]
-
-     (testing ::account/create
-        (let [path (get-path ::account/create)
-              access_token (access-token-application)]
-          (is (= 201  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path access_token 1234)
-                                      {:throw-exceptions false
-                                       :body (json/generate-string
-                                              (assoc new-account
-                                                     ;; string or int should both work here
-                                                     :birthDay "1"
-                                                     :birthMonth 1
-                                                     ))
-                                       :body-encoding "UTF-8"
-                                       :content-type :json})
-                          ;;                         print-body
-                          :status)))))
-     (reset! access_token (access-token-user (:emailAddress new-account)(:password new-account)))
+         port (-> *system*  :webserver :port)]
 
 
      (testing ::devices/register
@@ -198,7 +174,7 @@
      (testing ::profile/me
        (let [api-id ::profile/me
              path (bidi/path-for r api-id)]
-         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                    {:throw-exceptions false
                                     :body-encoding "UTF-8"
                                     :content-type :json})
@@ -219,11 +195,11 @@
      (testing ::login/validate-password
        (let [api-id ::login/validate-password
              path (bidi/path-for r api-id)]
-         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :body (json/generate-string
-                                            (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password new-account)))
+                                            (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password *user-account-data*)))
                                      :content-type :json})
                                         ;                        print-body
                         :status)))
@@ -235,11 +211,11 @@
              path (bidi/path-for r api-id)
                                         ;       access_token (access-token-user (:emailAddress account-data) (:password account-data))
              ]
-         (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path @access_token)
+         (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                          {:throw-exceptions false
                           :body-encoding "UTF-8"
                           :body (json/generate-string
-                                 (select-keys new-account (keys (-> login/schema :forgot-password :post))))
+                                 (select-keys *user-account-data*  (keys (-> login/schema :forgot-password :post))))
                           :content-type :json})
                                         ;             print-body
              :status)

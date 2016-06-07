@@ -220,8 +220,6 @@
                          r)
                        :status)))))))
 
-
-
 (deftest test-get-user
   (time
    (testing ::account/me

@@ -8,7 +8,7 @@
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
    [rebujito.api-test :refer (print-body)]
-   [rebujito.base-test :refer (system-fixture *system* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
+   [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
     [payment :as payment]
@@ -23,22 +23,17 @@
 (deftest payment-resource
   (testing ::payment/methods
     (let [port (-> *system*  :webserver :port)
-          account-data  (assoc (new-account-sb)
-                               :birthDay "1"
-                               :birthMonth "1")
-          account (create-account  account-data)
 
-          access_token (access-token-user (:emailAddress account-data)(:password account-data))
           ]
       (let [path (get-path ::payment/methods)]
        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-       (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path access_token)
+       (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                  {:throw-exceptions false
                                   :body-encoding "UTF-8"
                                   :content-type :json})
                       :status)))
        (let [{:keys [status body]}
-             (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path access_token)
+             (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                              {:throw-exceptions false
                               :body-encoding "UTF-8"
                               :body (json/generate-string

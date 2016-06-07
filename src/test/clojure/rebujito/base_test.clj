@@ -21,6 +21,7 @@
 
 (def ^:dynamic *system* nil)
 (def ^:dynamic *user-access-token* nil)
+(def ^:dynamic *app-access-token* nil)
 (def ^:dynamic *user-account-data* nil)
 
 (defn generate-random [n]
@@ -162,6 +163,7 @@
      (try
        (binding [*system* s#
                  *user-account-data* u#
+                 *app-access-token* (access-token-application s#)
                  *user-access-token* (bind-new-user-and-token s# u#)] ~@body)
        (finally
          (component/stop s#)))))
