@@ -76,15 +76,11 @@
               :consumes [{:media-type #{"application/json"}
                           :charset "UTF-8"}]
               :response (fn [ctx]
-                          (-> (rewards-response mimi)
-                              (d/chain
-                               (fn [res]
-                                 (>200 ctx res)))
+                          (-> (d/let-flow [rewards (rewards-response mimi)]
+                                          (>200 ctx rewards))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
-                                    (domain-exception ctx (ex-data exception-info))))
-                              (d/catch Exception
-                                  #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))}}}
+                                    (domain-exception ctx (ex-data exception-info))))))}}}
 
       (merge (common-resource :profile))
       (merge (access-control* authenticator authorizer {:get :rebujito.scopes/user})))))
