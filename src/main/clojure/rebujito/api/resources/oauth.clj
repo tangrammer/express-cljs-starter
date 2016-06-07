@@ -47,25 +47,7 @@
              "500" (>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."])
              ))
 
-(defn deferred-find-client [api-client-store client-id client-secret]
-  (log/info "deferred-find-client" api-client-store client-id client-secret)
-  (let [d* (d/deferred)]
-    (future
-      (try
-        (if-let [api-client  (p/find api-client-store client-id)]
-          (d/success! d* "SUCCESS")
-          (d/error! d*
-                    (ex-info (str "API ERROR!")
-                             {:type :api
-                              :status 400
-                              :body (format "client-id and client-secret: %s :: %s not valid  " client-id client-secret)}))
-          )
-        (catch Exception e (fn [e] (d/error! d*
-                                            (ex-info (str "API ERROR!")
-                                                     {:type :api
-                                                      :status 400
-                                                      :body (format "client-id and client-secret: %s :: %s not valid  " client-id client-secret)}))))))
-    d*))
+
 
 (defmulti get-token
   "OAuth Token methods: dispatch on grant_type"
@@ -74,39 +56,29 @@
 
 (defmethod get-token :client_credentials ; docs -> http://bit.ly/1sLcJZO
   [ctx store user-store authorizer crypto api-client-store]
-  (>201 ctx (p/grant authorizer {} #{scopes/application})))
+  (d/future (>201 ctx (p/grant authorizer {} #{scopes/application}))))
 
 (defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
   [ctx store user-store authorizer crypto api-client-store]
-  (->
-   (deferred-find-client api-client-store
-     (get-in ctx [:parameters :body :client_id])
-     (get-in ctx [:parameters :body :client_secret]))
-   (d/chain
-    (fn [n]
-      (api-sig/deferred-check
-             (get-in ctx [:parameters :query :sig])
-             (get-in ctx [:parameters :body :client_id])
-             (get-in ctx [:parameters :body :client_secret])
-             ))
-    (fn [m]
-      (if-let [user  (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
-                                             :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
-                         first
-                         (dissoc :password))]
-        (>201 ctx (p/grant authorizer user #{scopes/application scopes/user}))
-        (>404 ctx [:user-not-found (get-in ctx [:parameters :body :username])]))))
-      (d/catch clojure.lang.ExceptionInfo
-          (fn [exception-info]
-            (domain-exception ctx (ex-data exception-info))))
-      (d/catch Exception
-          #(>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))
+  (d/let-flow [api-client (p/login api-client-store
+                                   (get-in ctx [:parameters :body :client_id])
+                                   (get-in ctx [:parameters :body :client_secret]))
+               c (api-sig/deferred-check
+                   (get-in ctx [:parameters :query :sig])
+                   (get-in ctx [:parameters :body :client_id])
+                   (get-in ctx [:parameters :body :client_secret]))]
+              (if-let [user (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
+                                                     :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
+                                 first
+                                 (dissoc :password))]
+                (>201 ctx (p/grant authorizer user #{scopes/application scopes/user}))
+                (>404 ctx [:user-not-found (get-in ctx [:parameters :body :username])]))))
 
 (defmethod get-token :refresh_token ; docs -> http://bit.ly/1sLcWfw
   ; TODO verify refresh token #39
   ; https://github.com/naartjie/rebujito/issues/39
   [ctx store user-store authorizer crypto api-client-store]
-  (>201 ctx (p/grant authorizer {} #{scopes/application scopes/user})))
+  (d/future (>201 ctx (p/grant authorizer {} #{scopes/application scopes/user}))))
 
 (defn check-value [map key value]
   (let [map (clojure.walk/keywordize-keys map)]
@@ -128,7 +100,10 @@
                             :charset "UTF-8"}]
 
                 :response (fn [ctx]
-                            (get-token ctx store user-store authorizer crypto api-client-store))}}}
+                            (-> (get-token ctx store user-store authorizer crypto api-client-store)
+                                (d/catch clojure.lang.ExceptionInfo
+                                    (fn [exception-info]
+                                      (domain-exception ctx (ex-data exception-info))))))}}}
 
        (merge (common-resource :oauth))
        (merge access-control))))

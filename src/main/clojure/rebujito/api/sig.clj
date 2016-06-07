@@ -36,11 +36,9 @@
 
 (defn deferred-check [sig client-id client-secret]
   (log/info "deferred-check" sig client-id client-secret)
-  (let [d* (d/deferred)]
-    (future
-      (if (check sig client-id client-secret)
-        (d/success! d* "SUCCESS")
-        (d/error! d* (ex-info (str "API ERROR!")
-                              {:type :api
-                               :status 400
-                               :body (format "sign value: %s not valid " sig)}))))d*))
+  (if (check sig client-id client-secret)
+    true
+    (d/error-deferred  (ex-info (str "API ERROR!")
+                                {:type :api
+                                 :status 400
+                                 :body (format "sign value: %s not valid " sig)}))))

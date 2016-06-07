@@ -59,6 +59,8 @@
   (get-and-insert! [this data]
     "sync, the result is the new document"))
 
+(defprotocol ApiClient
+  (login [this id pw]))
 
 (defprotocol MailService
   (send [this data]))

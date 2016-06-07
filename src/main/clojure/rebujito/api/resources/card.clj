@@ -1,5 +1,6 @@
 (ns rebujito.api.resources.card
   (:require
+   [taoensso.timbre :as log]
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.protocols :as p]
@@ -61,7 +62,7 @@
                          (let [cardNumber #_(str (+ (rand-int 1000) (read-string (format "96235709%05d" 0))))
                                (get-in ctx [:parameters :body :cardNumber])]
                            (-> (p/register-physical-card mimi {:cardNumber cardNumber
-                                                               :customerId  (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
+                                                               :customerId (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
 
                                (d/chain
                                 (fn [mimi-res]
