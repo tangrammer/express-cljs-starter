@@ -259,7 +259,7 @@
      (testing ::card/register-digital-cards
        (let [path (get-path ::card/register-digital-cards)]
          ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-         (is (= 201 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :content-type :json})

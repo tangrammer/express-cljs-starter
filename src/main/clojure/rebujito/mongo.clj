@@ -23,8 +23,6 @@
 (defn ^String id>mimi-id [s]
   (str (BigInteger. s 16)))
 
-
-
 (defmulti db-find "dispatch on data meaning"
   (fn [mutable-storage data] (type data)))
 

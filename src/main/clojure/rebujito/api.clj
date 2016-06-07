@@ -56,7 +56,7 @@
                   (-> (card/register-physical store mimi user-store)
                       (assoc :id ::card/register-physical))]
 
-                 ["/register-digital" (-> (card/register-digital-cards store)
+                 ["/register-digital" (-> (card/register-digital-card store mimi user-store)
                                           (assoc :id ::card/register-digital-cards))]
 
                  ["/" [
