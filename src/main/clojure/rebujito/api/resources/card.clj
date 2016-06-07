@@ -134,11 +134,6 @@
     (merge (util/common-resource :me/cards))
     (merge util/access-control))))
 
-(defn execute-payment-deferred [payment-gateway profile-data card-data payment-method-data amount]
-  )
-
-
-
 (defn reload [store payment-gateway mimi]
   (resource
     (-> {:methods
