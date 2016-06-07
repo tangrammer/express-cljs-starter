@@ -5,7 +5,7 @@
   (get-cards [this])
   (get-deferred-card [this data])
   (get-deferred-profile [this])
-  (get-payment-method-detail [this data])
+  (get-deferred-payment-method-detail [this data])
   (put-payment-method-detail [this data])
   (post-payment-method [this data])
   (get-payment-method [this])
@@ -21,7 +21,7 @@
 (defprotocol Mimi
   (create-account [this data])
   (register-physical-card [this data])
-  (load-card [this data])
+  (load-card [this card-id amount])
   (rewards [this data])
   )
 
@@ -59,6 +59,8 @@
   (get-and-insert! [this data]
     "sync, the result is the new document"))
 
+(defprotocol ApiClient
+  (login [this id pw]))
 
 (defprotocol MailService
   (send [this data]))

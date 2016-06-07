@@ -23,8 +23,15 @@
                                :status 404
                                :body ["Card Not Found"]})))
       d*))
-  (get-payment-method-detail [this data]
-    (assoc mocks/get-payment-method-detail :target-environment :prod))
+  (get-deferred-payment-method-detail [this data]
+    (let [d* (d/deferred)]
+    (if-let [payment-method-data (assoc mocks/get-payment-method-detail :target-environment :prod)]
+      (d/success! d* payment-method-data)
+      (d/error! d* (ex-info (str "API ERROR!")
+                            {:type :store
+                             :status 404
+                             :body ["Payment Method Not Found"]})))
+    d*))
   (put-payment-method-detail [this data]
     (assoc mocks/put-payment-method-detail :target-environment :prod))
   (post-payment-method [this data]
@@ -62,8 +69,15 @@
                                :status 404
                                :body ["Card Not Found"]})))
       d*))
-  (get-payment-method-detail [this data]
-    (assoc mocks/get-payment-method-detail :target-environment :dev))
+  (get-deferred-payment-method-detail [this data]
+    (let [d* (d/deferred)]
+    (if-let [payment-method-data (assoc mocks/get-payment-method-detail :target-environment :dev)]
+      (d/success! d* payment-method-data)
+      (d/error! d* (ex-info (str "API ERROR!")
+                            {:type :store
+                             :status 404
+                             :body ["Payment Method Not Found"]})))
+    d*))
   (put-payment-method-detail [this data]
     (assoc mocks/put-payment-method-detail :target-environment :dev))
   (post-payment-method [this data]

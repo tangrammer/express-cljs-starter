@@ -125,8 +125,17 @@
           ))
       d*))
 
-  (load-card [this data]
-    (assoc mocks/mimi-card :target-environment :prod))
+  (load-card [this card-id amount]
+    (let [d* (d/deferred)]
+      (if-let [mimi-card-data (assoc mocks/mimi-card :target-environment :prod) #_(p/load-card mimi {:cardId (-> card-data :cardNumber)
+                                      :amount (-> payment-data :amount)})]
+        (d/success! d* mimi-card-data)
+        (d/error! d* (ex-info (str "API MIMI ERROR")
+                              {:type :mimi
+                               :status 500
+                               :body ["An unexpected error occurred debiting the card."]})))
+      d*)
+    )
   (rewards [this data]
     (log/info data)
     (let [d* (d/deferred)
@@ -178,8 +187,18 @@
         (d/success! d* (-> [:success]
                            (conj :prod-mimi))))
       d*))
-  (load-card [this data]
-    (assoc mocks/mimi-card :target-environment :dev))
+  (load-card [this card-id amount]
+    (let [d* (d/deferred)]
+      (if-let [mimi-card-data (assoc mocks/mimi-card :target-environment :dev) #_(p/load-card mimi {:cardId (-> card-data :cardNumber)
+                                      :amount (-> payment-data :amount)})]
+        (d/success! d* mimi-card-data)
+        (d/error! d* (ex-info (str "API MIMI ERROR")
+                              {:type :mimi
+                               :status 500
+                               :body ["An unexpected error occurred debiting the card."]})))
+      d*)
+    )
+
   (rewards [this data]
     ; TODO: mock the response, don't hit mimi
     (log/info data)
