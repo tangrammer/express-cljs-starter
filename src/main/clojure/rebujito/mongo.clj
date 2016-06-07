@@ -135,9 +135,9 @@
   [mutable-storage data]
   (log/info "db-find>>>>" data)
   (try
-    (d/future  (clojure.walk/keywordize-keys (if (= data "w8tnxd8h2wns43cfdgmt793j")
-                                               {"_id" "w8tnxd8h2wns43cfdgmt793j", "secret" "KDRSRVqKHp5TkKvJJhN7RYkE", "who" "mediamonks"}
-                                               (find-map-by-id mutable-storage (org.bson.types.ObjectId. data)))))
+    (clojure.walk/keywordize-keys (if (= data "w8tnxd8h2wns43cfdgmt793j")
+                                              {"_id" "w8tnxd8h2wns43cfdgmt793j", "secret" "KDRSRVqKHp5TkKvJJhN7RYkE", "who" "mediamonks"}
+                                              (find-map-by-id mutable-storage (org.bson.types.ObjectId. data))))
     (catch Exception e (d/error-deferred (ex-info (.getMessage e) {:message (.getMessage e)}))))
 )
 
