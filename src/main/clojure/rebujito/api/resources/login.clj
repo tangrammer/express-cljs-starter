@@ -43,7 +43,7 @@
                             :charset "UTF-8"}]
                :response (fn [ctx]
                            (let [user (p/read-token authenticator (get-in ctx [:parameters :query :access_token]))
-                                 user @(p/find user-store (:_id user))]
+                                 user (p/find user-store (:_id user))]
                              (if (p/check crypto (get-in ctx [:parameters :body :password]) (:password user))
                                (>200 ctx "")
                                (>403 ctx ["Forbidden" "password doesn't match"]))))}}}

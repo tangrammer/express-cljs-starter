@@ -1,8 +1,10 @@
 (ns rebujito.api.resources.profile
   (:require
+   [manifold.deferred :as d]
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
    [rebujito.api.util :as util]
+   [rebujito.api.resources :refer (domain-exception)]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
@@ -27,17 +29,18 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                :response (fn [ctx]
-                           (try
-                             (let [auth-user (util/authenticated-user ctx)
-                                   user-data (util/generate-user-data auth-user (:sub-market app-config))
-                                   profile-data (-> @(p/get-deferred-profile store)
-                                                    (merge {:user user-data})
-                                                    (merge {:rewardsSummary @(p/rewards mimi {})})
-                                                    (merge response-overrides)
-                                                    (dissoc :target-environment))]
-                               (util/>200 ctx profile-data))
-                             (catch Exception e
-                               (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
+                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                            user-data (util/generate-user-data auth-user (:sub-market app-config))
+                                            profile-data (p/get-deferred-profile store) ]
+                                           (util/>200 ctx (-> profile-data
+                                                              (merge {:user user-data})
+                                                              (merge {:rewardsSummary @(p/rewards mimi {})})
+                                                              (merge response-overrides)
+                                                              (dissoc :target-environment))))
+                               (d/catch clojure.lang.ExceptionInfo
+                                   (fn [exception-info]
+                                     (domain-exception ctx (ex-data exception-info))))
+                               ))}}}
 
 
        (merge (util/common-resource :profile))
