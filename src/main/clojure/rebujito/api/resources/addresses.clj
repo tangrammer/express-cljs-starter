@@ -8,7 +8,6 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-
 (def schema {:post {:addressLine1 String
                     :city String
                     :firstName String
@@ -20,9 +19,7 @@
                     :country String}})
 
 (defn insert-address [user-store user address]
-  ; mongo.update({_id: user._id}, {adresses: {$push: address}})
-  (p/update-by-id! user-store (:_id user) {$push {:addresses address}})
-  )
+  (p/update-by-id! user-store (:_id user) {$push {:addresses address}}))
 
 (defn create [user-store authorizer authenticator]
   (resource
