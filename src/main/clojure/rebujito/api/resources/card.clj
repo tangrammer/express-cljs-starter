@@ -154,29 +154,25 @@
                              (->
                               (d/let-flow [profile-data (p/get-deferred-profile store)
                                            card-data (p/get-deferred-card store (-> ctx :parameters :body :card-id))
-                                           payment-method-data (p/get-deferred-payment-method-detail store (-> ctx :parameters :body :paymentMethodId))
-                                           ]
-
-                               (d/chain
-                                (->
-                                 (p/execute-payment payment-gateway {:firstName (-> profile-data :user :firstName)
-                                                                     :lastName (-> profile-data :user :lastName)
-                                                                     :emailAddress (-> profile-data :user :email)
-                                                                     :routingNumber (-> payment-method-data :routingNumber)
-                                                                     :cvn (-> payment-method-data :cvn)
-                                                                     :transactionId "12345"
-                                                                     :currency (-> card-data :balanceCurrencyCode)
-                                                                     :amount (-> ctx :parameters :body :amount)
-                                                                     })
-                                 (d/chain
-                                     (fn [payment-data]
-                                       (p/load-card mimi (-> ctx :parameters :body :card-id) (-> ctx :parameters :body :amount)))
-                                     (fn [mimi-card-data]
-                                       (util/>200 ctx {:cardId nil
-                                                       :balance 416.02
-                                                       :balanceDate "2014-03-03T20:17:51.4329837Z"
-                                                       :balanceCurrencyCode "ZAR"
-                                                       :cardNumber "7777064158671182"}))))))
+                                           payment-method-data (p/get-deferred-payment-method-detail
+                                                                store (-> ctx :parameters :body :paymentMethodId))
+                                           payment-data (p/execute-payment payment-gateway
+                                                                           {:firstName (-> profile-data :user :firstName)
+                                                                            :lastName (-> profile-data :user :lastName)
+                                                                            :emailAddress (-> profile-data :user :email)
+                                                                            :routingNumber (-> payment-method-data :routingNumber)
+                                                                            :cvn (-> payment-method-data :cvn)
+                                                                            :transactionId "12345"
+                                                                            :currency (-> card-data :balanceCurrencyCode)
+                                                                            :amount (-> ctx :parameters :body :amount)
+                                                                            })
+                                           mimi-card-data (p/load-card mimi (-> ctx :parameters :body :card-id)
+                                                                       (-> ctx :parameters :body :amount))]
+                                          (util/>200 ctx {:cardId nil
+                                                          :balance 416.02
+                                                          :balanceDate "2014-03-03T20:17:51.4329837Z"
+                                                          :balanceCurrencyCode "ZAR"
+                                                          :cardNumber "7777064158671182"}))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
                                     (domain-exception ctx (ex-data exception-info))))))}}}
