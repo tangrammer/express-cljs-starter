@@ -74,6 +74,10 @@
                 (.json res #js {:status "ok"
                                 :customerId (aget result 0)})))))))))
 
+(def codez {:tier (clj->js {:code "MSR001"})
+            :reward (clj->js {:code "MSR002"})
+            :stored-value-card (clj->js {:code "SGC001"})})
+
 (.post app "/mimi/starbucks/account/card"
   (fn
     [req res]
@@ -86,12 +90,35 @@
       (prn payload)
       (if validation-errors
         (.json (.status res 400) (clj->js (assoc invalid-payload :details validation-errors)))
-        (link-card customer-id card-number
-          (fn [err result]
-            (log/debug "got result from micros: err" err "result" result)
-            (if err
-              (.json (.status res 500) #js {:error (.toString err)})
-              (.json res #js {:status "ok"}))))))))
+        (do
+
+          (print "creating accounts for" card-number)
+
+          ; TODO async this code
+          (.createSingleAccountType micros
+            (:tier codez)
+            card-number
+            (fn [err]
+              (if err (log/error "can't create MSR tier" err))))
+
+          (.createSingleAccountType micros
+            (:stored-value-card codez)
+            card-number
+            (fn [err]
+              (if err (log/error "can't create stored value card" err))))
+
+          (.createSingleAccountType micros
+            (:reward codez)
+            card-number
+            (fn [err]
+              (if err (log/error "can't create stored value card" err))))
+
+          (link-card customer-id card-number
+            (fn [err result]
+              (log/debug "got result from micros: err" err "result" result)
+              (if err
+                (.json (.status res 500) #js {:error (.toString err)})
+                (.json res #js {:status "ok"})))))))))
 
 (.get app "/mimi/starbucks/account/:cardNumber/balances"
   (fn

@@ -87,6 +87,7 @@
                                                       :status 500
                                                       :body (.getMessage e)}))))))
       d*))
+      ; TODO rename to link-card
   (register-physical-card [this data]
     (log/info (format "%s/account/card" base-url))
     (log/info data)
