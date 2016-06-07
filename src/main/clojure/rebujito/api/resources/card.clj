@@ -87,16 +87,16 @@
 
              :response (fn [ctx]
                          (let [cardNumber (get-next-card-number)]
-                           (-> (p/register-physical-card mimi {:cardNumber cardNumber
-                                                               :customerId  (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
-                               (d/chain
-                                (fn [mimi-res]
-                                  (util/>200 ctx (assoc @(p/get-deferred-card store {}) :cardNumber cardNumber))))
+                           (-> (d/let-flow [mimi-res (p/register-physical-card mimi {:cardNumber cardNumber
+                                                                                     :customerId  (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
+                                            card (p/get-deferred-card store {})]
+
+                                           (util/>200 ctx (assoc card :cardNumber cardNumber)))
+
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data  exception-info))))
-                               (d/catch Exception
-                                   #(util/>500* ctx (str "ERROR CAUGHT!" (.getMessage %))))))
+                               ))
                        )}}}
 
     (merge (util/common-resource :me/cards))
