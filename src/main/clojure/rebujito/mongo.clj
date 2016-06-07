@@ -30,6 +30,8 @@
   (throw (IllegalArgumentException.
           (str "Not ready to db-find using: " (type data)))))
 
+(defn- update-by-id!* [this id data]
+  (mc/update-by-id (:db this) (:collection this) id data))
 
 (defn- find*
   ([this]
@@ -41,6 +43,7 @@
 (defn- get-and-insert!* [this data]
   (mc/insert-and-return (:db this) (:collection this) data)
   )
+
 
 (defn- insert!* [this data]
   (mc/insert (:db this) (:collection this) data))
@@ -74,6 +77,8 @@
     (get-and-insert!* this data))
   (insert! [this data]
     (insert!* this data))
+  (update-by-id! [this id data]
+    (update-by-id!* this id data))
   )
 
 
@@ -94,6 +99,8 @@
     (get-and-insert!* this data))
   (insert! [this data]
     (insert!* this data))
+  (update-by-id! [this id data]
+    (update-by-id!* this id data))
 
   protocols/ApiClient
   (login [this id pw]

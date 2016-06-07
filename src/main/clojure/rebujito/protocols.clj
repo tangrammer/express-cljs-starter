@@ -57,7 +57,8 @@
   (get-and-update! [this data]
     "sync, the result is the updated document")
   (get-and-insert! [this data]
-    "sync, the result is the new document"))
+    "sync, the result is the new document")
+  (update-by-id! [this id data]))
 
 (defprotocol ApiClient
   (login [this id pw]))

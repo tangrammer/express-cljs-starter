@@ -4,6 +4,7 @@
    [rebujito.scopes :as scopes]
    [rebujito.api.util :as util]
    [cheshire.core :as json]
+   [monger.operators :refer [$push]]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
@@ -18,6 +19,11 @@
                     :phoneNumber String
                     :country String}})
 
+(defn insert-address [user-store user address]
+  ; mongo.update({_id: user._id}, {adresses: {$push: address}})
+  (p/update-by-id! user-store (:_id user) {$push {:addresses address}})
+  )
+
 (defn create [user-store authorizer authenticator]
   (resource
    (-> {:methods
@@ -26,9 +32,10 @@
                 :consumes [{:media-type #{"application/json"}
                             :charset "UTF-8"}]
                 :response (fn [ctx]
+                            (insert-address [user-store (org.bson.types.ObjectId. "0000000000000000028f0cc5") (-> ctx :request :body)])
                             (-> ctx :response (assoc :status 201)
                                 (assoc :body ["created"])
-                                (assoc-in [:headers :location] "/balabas")))}}}
+                                (assoc-in [:headers :location] "/me/addresses/TODO_id1")))}}}
 
 
        (merge (util/common-resource :addresses))
