@@ -134,15 +134,7 @@
     (merge (util/common-resource :me/cards))
     (merge util/access-control))))
 
-(defn load-payment-method-data-deferred [store payment-method-id]
-  (let [d* (d/deferred)]
-    (if-let [payment-method-data (p/get-payment-method-detail store payment-method-id)]
-      (d/success! d* payment-method-data)
-      (d/error! d* (ex-info (str "API ERROR!")
-                            {:type :api
-                             :status 404
-                             :body ["Payment Method Not Found"]})))
-    d*))
+
 
 (defn execute-payment-deferred [payment-gateway profile-data card-data payment-method-data amount]
   (let [d* (d/deferred)]
@@ -190,7 +182,7 @@
                              (->
                               (d/let-flow [profile-data (p/get-deferred-profile store)
                                            card-data (p/get-deferred-card store (-> ctx :parameters :body :card-id))
-                                           payment-method-data (load-payment-method-data-deferred store (-> ctx :parameters :body :paymentMethodId))]
+                                           payment-method-data (p/get-deferred-payment-method-detail store (-> ctx :parameters :body :paymentMethodId)) ]
 
                                (d/chain
                                 (-> (execute-payment-deferred payment-gateway profile-data card-data payment-method-data (-> ctx :parameters :body :amount))

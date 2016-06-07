@@ -20,7 +20,7 @@
                         :charset "UTF-8"}]
 
             :response (fn [ctx]
-                        (let [paymentMethod (p/get-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
+                        (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
                           (println "paymentMethod" paymentMethod)
                           (if paymentMethod
                             (util/>200 ctx paymentMethod)
@@ -32,7 +32,7 @@
                            :charset "UTF-8"}]
 
                :response (fn [ctx]
-                           (let [paymentMethod (p/get-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
+                           (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
                              (println "paymentMethod" paymentMethod)
                              (if paymentMethod
                                (if (p/delete-card-token payment-gateway {:cardToken (-> paymentMethod :routingNumber)})
@@ -57,7 +57,7 @@
 
             :response (fn [ctx]
                         ; get existing payment method
-                        (let [paymentMethod (p/get-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
+                        (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
                           (println "paymentMethod" paymentMethod)
                           (if paymentMethod
                             ; create a new token
