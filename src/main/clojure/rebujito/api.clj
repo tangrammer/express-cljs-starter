@@ -75,7 +75,7 @@
                ["/devices/register" (-> (devices/register store authorizer authenticator)
                                         (assoc :id ::devices/me/register))]
 
-               ["/paymentmethods" [["" (-> (payment/methods store payment-gateway)
+               ["/paymentmethods" [["" (-> (payment/methods store payment-gateway authorizer authenticator)
                                            (assoc :id ::payment/methods))]
                                    [["/" :payment-method-id] (-> (payment/method-detail store payment-gateway)
                                                                  (assoc :id ::payment/method-detail))]]]

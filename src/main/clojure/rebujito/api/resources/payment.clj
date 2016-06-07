@@ -5,6 +5,7 @@
    [taoensso.timbre :as log]
    [rebujito.protocols :as p]
    [rebujito.api.util :as util]
+   [rebujito.scopes :as scopes]
    [rebujito.api.resources :refer (domain-exception)]
    [cheshire.core :as json]
    [schema.core :as s]
@@ -128,7 +129,7 @@
                               :fullName String
                               :expirationMonth Long}}})
 
-(defn methods [store payment-gateway]
+(defn methods [store payment-gateway authorizer authenticator]
   (resource
    (-> {:methods
         {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
@@ -186,4 +187,5 @@
                                     (fn [exception-info]
                                       (domain-exception ctx (ex-data exception-info))))))}}}
        (merge (util/common-resource :me/payment-methods))
-       (merge util/access-control))))
+       (merge (util/access-control* authenticator authorizer {:get  scopes/user
+                                                              :post scopes/user}) ))))

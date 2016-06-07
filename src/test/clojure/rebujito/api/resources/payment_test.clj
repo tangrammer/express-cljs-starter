@@ -22,16 +22,23 @@
 
 (deftest payment-resource
   (testing ::payment/methods
-    (let [port (-> *system*  :webserver :port)]
+    (let [port (-> *system*  :webserver :port)
+          account-data  (assoc (new-account-sb)
+                               :birthDay "1"
+                               :birthMonth "1")
+          account (create-account  account-data)
+
+          access_token (access-token-user (:emailAddress account-data)(:password account-data))
+          ]
       (let [path (get-path ::payment/methods)]
        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-       (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path 123)
+       (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path access_token)
                                  {:throw-exceptions false
                                   :body-encoding "UTF-8"
                                   :content-type :json})
                       :status)))
        (let [{:keys [status body]}
-             (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
+             (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path access_token)
                              {:throw-exceptions false
                               :body-encoding "UTF-8"
                               :body (json/generate-string
