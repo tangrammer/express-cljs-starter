@@ -135,22 +135,7 @@
     (merge util/access-control))))
 
 (defn execute-payment-deferred [payment-gateway profile-data card-data payment-method-data amount]
-  (let [d* (d/deferred)]
-    (if-let [payment-data (p/execute-payment payment-gateway {:firstName (-> profile-data :user :firstName)
-                                                              :lastName (-> profile-data :user :lastName)
-                                                              :emailAddress (-> profile-data :user :email)
-                                                              :routingNumber (-> payment-method-data :routingNumber)
-                                                              :cvn (-> payment-method-data :cvn)
-                                                              :transactionId "12345"
-                                                              :currency (-> card-data :balanceCurrencyCode)
-                                                              :amount amount
-                                                              })]
-      (d/success! d* payment-data)
-      (d/error! d* (ex-info (str "API GATEWAY ERROR!")
-                            {:type :api
-                             :status 500
-                             :body ["An unexpected error occurred processing the payment."]})))
-    d*))
+  )
 
 
 
@@ -169,11 +154,21 @@
                              (->
                               (d/let-flow [profile-data (p/get-deferred-profile store)
                                            card-data (p/get-deferred-card store (-> ctx :parameters :body :card-id))
-                                           payment-method-data (p/get-deferred-payment-method-detail store (-> ctx :parameters :body :paymentMethodId)) ]
+                                           payment-method-data (p/get-deferred-payment-method-detail store (-> ctx :parameters :body :paymentMethodId))
+                                           ]
 
                                (d/chain
-                                (-> (execute-payment-deferred payment-gateway profile-data card-data payment-method-data (-> ctx :parameters :body :amount))
-                                    (d/chain
+                                (->
+                                 (p/execute-payment payment-gateway {:firstName (-> profile-data :user :firstName)
+                                                                     :lastName (-> profile-data :user :lastName)
+                                                                     :emailAddress (-> profile-data :user :email)
+                                                                     :routingNumber (-> payment-method-data :routingNumber)
+                                                                     :cvn (-> payment-method-data :cvn)
+                                                                     :transactionId "12345"
+                                                                     :currency (-> card-data :balanceCurrencyCode)
+                                                                     :amount (-> ctx :parameters :body :amount)
+                                                                     })
+                                 (d/chain
                                      (fn [payment-data]
                                        (p/load-card mimi (-> ctx :parameters :body :card-id) (-> ctx :parameters :body :amount)))
                                      (fn [mimi-card-data]

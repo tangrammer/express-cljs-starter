@@ -1,5 +1,6 @@
 (ns rebujito.payment-gateway
   (:require
+   [manifold.deferred :as d]
    [schema.core :as s]
    [taoensso.timbre :as log]
    [rebujito.protocols :as protocols]
@@ -59,45 +60,51 @@
                         (and (not-empty result) (= (first result)  "Completed"))
                         )))))
   (execute-payment [this data]
-    (println "PayGate Payment Request" data)
-    @(http-k/post (-> this :url)
-                  {:body (velocity/render "paygate/payment-with-token.vm"
-                                          :paygateId (-> this :paygateId)
-                                          :paygatePassword (-> this :paygatePassword)
-                                          :firstName (-> data :firstName)
-                                          :lastName (-> data :lastName)
-                                          :emailAddress (-> data :emailAddress)
-                                          :cardToken (-> data :routingNumber)
-                                          :cvn (-> data :cvn)
-                                          :transactionId (-> data :transactionId)
-                                          :currency "ZAR"
-                                          :amount (-> data :amount))
-                   }
-                  (fn [{:keys [status body error]}]
-                    (println "PayGate Payment Response" status error body)
-                    (if (or error (not= 200 status) (not (.contains body "CardPaymentResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
-                      false
-                      (let [response (xp/xml->doc body)
-                            TransactionId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionId" response)
-                            StatusName (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/StatusName" response)
-                            AuthCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/AuthCode" response)
-                            PayRequestId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/PayRequestId" response)
-                            TransactionStatusCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusCode" response)
-                            TransactionStatusDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusDescription" response)
-                            ResultCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultCode" response)
-                            ResultDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultDescription" response)
-                            ]
-                        (log/debug "TransactionId" TransactionId 
-                                   "StatusName" StatusName 
-                                   "AuthCode" AuthCode
-                                   "PayRequestId" PayRequestId
-                                   "TransactionStatusCode" TransactionStatusCode
-                                   "TransactionStatusDescription" TransactionStatusDescription
-                                   "ResultCode" ResultCode
-                                   "ResultDescription" ResultDescription
-                                   )
-                        (and (not-empty TransactionStatusCode) (= (first TransactionStatusCode)  "1"))
-                        ))))))
+    (let [d* (d/deferred)]
+      (do (println "PayGate Payment Request" data)
+          (http-k/post (-> this :url)
+                       {:body (velocity/render "paygate/payment-with-token.vm"
+                                               :paygateId (-> this :paygateId)
+                                               :paygatePassword (-> this :paygatePassword)
+                                               :firstName (-> data :firstName)
+                                               :lastName (-> data :lastName)
+                                               :emailAddress (-> data :emailAddress)
+                                               :cardToken (-> data :routingNumber)
+                                               :cvn (-> data :cvn)
+                                               :transactionId (-> data :transactionId)
+                                               :currency "ZAR"
+                                               :amount (-> data :amount))
+                        }
+                       (fn [{:keys [status body error]}]
+                         (println "PayGate Payment Response" status error body)
+                         (if (or error (not= 200 status) (not (.contains body "CardPaymentResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
+                           (d/error! d* (ex-info (str "API GATEWAY ERROR!")
+                                                 {:type :payment-gateway
+                                                  :status 500
+                                                  :body ["An unexpected error occurred processing the payment."]}))
+
+                           (let [response (xp/xml->doc body)
+                                 TransactionId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionId" response)
+                                 StatusName (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/StatusName" response)
+                                 AuthCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/AuthCode" response)
+                                 PayRequestId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/PayRequestId" response)
+                                 TransactionStatusCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusCode" response)
+                                 TransactionStatusDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusDescription" response)
+                                 ResultCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultCode" response)
+                                 ResultDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultDescription" response)
+                                 res-debug (vector "TransactionId" TransactionId
+                                                   "StatusName" StatusName
+                                                   "AuthCode" AuthCode
+                                                   "PayRequestId" PayRequestId
+                                                   "TransactionStatusCode" TransactionStatusCode
+                                                   "TransactionStatusDescription" TransactionStatusDescription
+                                                   "ResultCode" ResultCode
+                                                   "ResultDescription" ResultDescription
+                                                   )]
+                             (log/debug res-debug)
+                             (d/success! d* [(and (not-empty TransactionStatusCode) (= (first TransactionStatusCode)  "1"))
+                                             res-debug]))))))
+      d*)))
 
 (defrecord MockPaymentGateway []
   component/Lifecycle
@@ -112,13 +119,15 @@
      :cardToken "123abc"})
   (delete-card-token [this data] {:status "completed"})
   (execute-payment [this data]
-    {:status "completed"
-     :transactionId "23423554252"
-     :reference "33256w456345"
-     :payRequestId "0B282A21-865C-484C-9A21-D9211F8CCEA2"
-     :transactionStatusCode "1"
-     :resultCode "Approved"
-     }))
+    (let [d* (d/deferred)]
+      (d/success! d* {:status "completed"
+                      :transactionId "23423554252"
+                      :reference "33256w456345"
+                      :payRequestId "0B282A21-865C-484C-9A21-D9211F8CCEA2"
+                      :transactionStatusCode "1"
+                      :resultCode "Approved"
+                      })
+      d*)))
 
 (def PaygateConfigSchema
   {:paygateId s/Str
