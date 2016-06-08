@@ -41,9 +41,16 @@
                ["" (-> (account/me store mimi user-store app-config)
                        (assoc :id ::account/me
                               :oauth {:get scopes/user}))]
-               ["/addresses"  (->  (addresses/create user-store)
-                                   (assoc :id ::addresses/create
-                                          :oauth {:post scopes/user}))]
+               ["/addresses" [
+                              ["" (-> (addresses/create user-store)
+                                      (assoc :id ::addresses/create
+                                              :oauth {:post scopes/user
+                                                      ; :get scopes/user
+                                                      }))]
+                              [["/" :address-uuid] (-> (addresses/get-one user-store)
+                                                       (assoc :id ::addresses/get
+                                                              :oauth {:get scopes/user}))]]]
+                            ;  ]]
                ["/logout/"  (-> (login/logout user-store)
                                 (assoc :id ::login/logout))]
                ["/login/validate-password" (-> (login/validate-password user-store crypto authenticator)
