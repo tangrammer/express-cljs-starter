@@ -12,110 +12,109 @@
    [yada.resource :refer [resource]]))
 
 (defn method-detail [store payment-gateway]
-  (resource
-   (->
-    {:methods
-     {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}
-                         :path {:payment-method-id String}}
-            :consumes [{:media-type #{"application/json"}
-                        :charset "UTF-8"}]
+  (->
+   {:methods
+    {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}
+                        :path {:payment-method-id String}}
+           :consumes [{:media-type #{"application/json"}
+                       :charset "UTF-8"}]
 
-            :response (fn [ctx]
-                        (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
-                          (println "paymentMethod" paymentMethod)
-                          (if paymentMethod
-                            (util/>200 ctx paymentMethod)
-                            (util/>404 ctx ["Not Found"]))))}
+           :response (fn [ctx]
+                       (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
+                         (println "paymentMethod" paymentMethod)
+                         (if paymentMethod
+                           (util/>200 ctx paymentMethod)
+                           (util/>404 ctx ["Not Found"]))))}
 
-      :delete {:parameters {:query {:access_token String}
-                            :path {:payment-method-id String}}
-               :consumes [{:media-type #{"application/json"}
-                           :charset "UTF-8"}]
+     :delete {:parameters {:query {:access_token String}
+                           :path {:payment-method-id String}}
+              :consumes [{:media-type #{"application/json"}
+                          :charset "UTF-8"}]
 
-               :response (fn [ctx]
-                           (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
-                             (println "paymentMethod" paymentMethod)
-                             (if paymentMethod
-                               (if (p/delete-card-token payment-gateway {:cardToken (-> paymentMethod :routingNumber)})
-                                 (util/>200 ctx ["OK" "Success"])
-                                 (util/>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."]))
-                               (util/>404 ctx ["Not Found"]))))}
+              :response (fn [ctx]
+                          (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
+                            (println "paymentMethod" paymentMethod)
+                            (if paymentMethod
+                              (if (p/delete-card-token payment-gateway {:cardToken (-> paymentMethod :routingNumber)})
+                                (util/>200 ctx ["OK" "Success"])
+                                (util/>500 ctx ["Internal Server Error" "An unexpected error occurred processing the request."]))
+                              (util/>404 ctx ["Not Found"]))))}
 
-      :put {:parameters {:query {:access_token String}
-                         :path {:payment-method-id String}
-                         :body {:expirationYear Long
-                                :billingAddressId String
-                                :accountNumber String
-                                :default Boolean
-                                :nickname String
-                                :paymentType String
-                                :cvn String
-                                :fullName String
-                                :expirationMonth Long}}
+     :put {:parameters {:query {:access_token String}
+                        :path {:payment-method-id String}
+                        :body {:expirationYear Long
+                               :billingAddressId String
+                               :accountNumber String
+                               :default Boolean
+                               :nickname String
+                               :paymentType String
+                               :cvn String
+                               :fullName String
+                               :expirationMonth Long}}
 
-            :consumes [{:media-type #{"application/json"}
-                        :charset "UTF-8"}]
+           :consumes [{:media-type #{"application/json"}
+                       :charset "UTF-8"}]
 
-            :response (fn [ctx]
-                        ; get existing payment method
-                        (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
-                          (println "paymentMethod" paymentMethod)
-                          (if paymentMethod
-                            ; create a new token
-                            (let [request (get-in ctx [:parameters :body])
-                                  {:keys [card-token]} @(p/create-card-token payment-gateway
-                                                                           {:cardNumber (-> request :accountNumber)
-                                                                            :expirationMonth (-> request :expirationMonth)
-                                                                            :expirationYear (-> request :expirationYear)
-                                                                            :cvn (-> request :cvn)})]
-                              (println "CardToken" card-token)
-                              (if card-token
-                                ; update payment method with new details and token
-                                (let [updatedPaymentMethod (p/put-payment-method-detail store
-                                                                              {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])
-                                                                               :nickName (-> ctx :nickName)
-                                                                               :paymentType (-> ctx :paymentType)
-                                                                               :fullName (-> ctx :fullName)
-                                                                               :default (-> ctx :default)
-                                                                               :accountNumber "****************"
-                                                                               :accountNumberLastFour "****"
-                                                                               :cvn (-> ctx :cvn)
-                                                                               :expirationMonth (-> ctx :expirationMonth)
-                                                                               :expirationYear (-> ctx :expirationYear)
-                                                                               :billingAddressId (-> ctx :billingAddressId)
-                                                                               :routingNumber card-token
-                                                                               })]
-                                  (println "updatedPaymentMethod" updatedPaymentMethod)
-                                  (if updatedPaymentMethod
-                                    (fn []
-                                      ; delete the old token
-                                      (try
-                                        (p/delete-card-token payment-gateway {:cardToken (-> paymentMethod :routingNumber)})
-                                        (catch Exception e
-                                          ; ignore errors
-                                          (println e)))
-                                      ; return result
-                                      (util/>200 ctx {
-                                                 :fullName (-> updatedPaymentMethod :fullName)
-                                                 :billingAddressId (-> updatedPaymentMethod :billingAddressId)
-                                                 :accountNumber (-> updatedPaymentMethod :accountNumber)
-                                                 :default (-> updatedPaymentMethod :default)
-                                                 :paymentMethodId (-> updatedPaymentMethod :paymentMethodId)
-                                                 :nickname (-> updatedPaymentMethod :nickname)
-                                                 :paymentType (-> updatedPaymentMethod :paymentType)
-                                                 :accountNumberLastFour (-> updatedPaymentMethod :accountNumberLastFour)
-                                                 :cvn (-> updatedPaymentMethod :cvn)
-                                                 :expirationYear (-> updatedPaymentMethod :expirationYear)
-                                                 :expirationMonth (-> updatedPaymentMethod :expirationMonth)
-                                                 :isTemporary (-> updatedPaymentMethod :isTemporary)
-                                                 :bankName (-> updatedPaymentMethod :bankName)
-                                                 :routingNumber (-> updatedPaymentMethod :routingNumber)
-                                                 }))
-                                    (util/>500 ctx ["An unexpected error occurred processing the request."])))))
-                            (util/>404 ctx ["Not Found"]))))}}}
+           :response (fn [ctx]
+                                        ; get existing payment method
+                       (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
+                         (println "paymentMethod" paymentMethod)
+                         (if paymentMethod
+                                        ; create a new token
+                           (let [request (get-in ctx [:parameters :body])
+                                 {:keys [card-token]} @(p/create-card-token payment-gateway
+                                                                            {:cardNumber (-> request :accountNumber)
+                                                                             :expirationMonth (-> request :expirationMonth)
+                                                                             :expirationYear (-> request :expirationYear)
+                                                                             :cvn (-> request :cvn)})]
+                             (println "CardToken" card-token)
+                             (if card-token
+                                        ; update payment method with new details and token
+                               (let [updatedPaymentMethod (p/put-payment-method-detail store
+                                                                                       {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])
+                                                                                        :nickName (-> ctx :nickName)
+                                                                                        :paymentType (-> ctx :paymentType)
+                                                                                        :fullName (-> ctx :fullName)
+                                                                                        :default (-> ctx :default)
+                                                                                        :accountNumber "****************"
+                                                                                        :accountNumberLastFour "****"
+                                                                                        :cvn (-> ctx :cvn)
+                                                                                        :expirationMonth (-> ctx :expirationMonth)
+                                                                                        :expirationYear (-> ctx :expirationYear)
+                                                                                        :billingAddressId (-> ctx :billingAddressId)
+                                                                                        :routingNumber card-token
+                                                                                        })]
+                                 (println "updatedPaymentMethod" updatedPaymentMethod)
+                                 (if updatedPaymentMethod
+                                   (fn []
+                                        ; delete the old token
+                                     (try
+                                       (p/delete-card-token payment-gateway {:cardToken (-> paymentMethod :routingNumber)})
+                                       (catch Exception e
+                                        ; ignore errors
+                                         (println e)))
+                                        ; return result
+                                     (util/>200 ctx {
+                                                     :fullName (-> updatedPaymentMethod :fullName)
+                                                     :billingAddressId (-> updatedPaymentMethod :billingAddressId)
+                                                     :accountNumber (-> updatedPaymentMethod :accountNumber)
+                                                     :default (-> updatedPaymentMethod :default)
+                                                     :paymentMethodId (-> updatedPaymentMethod :paymentMethodId)
+                                                     :nickname (-> updatedPaymentMethod :nickname)
+                                                     :paymentType (-> updatedPaymentMethod :paymentType)
+                                                     :accountNumberLastFour (-> updatedPaymentMethod :accountNumberLastFour)
+                                                     :cvn (-> updatedPaymentMethod :cvn)
+                                                     :expirationYear (-> updatedPaymentMethod :expirationYear)
+                                                     :expirationMonth (-> updatedPaymentMethod :expirationMonth)
+                                                     :isTemporary (-> updatedPaymentMethod :isTemporary)
+                                                     :bankName (-> updatedPaymentMethod :bankName)
+                                                     :routingNumber (-> updatedPaymentMethod :routingNumber)
+                                                     }))
+                                   (util/>500 ctx ["An unexpected error occurred processing the request."])))))
+                           (util/>404 ctx ["Not Found"]))))}}}
 
-    (merge (util/common-resource "me/payment-methods/{payment-method-id}"))
-    (merge util/access-control))))
+   (merge (util/common-resource "me/payment-methods/{payment-method-id}"))
+   (merge util/access-control)))
 
 (def schema {:methods {:post {:expirationYear Long
                               :billingAddressId String
