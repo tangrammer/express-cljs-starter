@@ -1,5 +1,6 @@
 (ns rebujito.payment-gateway
   (:require
+   [cheshire.core :as json]
    [manifold.deferred :as d]
    [schema.core :as s]
    [taoensso.timbre :as log]
@@ -42,7 +43,7 @@
                         (d/error! d* (ex-info (str "error!!!" 500)
                                               {:type :payment-gateway
                                                :status 500
-                                               :body ["paygate/create-card-token" status error body]}))
+                                               :body (json/generate-string ["paygate/create-card-token" status error body])}))
                         (let [response (xp/xml->doc body)
                               card-token (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
                           (if (and (not-empty card-token) (first card-token))
@@ -51,7 +52,7 @@
                             (d/error! d* (ex-info (str "error!!!" 500)
                                                   {:type :payment-gateway
                                                    :status 500
-                                                   :body ["paygate/create-card-token NULL card-token" status error body]})))))))
+                                                   :body (json/generate-string ["paygate/create-card-token NULL card-token" status error body])})))))))
       d*))
   (delete-card-token [this data]
     (let [d* (d/deferred)]
@@ -67,7 +68,7 @@
                         (d/error! d* (ex-info (str "error!!!" 500)
                                               {:type :payment-gateway
                                                :status 500
-                                               :body ["paygate/delete-card-token" status error body]}))
+                                               :body (json/generate-string ["paygate/delete-card-token" status error body])}))
                         (let [response (xp/xml->doc body)
                               result (xp/$x:text* "/Envelope/Body/SingleVaultResponse/DeleteVaultResponse/Status/StatusName" response)]
                           (if (and (not-empty result) (= (first result)  "Completed"))
@@ -75,7 +76,7 @@
                             (d/error! d* (ex-info (str "error!!!" 500)
                                                   {:type :payment-gateway
                                                    :status 500
-                                                   :body ["paygate/delete-card-token" status error body]})))))))
+                                                   :body (json/generate-string ["paygate/delete-card-token" status error body])})))))))
       d*))
   (execute-payment [this data]
     (let [d* (d/deferred)]
@@ -99,7 +100,7 @@
                            (d/error! d* (ex-info (str "API GATEWAY ERROR!")
                                                  {:type :payment-gateway
                                                   :status 500
-                                                  :body ["An unexpected error occurred processing the payment."]}))
+                                                  :body "An unexpected error occurred processing the payment."}))
 
                            (let [response (xp/xml->doc body)
                                  TransactionId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionId" response)

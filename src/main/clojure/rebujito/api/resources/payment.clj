@@ -11,7 +11,7 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(def schema {:methods {:post {:billingAddressId String
+(def schema {:methods {:post {(s/optional-key :billingAddressId) String
                               :accountNumber String
                               (s/optional-key :default) String
                               (s/optional-key :isDefault) Boolean
@@ -19,7 +19,7 @@
                               :nickname String
                               :paymentType String
                               :cvn String
-                              :fullName String
+                              (s/optional-key :fullName) String
                               :expirationMonth Long
                               :expirationYear Long}}
              :method-detail {:put {:expirationYear Long
