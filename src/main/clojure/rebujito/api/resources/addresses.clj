@@ -22,19 +22,16 @@
   (p/update-by-id! user-store (:_id user) {$push {:addresses address}}))
 
 (defn create [user-store authorizer authenticator]
-  (resource
-   (-> {:methods
-        {:post {:parameters {:query {:access_token String}
-                             :body (:post schema)}
-                :consumes [{:media-type #{"application/json"}
-                            :charset "UTF-8"}]
-                :response (fn [ctx]
-                            (insert-address [user-store (org.bson.types.ObjectId. "0000000000000000028f0cc5") (-> ctx :request :body)])
-                            (-> ctx :response (assoc :status 201)
-                                (assoc :body ["created"])
-                                (assoc-in [:headers :location] "/me/addresses/TODO_id1")))}}}
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :body (:post schema)}
+               :consumes [{:media-type #{"application/json"}
+                           :charset "UTF-8"}]
+               :response (fn [ctx]
+                           (-> ctx :response (assoc :status 201)
+                               (assoc :body ["created"])
+                               (assoc-in [:headers :location] "/balabas")))}}}
 
-
-       (merge (util/common-resource :addresses))
-       (merge {:access-control {}} #_(util/access-control*  authenticator authorizer {:get scopes/user}
-               )))))
+      (merge (util/common-resource :addresses))
+      (merge {:access-control {}} #_(util/access-control*  authenticator authorizer {:get scopes/user}
+                                                           ))))

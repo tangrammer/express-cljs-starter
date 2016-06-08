@@ -21,27 +21,26 @@
 (def schema {:put {:accountImageUrl String}})
 
 (defn me [store mimi user-store authorizer authenticator app-config]
-  (resource
-   (-> {:methods
-        {:get {:parameters {:query {:access_token String
-                                    (s/optional-key :select) String
-                                    (s/optional-key :ignore) String}}
-                :consumes [{:media-type #{"application/json"}
-                            :charset "UTF-8"}]
-               :response (fn [ctx]
-                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                            user-data (util/generate-user-data auth-user (:sub-market app-config))
-                                            profile-data (p/get-deferred-profile store) ]
-                                           (util/>200 ctx (-> profile-data
-                                                              (merge {:user user-data})
-                                                              (merge {:rewardsSummary @(p/rewards mimi {})})
-                                                              (merge response-overrides)
-                                                              (dissoc :target-environment))))
-                               (d/catch clojure.lang.ExceptionInfo
-                                   (fn [exception-info]
-                                     (domain-exception ctx (ex-data exception-info))))
-                               ))}}}
+  (-> {:methods
+       {:get {:parameters {:query {:access_token String
+                                   (s/optional-key :select) String
+                                   (s/optional-key :ignore) String}}
+              :consumes [{:media-type #{"application/json"}
+                          :charset "UTF-8"}]
+              :response (fn [ctx]
+                          (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                           user-data (util/generate-user-data auth-user (:sub-market app-config))
+                                           profile-data (p/get-deferred-profile store) ]
+                                          (util/>200 ctx (-> profile-data
+                                                             (merge {:user user-data})
+                                                             (merge {:rewardsSummary @(p/rewards mimi {})})
+                                                             (merge response-overrides)
+                                                             (dissoc :target-environment))))
+                              (d/catch clojure.lang.ExceptionInfo
+                                  (fn [exception-info]
+                                    (domain-exception ctx (ex-data exception-info))))
+                              ))}}}
 
 
-       (merge (util/common-resource :profile))
-       (merge (util/access-control* authenticator authorizer {:get scopes/user})))))
+      (merge (util/common-resource :profile))
+      (merge (util/access-control* authenticator authorizer {:get scopes/user}))))

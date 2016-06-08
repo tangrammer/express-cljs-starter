@@ -19,17 +19,16 @@
                     (s/optional-key s/Keyword) s/Any}})
 
 (defn register [store authorizer authenticator]
- (resource
-  (-> {:methods
-       {:post {:parameters {:query {:access_token String
+ (-> {:methods
+      {:post {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
-                                    (s/optional-key :ignore) String}
-                            :body s/Any
-                            }
-               :consumes [{:media-type #{"application/json"}
-                           :charset "UTF-8"}]
-               :response (fn [ctx]
-                           (>202 ctx nil))}}}
+                                   (s/optional-key :ignore) String}
+                           :body s/Any
+                           }
+              :consumes [{:media-type #{"application/json"}
+                          :charset "UTF-8"}]
+              :response (fn [ctx]
+                          (>202 ctx nil))}}}
 
-      (merge (common-resource :devices))
-      (merge {:access-control {}}))))
+     (merge (common-resource :devices))
+     (merge {:access-control {}})))

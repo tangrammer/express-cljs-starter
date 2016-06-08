@@ -83,25 +83,24 @@
     (= ((keyword key) map) value)))
 
 (defn token-resource-owner [store user-store authorizer crypto api-client-store]
-  (resource
-   (-> {:methods
-        {:post {:parameters {:query {:sig String}
-                             :body (s/conditional
-                                    #(check-value % :grant_type "client_credentials")
-                                    (-> schema :token-client-credentials)
-                                    #(check-value % :grant_type "password")
-                                    (-> schema :token-resource-owner)
-                                    #(check-value % :grant_type "refresh_token")
-                                    (-> schema :token-refresh-token))}
+  (-> {:methods
+       {:post {:parameters {:query {:sig String}
+                            :body (s/conditional
+                                   #(check-value % :grant_type "client_credentials")
+                                   (-> schema :token-client-credentials)
+                                   #(check-value % :grant_type "password")
+                                   (-> schema :token-resource-owner)
+                                   #(check-value % :grant_type "refresh_token")
+                                   (-> schema :token-refresh-token))}
 
-                :consumes [{:media-type #{"application/x-www-form-urlencoded"}
-                            :charset "UTF-8"}]
+               :consumes [{:media-type #{"application/x-www-form-urlencoded"}
+                           :charset "UTF-8"}]
 
-                :response (fn [ctx]
-                            (-> (get-token ctx store user-store authorizer crypto api-client-store)
-                                (d/catch clojure.lang.ExceptionInfo
-                                    (fn [exception-info]
-                                      (domain-exception ctx (ex-data exception-info))))))}}}
+               :response (fn [ctx]
+                           (-> (get-token ctx store user-store authorizer crypto api-client-store)
+                               (d/catch clojure.lang.ExceptionInfo
+                                   (fn [exception-info]
+                                     (domain-exception ctx (ex-data exception-info))))))}}}
 
-       (merge (common-resource :oauth))
-       (merge access-control))))
+      (merge (common-resource :oauth))
+      (merge access-control)))
