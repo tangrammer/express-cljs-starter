@@ -18,8 +18,6 @@
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body (-> schema :forgot-password :post)}
-               :consumes [{:media-type #{"application/json"}
-                           :charset "UTF-8"}]
                :response (fn [ctx]
                            (let [token (get-in ctx [:parameters :query :access_token])]
                              (if (p/verify authorizer token scopes/application)
@@ -37,8 +35,6 @@
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body (-> schema :validate-password :post)}
-               :consumes [{:media-type #{"application/json"}
-                           :charset "UTF-8"}]
                :response (fn [ctx]
                            (let [user (p/read-token authenticator (get-in ctx [:parameters :query :access_token]))
                                  user (p/find user-store (:_id user))]
@@ -52,10 +48,7 @@
 
 (defn logout [user-store authorizer authenticator]
  (-> {:methods
-      {:get {:parameters {:query {:access_token String}
-                          }
-             :consumes [{:media-type #{"application/json"}
-                         :charset "UTF-8"}]
+      {:get {:parameters {:query {:access_token String}}
              :response (fn [ctx]
                          (>200 ctx {:status "ok"}))}}}
 

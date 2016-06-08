@@ -16,9 +16,6 @@
    {:methods
     {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}
                         :path {:payment-method-id String}}
-           :consumes [{:media-type #{"application/json"}
-                       :charset "UTF-8"}]
-
            :response (fn [ctx]
                        (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
                          (println "paymentMethod" paymentMethod)
@@ -28,9 +25,6 @@
 
      :delete {:parameters {:query {:access_token String}
                            :path {:payment-method-id String}}
-              :consumes [{:media-type #{"application/json"}
-                          :charset "UTF-8"}]
-
               :response (fn [ctx]
                           (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
                             (println "paymentMethod" paymentMethod)
@@ -51,10 +45,6 @@
                                :cvn String
                                :fullName String
                                :expirationMonth Long}}
-
-           :consumes [{:media-type #{"application/json"}
-                       :charset "UTF-8"}]
-
            :response (fn [ctx]
                                         ; get existing payment method
                        (let [paymentMethod @(p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
@@ -131,8 +121,6 @@
 (defn methods [store payment-gateway authorizer authenticator]
   (-> {:methods
        {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
-              :consumes [{:media-type #{"application/json"}
-                          :charset "UTF-8"}]
               :response (fn [ctx]
                           (let [paymentMethods (p/get-payment-method store)]
                             (println "paymentMethods" paymentMethods)
@@ -142,8 +130,6 @@
 
         :post {:parameters {:query {:access_token String}
                             :body (-> schema :methods :post)}
-               :consumes [{:media-type #{"application/json"}
-                           :charset "UTF-8"}]
                :response (fn [ctx]
                            (-> (d/let-flow [request (get-in ctx [:parameters :body])
                                             card-token (p/create-card-token payment-gateway

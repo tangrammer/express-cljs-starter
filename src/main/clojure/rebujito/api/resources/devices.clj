@@ -25,8 +25,6 @@
                                    (s/optional-key :ignore) String}
                            :body s/Any
                            }
-              :consumes [{:media-type #{"application/json"}
-                          :charset "UTF-8"}]
               :response (fn [ctx]
                           (>202 ctx nil))}}}
 

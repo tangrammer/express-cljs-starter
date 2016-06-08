@@ -77,8 +77,6 @@
                                     :market String
                                     (s/optional-key :locale) String}
                             :body (:post schema)}
-               :consumes [{:media-type #{"application/json"}
-                           :charset "UTF-8"}]
                :response (fn [ctx]
                            (-> (d/let-flow [email-exists? (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
                                             mimi-account (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))
@@ -96,8 +94,6 @@
        {:get {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
                                    (s/optional-key :ignore) String}}
-              :consumes [{:media-type #{"application/json"}
-                          :charset "UTF-8"}]
               :response (fn [ctx]
                           (try
                             (let [auth-user (util/authenticated-user ctx)]
