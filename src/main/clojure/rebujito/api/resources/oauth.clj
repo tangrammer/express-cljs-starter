@@ -84,7 +84,8 @@
 
 (defn token-resource-owner [store user-store authorizer crypto api-client-store]
   (-> {:methods
-       {:post {:parameters {:query {:sig String}
+       {:post {:parameters {:query {:sig String
+                                    (s/optional-key :platform) String}
                             :body (s/conditional
                                    #(check-value % :grant_type "client_credentials")
                                    (-> schema :token-client-credentials)

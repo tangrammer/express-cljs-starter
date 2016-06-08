@@ -75,7 +75,8 @@
   (-> {:methods
        {:post {:parameters {:query {:access_token String
                                     :market String
-                                    (s/optional-key :locale) String}
+                                    (s/optional-key :locale) String
+                                    (s/optional-key :platform) String}
                             :body (:post schema)}
                :consumes [{:media-type #{"application/json"}
                            :charset "UTF-8"}]
