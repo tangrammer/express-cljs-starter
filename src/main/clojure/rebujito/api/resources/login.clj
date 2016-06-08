@@ -15,13 +15,12 @@
                                         :password String}}})
 
 (defn forgot-password [mailer authorizer authenticator ]
-  (resource
-   (-> {:methods
-        {:post {:parameters {:query {:access_token String}
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
                             :body (-> schema :forgot-password :post)}
-                :consumes [{:media-type #{"application/json"}
-                            :charset "UTF-8"}]
-                :response (fn [ctx]
+               :consumes [{:media-type #{"application/json"}
+                           :charset "UTF-8"}]
+               :response (fn [ctx]
                            (let [token (get-in ctx [:parameters :query :access_token])]
                              (if (p/verify authorizer token scopes/application)
                                (do
@@ -31,16 +30,15 @@
                                (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"]))))}}}
 
 
-       (merge (common-resource :login))
-       (merge (access-control* authenticator authorizer {:post scopes/application})))))
+      (merge (common-resource :login))
+      (merge (access-control* authenticator authorizer {:post scopes/application}))))
 
 (defn validate-password [user-store crypto authorizer authenticator ]
-  (resource
-   (-> {:methods
-        {:post {:parameters {:query {:access_token String}
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
                             :body (-> schema :validate-password :post)}
-                :consumes [{:media-type #{"application/json"}
-                            :charset "UTF-8"}]
+               :consumes [{:media-type #{"application/json"}
+                           :charset "UTF-8"}]
                :response (fn [ctx]
                            (let [user (p/read-token authenticator (get-in ctx [:parameters :query :access_token]))
                                  user (p/find user-store (:_id user))]
@@ -49,18 +47,17 @@
                                (>403 ctx ["Forbidden" "password doesn't match"]))))}}}
 
 
-       (merge (common-resource :login))
-       (merge (access-control* authenticator authorizer {:post scopes/user})))))
+      (merge (common-resource :login))
+      (merge (access-control* authenticator authorizer {:post scopes/user}))))
 
 (defn logout [user-store authorizer authenticator]
- (resource
-  (-> {:methods
-       {:get {:parameters {:query {:access_token String}
-                            }
-               :consumes [{:media-type #{"application/json"}
-                           :charset "UTF-8"}]
-               :response (fn [ctx]
-                           (>200 ctx {:status "ok"}))}}}
+ (-> {:methods
+      {:get {:parameters {:query {:access_token String}
+                          }
+             :consumes [{:media-type #{"application/json"}
+                         :charset "UTF-8"}]
+             :response (fn [ctx]
+                         (>200 ctx {:status "ok"}))}}}
 
-      (merge (common-resource :me/login))
-      (merge {:access-control {}}))))
+     (merge (common-resource :me/login))
+     (merge {:access-control {}})))

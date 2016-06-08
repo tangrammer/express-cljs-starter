@@ -19,24 +19,25 @@
      ]))
 
 (defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config]
-  ["/" [["health" (resource (-> {:methods
-                                 {:get {:consumes [{:media-type #{"application/json"}
-                                                    :charset "UTF-8"}]
-                                        :response (read-string (slurp (clojure.java.io/resource "VERSION.edn"))) }}}
-                                (merge (util/common-resource :meta))
-                                (merge {:access-control {}})) )]
+  ["/" [["health"  (-> {:id :jolin
+                        :methods
+                                {:get {:consumes [{:media-type #{"application/json"}
+                                                   :charset "UTF-8"}]
+                                       :response (read-string (slurp (clojure.java.io/resource "VERSION.edn"))) }}}
+                               (merge (util/common-resource :meta))
+                               (merge {:access-control {}})) ]
         ["account/create" (-> (account/create store mimi user-store crypto authenticator authorizer)
                               (assoc :id ::account/create))]
-        ["oauth/token" (-> (oauth/token-resource-owner store user-store authorizer crypto api-client-store)
+        ["oauth/token" (->  (oauth/token-resource-owner store user-store authorizer crypto api-client-store)
                            (assoc :id ::oauth/token-resource-owner))]
-        ["login/forgot-password" (-> (login/forgot-password mailer authorizer authenticator)
+        ["login/forgot-password" (->  (login/forgot-password mailer authorizer authenticator)
                                      (assoc :id ::login/forgot-password))]
-        ["devices/register" (-> (devices/register store authorizer authenticator)
-                                        (assoc :id ::devices/register))]
+        ["devices/register" (->  (devices/register store authorizer authenticator)
+                                (assoc :id ::devices/register))]
         ["me" [
                ["" (-> (account/me store mimi user-store authorizer authenticator app-config)
                        (assoc :id ::account/me))]
-               ["/addresses"  (-> (addresses/create user-store authorizer authenticator)
+               ["/addresses"  (->  (addresses/create user-store authorizer authenticator)
                                 (assoc :id ::addresses/create))]
                ["/logout/"  (-> (login/logout user-store authorizer authenticator)
                                 (assoc :id ::login/logout))]
@@ -62,7 +63,7 @@
                  ["/" [
                        [
                         ["" :card-id] [
-                                       ["" (-> (card/unregister store)(assoc :id ::card/unregister))]
+                                       ["" (-> (card/unregister store) (assoc :id ::card/unregister))]
                                        ["/reload" (-> (card/reload store payment-gateway mimi)
                                                       (assoc :id ::card/reload))]
                                        ]
@@ -73,7 +74,7 @@
                 ]
 
                ["/devices/register" (-> (devices/register store authorizer authenticator)
-                                        (assoc :id ::devices/me/register))]
+                                                 (assoc :id ::devices/me/register))]
 
                ["/paymentmethods" [["" (-> (payment/methods store payment-gateway authorizer authenticator)
                                            (assoc :id ::payment/methods))]
@@ -84,10 +85,16 @@
                ]]]]
   )
 
+(defn t [d]
+  (clojure.walk/postwalk #(if (:swagger/tags %)
+                            (do  (println ">> extending resource" (:swagger/tags %))
+                                 (resource (update % :swagger/tags (fn [c] (conj c :more)))))
+                            %) d))
+
 (s/defrecord ApiComponent [app-config store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (api store mimi  user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config)))
+    (assoc component :routes (t (api store mimi  user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config))))
   (stop [component]
         component))
 

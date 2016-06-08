@@ -71,40 +71,39 @@
     false))
 
 (defn create [store mimi user-store crypto authenticator authorizer]
-  (resource
-   (-> {:methods
-        {:post {:parameters {:query {:access_token String
-                                     :market String
-                                     (s/optional-key :locale) String}
-                             :body (:post schema)}
-                :consumes [{:media-type #{"application/json"}
-                            :charset "UTF-8"}]
-                :response (fn [ctx]
-                            (-> (d/let-flow [email-exists? (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
-                                             mimi-account (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))
-                                             mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)
-                                             ]
-                                            (util/>201 ctx (dissoc  mongo-account :password)))
-                                (d/catch clojure.lang.ExceptionInfo
-                                 (fn [exception-info]
-                                   (domain-exception ctx (ex-data exception-info))))))}}}
-       (merge (util/common-resource :account))
-       (merge (util/access-control* authenticator authorizer {:post :rebujito.scopes/application})))))
+
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String
+                                    :market String
+                                    (s/optional-key :locale) String}
+                            :body (:post schema)}
+               :consumes [{:media-type #{"application/json"}
+                           :charset "UTF-8"}]
+               :response (fn [ctx]
+                           (-> (d/let-flow [email-exists? (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
+                                            mimi-account (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))
+                                            mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)
+                                            ]
+                                           (util/>201 ctx (dissoc  mongo-account :password)))
+                               (d/catch clojure.lang.ExceptionInfo
+                                   (fn [exception-info]
+                                     (domain-exception ctx (ex-data exception-info))))))}}}
+      (merge (util/common-resource :account))
+      (merge (util/access-control* authenticator authorizer {:post :rebujito.scopes/application}))))
 
 (defn me [store mimi user-store authorizer authenticator app-config]
-  (resource
-   (-> {:methods
-        {:get {:parameters {:query {:access_token String
-                                     (s/optional-key :select) String
-                                     (s/optional-key :ignore) String}}
-               :consumes [{:media-type #{"application/json"}
-                            :charset "UTF-8"}]
-               :response (fn [ctx]
-                           (try
-                             (let [auth-user (util/authenticated-user ctx)]
-                               (util/>201 ctx (util/generate-user-data auth-user (:sub-market app-config))))
-                             (catch Exception e
-                               (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
+  (-> {:methods
+       {:get {:parameters {:query {:access_token String
+                                   (s/optional-key :select) String
+                                   (s/optional-key :ignore) String}}
+              :consumes [{:media-type #{"application/json"}
+                          :charset "UTF-8"}]
+              :response (fn [ctx]
+                          (try
+                            (let [auth-user (util/authenticated-user ctx)]
+                              (util/>201 ctx (util/generate-user-data auth-user (:sub-market app-config))))
+                            (catch Exception e
+                              (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 
-       (merge (util/common-resource :account))
-       (merge (util/access-control* authenticator authorizer {:get scopes/user})))))
+      (merge (util/common-resource :account))
+      (merge (util/access-control* authenticator authorizer {:get scopes/user}))))
