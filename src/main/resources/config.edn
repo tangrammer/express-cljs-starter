@@ -7,6 +7,8 @@
 
  :env-type #profile {:dev :dev :test :test :prod :prod}
 
+ :bugsnag {:key "be92431f82f5769f212a85bfd7ba9520"}
+
  :yada {:base-url #profile {:prod "/starbucks/api/v1"
                             :test "/starbucks/v1"
                             :default "/starbucks/v1"}
