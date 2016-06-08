@@ -68,7 +68,7 @@
       :myTiers []}
      %)))
 
-(defn me-rewards [store mimi user-store authorizer authenticator]
+(defn me-rewards [store mimi user-store]
  (-> {:methods
       {:get {:parameters {:query {:access_token String
                                   (s/optional-key :select) String
@@ -80,5 +80,4 @@
                                  (fn [exception-info]
                                    (domain-exception ctx (ex-data exception-info))))))}}}
 
-     (merge (common-resource :profile))
-     (merge (access-control* authenticator authorizer {:get :rebujito.scopes/user}))))
+     (merge (common-resource :profile))))

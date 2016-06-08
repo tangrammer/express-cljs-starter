@@ -103,5 +103,4 @@
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}}}
 
-      (merge (common-resource :oauth))
-      (merge access-control)))
+      (merge (common-resource :oauth))))

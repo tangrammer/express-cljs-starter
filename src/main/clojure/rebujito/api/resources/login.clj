@@ -14,7 +14,7 @@
              :validate-password {:post {(s/optional-key :encoded) Boolean
                                         :password String}}})
 
-(defn forgot-password [mailer authorizer authenticator ]
+(defn forgot-password [mailer authorizer ]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body (-> schema :forgot-password :post)}
@@ -28,10 +28,9 @@
                                (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"]))))}}}
 
 
-      (merge (common-resource :login))
-      (merge (access-control* authenticator authorizer {:post scopes/application}))))
+      (merge (common-resource :login))))
 
-(defn validate-password [user-store crypto authorizer authenticator ]
+(defn validate-password [user-store crypto authenticator ]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body (-> schema :validate-password :post)}
@@ -43,14 +42,12 @@
                                (>403 ctx ["Forbidden" "password doesn't match"]))))}}}
 
 
-      (merge (common-resource :login))
-      (merge (access-control* authenticator authorizer {:post scopes/user}))))
+      (merge (common-resource :login))))
 
-(defn logout [user-store authorizer authenticator]
+(defn logout [user-store ]
  (-> {:methods
       {:get {:parameters {:query {:access_token String}}
              :response (fn [ctx]
                          (>200 ctx {:status "ok"}))}}}
 
-     (merge (common-resource :me/login))
-     (merge {:access-control {}})))
+     (merge (common-resource :me/login))))

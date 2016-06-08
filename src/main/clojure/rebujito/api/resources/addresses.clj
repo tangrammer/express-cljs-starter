@@ -26,7 +26,7 @@
     (p/update-by-id! user-store user-id {$push {:addresses address}})
     uuid))
 
-(defn create [user-store authorizer authenticator]
+(defn create [user-store]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body (:post schema)}
@@ -41,5 +41,4 @@
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}}}
 
-      (merge (util/common-resource :addresses))
-      (merge (util/access-control* authenticator authorizer {:post scopes/user}))))
+      (merge (util/common-resource :addresses))))

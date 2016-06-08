@@ -18,7 +18,7 @@
                     :applicationId String
                     (s/optional-key s/Keyword) s/Any}})
 
-(defn register [store authorizer authenticator]
+(defn register [store ]
  (-> {:methods
       {:post {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
@@ -28,5 +28,4 @@
               :response (fn [ctx]
                           (>202 ctx nil))}}}
 
-     (merge (common-resource :devices))
-     (merge {:access-control {}})))
+     (merge (common-resource :devices))))

@@ -102,10 +102,9 @@
                                  (fn [exception-info]
                                    (domain-exception ctx (ex-data exception-info)))))))}}}
 
-   (merge (util/common-resource "me/payment-methods/{payment-method-id}"))
-   (merge util/access-control)))
+   (merge (util/common-resource "me/payment-methods/{payment-method-id}"))))
 
-(defn methods [store payment-gateway authorizer authenticator]
+(defn methods [store payment-gateway]
   (-> {:methods
        {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
               :response (fn [ctx]
@@ -157,6 +156,4 @@
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}}}
-      (merge (util/common-resource :me/payment-methods))
-      (merge (util/access-control* authenticator authorizer {:get  scopes/user
-                                                             :post scopes/user}) )))
+      (merge (util/common-resource :me/payment-methods))))

@@ -70,7 +70,7 @@
                            :body  (format  "Email address %s is not unique" (:emailAddress data-account))}))
     false))
 
-(defn create [store mimi user-store crypto authenticator authorizer]
+(defn create [store mimi user-store crypto]
 
   (-> {:methods
        {:post {:parameters {:query {:access_token String
@@ -87,10 +87,9 @@
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}}}
-      (merge (util/common-resource :account))
-      (merge (util/access-control* authenticator authorizer {:post scopes/application}))))
+      (merge (util/common-resource :account))))
 
-(defn me [store mimi user-store authorizer authenticator app-config]
+(defn me [store mimi user-store app-config]
   (-> {:methods
        {:get {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
@@ -102,5 +101,4 @@
                             (catch Exception e
                               (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
 
-      (merge (util/common-resource :account))
-      (merge (util/access-control* authenticator authorizer {:get scopes/user}))))
+      (merge (util/common-resource :account))))

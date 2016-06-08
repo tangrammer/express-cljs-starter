@@ -20,7 +20,7 @@
 
 (def schema {:put {:accountImageUrl String}})
 
-(defn me [store mimi user-store authorizer authenticator app-config]
+(defn me [store mimi user-store  app-config]
   (-> {:methods
        {:get {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
@@ -40,6 +40,4 @@
                               ))}}}
 
 
-      (merge (util/common-resource :profile))
-      (merge (util/access-control* authenticator authorizer {:get scopes/user}))
-      ))
+      (merge (util/common-resource :profile))))

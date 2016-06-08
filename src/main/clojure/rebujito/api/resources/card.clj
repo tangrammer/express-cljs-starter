@@ -24,8 +24,7 @@
                                         ; TODO
                                         ;  (>200 ctx [(p/get-cards store)])
                        (util/>200 ctx []))}}}
-   (merge (util/common-resource :me/cards))
-   (merge util/access-control)))
+   (merge (util/common-resource :me/cards))))
 
 (defn unregister [store]
   (->
@@ -42,8 +41,7 @@
                             "121018" (util/>400 ctx ["Cannot unregister a digital card that has a balance greater than zero." "Only zero balance digital cards can be unregistered"])
                             (util/>200 ctx ["OK" "Success"])))}}}
 
-   (merge (util/common-resource :me/cards))
-   (merge util/access-control)))
+   (merge (util/common-resource :me/cards))))
 
 (def schema {:post {:register-physical {:cardNumber String
                                         :pin String}}})
@@ -65,8 +63,7 @@
                                     (domain-exception ctx (ex-data  exception-info))))))
                         )}}}
 
-   (merge (util/common-resource :me/cards))
-   (merge util/access-control)))
+   (merge (util/common-resource :me/cards))))
 
 (defn register-digital-card [store mimi user-store]
   (->
@@ -86,8 +83,7 @@
                               ))
                         )}}}
 
-   (merge (util/common-resource :me/cards))
-   (merge util/access-control)))
+   (merge (util/common-resource :me/cards))))
 
 (def empty-history {:paging {:total 0
                              :offset 0
@@ -105,8 +101,7 @@
            :response (fn [ctx]
                        (util/>200 ctx empty-history))}}}
 
-   (merge (util/common-resource :me/cards))
-   (merge util/access-control)))
+   (merge (util/common-resource :me/cards))))
 
 (defn reload [store payment-gateway mimi]
   (-> {:methods
@@ -143,5 +138,4 @@
                                 (fn [exception-info]
                                   (domain-exception ctx (ex-data exception-info))))))}}}
 
-      (merge (util/common-resource :me/cards))
-      (merge util/access-control)))
+      (merge (util/common-resource :me/cards))))

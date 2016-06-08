@@ -70,6 +70,9 @@
     (log/info "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters))))
 
 
+(def access-control
+  {:access-control {}})
+
 (defn common-resource
   ([desc]
    (let [n (if (keyword? desc)
@@ -79,12 +82,13 @@
              desc)]
     (common-resource n n)))
   ([desc swagger-tag]
-   {:description desc
-    :logger log-handler
-    :produces [{:media-type #{"application/json"}
-                :charset "UTF-8"}]
-    :swagger/tags (if (vector? swagger-tag)
-                    swagger-tag [swagger-tag])}))
+   (merge {:description desc
+           :logger log-handler
+           :produces [{:media-type #{"application/json"}
+                       :charset "UTF-8"}]
+           :swagger/tags (if (vector? swagger-tag)
+                           swagger-tag [swagger-tag])}
+          access-control)))
 
 (defmethod yada.security/verify :jwt
   [ctx {:keys [verify]}]
@@ -92,8 +96,7 @@
     (log/debug ">>>>> token" token)
     (verify token)))
 
-(def access-control
-  {:access-control {}})
+
 
 
 ;; TODO: returns this kind of result to match starbucks doc

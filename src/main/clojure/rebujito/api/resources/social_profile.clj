@@ -23,5 +23,4 @@
                          "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request"])
                          (>200 ctx ["OK"])))}}}
 
-   (merge (common-resource :me/social-profile))
-   (merge access-control)))
+   (merge (common-resource :me/social-profile))))
