@@ -99,7 +99,7 @@
   (clojure.walk/postwalk
    #(if (:swagger/tags %)
       (do  (log/debug ">> extending resource" (:swagger/tags %))
-           (resource (let [data (update % :swagger/tags (fn [c] (conj c :more)))
+           (resource (let [;data (update % :swagger/tags (fn [c] (conj c :more)))
                            data (if (:oauth data)
                                   (-> data
                                       (merge (util/access-control* authenticator authorizer (:oauth data)))
