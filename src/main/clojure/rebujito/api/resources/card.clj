@@ -43,14 +43,14 @@
 
    (merge (util/common-resource :me/cards))))
 
-(def schema {:post {:register-physical {:cardNumber String
+(def schema {:register-physical {:post {:cardNumber String
                                         :pin String}}})
 
 (defn register-physical [store mimi user-store]
   (->
    {:methods
     {:post {:parameters {:query {:access_token String}
-                         :body (-> schema :post :register-physical)}
+                         :body (-> schema :register-physical :post)}
             :response (fn [ctx]
                         (let [cardNumber #_(str (+ (rand-int 1000) (read-string (format "96235709%05d" 0))))
                               (get-in ctx [:parameters :body :cardNumber])]

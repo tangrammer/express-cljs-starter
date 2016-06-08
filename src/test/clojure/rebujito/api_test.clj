@@ -88,7 +88,7 @@
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :body (json/generate-string
-                                            (assoc (g/generate (-> card/schema :post :register-physical))
+                                            (assoc (g/generate (-> card/schema :register-physical :post))
                                                    :cardNumber (str (+ (rand-int 1000) (read-string (format "96235709%05d" 0)))))
                                             )
                                      :content-type :json})
