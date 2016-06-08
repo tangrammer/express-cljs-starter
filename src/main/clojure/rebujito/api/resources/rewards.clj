@@ -58,6 +58,7 @@
   }))
 
 (defn rewards-response [mimi]
+
   (d/chain (p/rewards mimi {})
    translate-mimi-rewards
    #(merge
