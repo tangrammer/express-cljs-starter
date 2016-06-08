@@ -20,7 +20,7 @@
               :type "Billing"})
 
 (defn create-fake-user [user-store]
-  (let [id (p/generate-id user-store "123123")
+  (let [id (m/generate-account-id "123123")
         user {:_id id}]
     (p/insert! user-store user)
     user))
@@ -30,9 +30,13 @@
         user-store (:user-store *system*)]
     (testing "insert-address"
       (let [user (create-fake-user user-store)
-            _ (addresses/insert-address user-store user payload)
-            user (first (p/find user-store user))]
+            user-id (str (:_id user))
+            uuid (addresses/insert-address user-store user-id payload)
+            user (first (p/find user-store user))
+            addresses (:addresses user)
+            address (first addresses)]
+            
         (is (not (nil? user)))
-        (let [addresses (:addresses user)]
-          (is (= 1 (count addresses)))
-          (is (= payload (first addresses))))))))
+        (is (= 1 (count addresses)))
+        (is (= (assoc payload :uuid uuid)
+              address))))))

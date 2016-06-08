@@ -12,13 +12,18 @@
    [taoensso.timbre :as log])
   (:import [org.bson.types ObjectId]))
 
-(defn ^org.bson.types.ObjectId generate-account-id [s]
+(defn to-mongo-id-hex-string [s]
+  (format "%024x"  (read-string s)))
+
+(defn to-mongo-object-id [hex]
+  (org.bson.types.ObjectId. hex))
+
+(defn ^org.bson.types.ObjectId generate-account-id [^String s]
   {:pre  [(try (number? (read-string s))
                (catch Exception e (do
                                     "should be possible to be parsed as a number!"
                                     false)))]}
-  (let [hex-id (format "%024x"  (read-string s))]
-                                (org.bson.types.ObjectId.  hex-id)))
+  (-> s to-mongo-id-hex-string to-mongo-object-id))
 
 (defn ^String id>mimi-id [s]
   (str (BigInteger. s 16)))
@@ -30,8 +35,9 @@
   (throw (IllegalArgumentException.
           (str "Not ready to db-find using: " (type data)))))
 
-(defn- update-by-id!* [this id data]
-  (mc/update-by-id (:db this) (:collection this) id data))
+(defn- update-by-id!* [this hex-id data]
+  (let [id (to-mongo-object-id hex-id)]
+    (mc/update-by-id (:db this) (:collection this) id data)))
 
 (defn- find*
   ([this]
@@ -77,8 +83,8 @@
     (get-and-insert!* this data))
   (insert! [this data]
     (insert!* this data))
-  (update-by-id! [this id data]
-    (update-by-id!* this id data))
+  (update-by-id! [this hex-id data]
+    (update-by-id!* this hex-id data))
   )
 
 
@@ -99,8 +105,8 @@
     (get-and-insert!* this data))
   (insert! [this data]
     (insert!* this data))
-  (update-by-id! [this id data]
-    (update-by-id!* this id data))
+  (update-by-id! [this hex-id data]
+    (update-by-id!* this hex-id data))
 
   protocols/ApiClient
   (login [this id pw]
