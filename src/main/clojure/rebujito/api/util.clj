@@ -44,25 +44,28 @@
 (defn >200 [ctx body]
   (>base ctx 200 body))
 
+(def send-bugsnag true)
+
 (defn log-handler  [ctx]
   (if  (>= (-> ctx :response :status) 400)
     (let [body (bs/to-string (-> ctx :response :body ))]
       (log/info "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters) " :: " body)
-      (bugsnag/notify
-       (Exception. "log-handler-error")
-       {:api-key (:key (:bugsnag (config/config)))
-        :meta {:status (-> ctx :response :status)
-               :id :log-handler
-               :uri (-> ctx :request :uri)
-               :parameters (-> ctx :parameters)
-               :body body
-               :email "juanantonioruz@gmail.com"
-               }
-        :user {:id :log-handler
-               :uri (-> ctx :request :uri)
-               :parameters (-> ctx :parameters)
-               :body body
-               :email "juanantonioruz@gmail.com"}})
+      (when send-bugsnag
+        (bugsnag/notify
+        (Exception. "log-handler-error")
+        {:api-key (:key (:bugsnag (config/config)))
+         :meta {:status (-> ctx :response :status)
+                :id :log-handler
+                :uri (-> ctx :request :uri)
+                :parameters (-> ctx :parameters)
+                :body body
+                :email "juanantonioruz@gmail.com"
+                }
+         :user {:id :log-handler
+                :uri (-> ctx :request :uri)
+                :parameters (-> ctx :parameters)
+                :body body
+                :email "juanantonioruz@gmail.com"}}))
       (assoc-in ctx [:response :body] (bs/convert body java.nio.ByteBuffer)))
     (log/info "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters))))
 
