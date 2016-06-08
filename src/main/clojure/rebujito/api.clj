@@ -3,6 +3,7 @@
     [com.stuartsierra.component :as component]
     [schema.core :as s]
     [yada.resource :refer (resource)]
+    [taoensso.timbre :as log]
     [rebujito.api
      [util :as util]]
     [rebujito.api.resources
