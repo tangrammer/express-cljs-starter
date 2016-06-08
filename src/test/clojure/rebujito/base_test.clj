@@ -2,7 +2,7 @@
   (:require
    [byte-streams :as bs]
    [cheshire.core :as json]
-[bidi.bidi :as bidi]
+   [bidi.bidi :as bidi]
    [com.stuartsierra.component :as component]
                [rebujito.system.dev-system :as dev]
                [rebujito.api.sig :as api-sig]
