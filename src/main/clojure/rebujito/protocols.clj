@@ -13,7 +13,7 @@
   (post-refresh-token [this]))
 
 (defprotocol PaymentGateway
-  (ping [this data])
+;  (ping [this data])
   (create-card-token [this data])
   (delete-card-token [this data])
   (execute-payment [this data]))

@@ -88,7 +88,7 @@
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}}}
       (merge (util/common-resource :account))
-      (merge (util/access-control* authenticator authorizer {:post :rebujito.scopes/application}))))
+      (merge (util/access-control* authenticator authorizer {:post scopes/application}))))
 
 (defn me [store mimi user-store authorizer authenticator app-config]
   (-> {:methods

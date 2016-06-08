@@ -15,17 +15,17 @@
     this)
   (stop [this] this)
   protocols/PaymentGateway
-  (ping [this data]
-    @(http-k/post (-> this :url)
-                  {:body (velocity/render "paygate/ping.vm"
-                                          :paygateId (-> this :paygateId)
-                                          :paygatePassword (-> this :paygatePassword)
-                                          :identifier "test")}
-                  (fn [{:keys [status body error]}]
-                    (log/debug status error body)
-                    (if (or error (not= 200 status) (not (.contains body "PingResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
-                      (throw (ex-info "500" "Paygate Not Available"))
-                      ))))
+  ;; (ping [this data]
+  ;;   @(http-k/post (-> this :url)
+  ;;                 {:body (velocity/render "paygate/ping.vm"
+  ;;                                         :paygateId (-> this :paygateId)
+  ;;                                         :paygatePassword (-> this :paygatePassword)
+  ;;                                         :identifier "test")}
+  ;;                 (fn [{:keys [status body error]}]
+  ;;                   (log/debug status error body)
+  ;;                   (if (or error (not= 200 status) (not (.contains body "PingResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
+  ;;                     (throw (ex-info "500" "Paygate Not Available"))
+  ;;                     ))))
   (create-card-token [this data]
     (let [d* (d/deferred)]
       (log/debug data)
@@ -54,23 +54,32 @@
                                                    :body ["paygate/create-card-token NULL card-token" status error body]})))))))
       d*))
   (delete-card-token [this data]
-    (log/debug data)
-    @(http-k/post (-> this :url)
-                  {:body (velocity/render "paygate/delete-card-token.vm"
-                                          :paygateId (-> this :paygateId)
-                                          :paygatePassword (-> this :paygatePassword)
-                                          :vaultId (-> data :cardToken))}
-                  (fn [{:keys [status body error]}]
-                    (println "Delete Card Token Response" status error body)
-                    (if (or error (not= 200 status) (not (.contains body "DeleteVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
-                      false
-                      (let [response (xp/xml->doc body)
-                            result (xp/$x:text* "/Envelope/Body/SingleVaultResponse/DeleteVaultResponse/Status/StatusName" response)]
-                        (and (not-empty result) (= (first result)  "Completed"))
-                        )))))
+    (let [d* (d/deferred)]
+      (log/debug data)
+      (http-k/post (-> this :url)
+                   {:body (velocity/render "paygate/delete-card-token.vm"
+                                            :paygateId (-> this :paygateId)
+                                            :paygatePassword (-> this :paygatePassword)
+                                            :vaultId (-> data :cardToken))}
+                    (fn [{:keys [status body error]}]
+                      (log/debug "Delete Card Token Response" status error body)
+                      (if (or error (not= 200 status) (not (.contains body "DeleteVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
+                        (d/error! d* (ex-info (str "error!!!" 500)
+                                              {:type :payment-gateway
+                                               :status 500
+                                               :body ["paygate/delete-card-token" status error body]}))
+                        (let [response (xp/xml->doc body)
+                              result (xp/$x:text* "/Envelope/Body/SingleVaultResponse/DeleteVaultResponse/Status/StatusName" response)]
+                          (if (and (not-empty result) (= (first result)  "Completed"))
+                            (d/success! d* true)
+                            (d/error! d* (ex-info (str "error!!!" 500)
+                                                  {:type :payment-gateway
+                                                   :status 500
+                                                   :body ["paygate/delete-card-token" status error body]})))))))
+      d*))
   (execute-payment [this data]
     (let [d* (d/deferred)]
-      (do (println "PayGate Payment Request" data)
+      (do (log/debug "PayGate Payment Request" data)
           (http-k/post (-> this :url)
                        {:body (velocity/render "paygate/payment-with-token.vm"
                                                :paygateId (-> this :paygateId)
@@ -85,7 +94,7 @@
                                                :amount (-> data :amount))
                         }
                        (fn [{:keys [status body error]}]
-                         (println "PayGate Payment Response" status error body)
+                         (log/debug "PayGate Payment Response" status error body)
                          (if (or error (not= 200 status) (not (.contains body "CardPaymentResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
                            (d/error! d* (ex-info (str "API GATEWAY ERROR!")
                                                  {:type :payment-gateway
@@ -122,10 +131,13 @@
     this)
   (stop [this] this)
   protocols/PaymentGateway
-  (ping [this data])
+;;  (ping [this data])
   (create-card-token [this data]
-    {:status "200"
-     :cardToken "123abc"})
+    (let [d* (d/deferred)]
+      (d/success! d* {:status "200"
+                   :cardToken "123abc"})
+      d*
+      ))
   (delete-card-token [this data] {:status "completed"})
   (execute-payment [this data]
     (let [d* (d/deferred)]
