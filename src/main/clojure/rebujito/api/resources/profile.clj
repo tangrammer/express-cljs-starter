@@ -25,8 +25,6 @@
        {:get {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
                                    (s/optional-key :ignore) String}}
-              :consumes [{:media-type #{"application/json"}
-                          :charset "UTF-8"}]
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                            user-data (util/generate-user-data auth-user (:sub-market app-config))
@@ -43,4 +41,5 @@
 
 
       (merge (util/common-resource :profile))
-      (merge (util/access-control* authenticator authorizer {:get scopes/user}))))
+      (merge (util/access-control* authenticator authorizer {:get scopes/user}))
+      ))

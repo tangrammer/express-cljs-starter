@@ -72,8 +72,6 @@
       {:get {:parameters {:query {:access_token String
                                   (s/optional-key :select) String
                                   (s/optional-key :ignore) String}}
-             :consumes [{:media-type #{"application/json"}
-                         :charset "UTF-8"}]
              :response (fn [ctx]
                          (-> (d/let-flow [rewards (rewards-response mimi)]
                                          (>200 ctx rewards))

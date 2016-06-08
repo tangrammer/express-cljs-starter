@@ -85,16 +85,22 @@
                ]]]]
   )
 
-(defn t [d]
-  (clojure.walk/postwalk #(if (:swagger/tags %)
-                            (do  (println ">> extending resource" (:swagger/tags %))
-                                 (resource (update % :swagger/tags (fn [c] (conj c :more)))))
-                            %) d))
+(defn dynamic-resource [d]
+  (clojure.walk/postwalk
+   #(if (:swagger/tags %)
+      (do  (log/debug ">> extending resource" (:swagger/tags %))
+           (resource (let [data (update % :swagger/tags (fn [c] (conj c :more)))
+                           data (if (:consumes data)
+                                  data
+                                  (assoc data :consumes   [{:media-type #{"application/json"}
+                                                            :charset "UTF-8"}]))]
+                       data)))
+      %) d))
 
 (s/defrecord ApiComponent [app-config store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (t (api store mimi  user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config))))
+    (assoc component :routes (dynamic-resource (api store mimi  user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config))))
   (stop [component]
         component))
 

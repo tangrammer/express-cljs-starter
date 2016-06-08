@@ -16,9 +16,6 @@
    {:methods
     {:put {:parameters {:query {:access_token String}
                         :body (-> schema :put)}
-           :consumes [{:media-type #{"application/json"}
-                       :charset "UTF-8"}]
-
            :response (fn [ctx]
                        (condp = (get-in ctx [:parameters :query :access_token])
                          "111023" (>400 ctx ["No Request supplied" "Request was malformed. Must contain a body."])

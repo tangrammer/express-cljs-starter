@@ -14,7 +14,7 @@
     [com.stuartsierra.component :refer [system-map system-using using] :as component]
     [clojure.java.io :as io]
     [clojure.java.javadoc :refer [javadoc]]
-    [clojure.pprint :refer [pprint]]
+    [clojure.pprint :refer [pprint pp]]
     [clojure.reflect :refer [reflect]]
     [clojure.repl :refer [apropos dir doc find-doc pst source]]
     [clojure.test :refer [run-tests run-all-tests]]
@@ -74,10 +74,14 @@
   []
   (stop-system!))
 
+(defn dont-send-snagbug []
+  (alter-var-root (var rebujito.api.util/send-bugsnag) (fn [d] false)))
+
 (defn go
   "Initializes and starts the system running."
   []
   (init)
+  (dont-send-snagbug)
   (start)
   (check-mobile-user)
   :ready)

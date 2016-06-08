@@ -25,8 +25,6 @@
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body (:post schema)}
-               :consumes [{:media-type #{"application/json"}
-                           :charset "UTF-8"}]
                :response (fn [ctx]
                            (-> ctx :response (assoc :status 201)
                                (assoc :body ["created"])

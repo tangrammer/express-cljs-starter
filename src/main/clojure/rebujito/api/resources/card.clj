@@ -32,9 +32,6 @@
    {:methods
     {:delete {:parameters {:path {:card-id String}
                            :query {:access_token String}}
-              :consumes [{:media-type #{"application/json"}
-                          :charset "UTF-8"}]
-
               :response (fn [ctx]
                           (condp = (get-in ctx [:parameters :query :access_token])
                             "500"    (util/>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
@@ -56,9 +53,6 @@
    {:methods
     {:post {:parameters {:query {:access_token String}
                          :body (-> schema :post :register-physical)}
-            :consumes [{:media-type #{"application/json"}
-                        :charset "UTF-8"}]
-
             :response (fn [ctx]
                         (let [cardNumber #_(str (+ (rand-int 1000) (read-string (format "96235709%05d" 0))))
                               (get-in ctx [:parameters :body :cardNumber])]
@@ -78,9 +72,6 @@
   (->
    {:methods
     {:post {:parameters {:query {:access_token String}}
-            :consumes [{:media-type #{"application/json"}
-                        :charset "UTF-8"}]
-
             :response (fn [ctx]
                         (let [cardNumber (get-next-card-number)]
                           (-> (d/let-flow [mimi-res (p/register-physical-card mimi {:cardNumber cardNumber
@@ -111,9 +102,6 @@
                                 (s/optional-key :limit) String
                                 (s/optional-key :offset) String
                                 }}
-           :consumes [{:media-type #{"application/json"}
-                       :charset "UTF-8"}]
-
            :response (fn [ctx]
                        (util/>200 ctx empty-history))}}}
 
@@ -128,8 +116,6 @@
                                    :paymentMethodId String
                                    :sessionId String
                                    }}
-               :consumes [{:media-type #{"application/json"}
-                           :charset "UTF-8"}]
                :response (fn [ctx]
                            (->
                             (d/let-flow [profile-data (p/get-deferred-profile store)
