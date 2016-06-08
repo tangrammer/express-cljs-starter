@@ -88,7 +88,7 @@
 (defn dynamic-resource [d]
   (clojure.walk/postwalk
    #(if (:swagger/tags %)
-      (do  (println ">> extending resource" (:swagger/tags %))
+      (do  (log/debug ">> extending resource" (:swagger/tags %))
            (resource (let [data (update % :swagger/tags (fn [c] (conj c :more)))
                            data (if (:consumes data)
                                   data
