@@ -106,8 +106,7 @@
    (merge (util/common-resource "me/payment-methods/{payment-method-id}"))
    (merge util/access-control)))
 
-(def schema {:methods {:post {:expirationYear Long
-                              :billingAddressId String
+(def schema {:methods {:post {:billingAddressId String
                               :accountNumber String
                               (s/optional-key :default) String
                               (s/optional-key :isDefault) Boolean
@@ -116,7 +115,8 @@
                               :paymentType String
                               :cvn String
                               :fullName String
-                              :expirationMonth Long}}})
+                              :expirationMonth Long
+                              :expirationYear Long}}})
 
 (defn methods [store payment-gateway authorizer authenticator]
   (-> {:methods
@@ -152,7 +152,7 @@
                                                                  :routingNumber (:card-token card-token)
                                                                  })]
                                         ; Create a new payment method with the Token
-                                           (util/>201 ctx {:fullName (-> new-payment-method :fullName)
+                                           (util/>200 ctx {:fullName (-> new-payment-method :fullName)
                                                            :billingAddressId (-> new-payment-method :billingAddressId)
                                                            :accountNumber (-> new-payment-method :accountNumber)
                                                            :default (-> new-payment-method :default)

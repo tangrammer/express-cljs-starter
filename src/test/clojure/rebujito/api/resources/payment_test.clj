@@ -22,9 +22,7 @@
 
 (deftest payment-resource
   (testing ::payment/methods
-    (let [port (-> *system*  :webserver :port)
-
-          ]
+    (let [port (-> *system*  :webserver :port)]
       (let [path (get-path ::payment/methods)]
        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
        (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -53,7 +51,7 @@
              body (-> (bs/to-string body)
                       (json/parse-string true))
              ]
-         (is (= status 201))
+         (is (= status 200))
 
          (clojure.pprint/pprint body)
          (is  (:paymentMethodId body))
