@@ -44,7 +44,13 @@
    (merge (util/common-resource :me/cards))))
 
 (def schema {:register-physical {:post {:cardNumber String
-                                        :pin String}}})
+                                        :pin String}}
+             :reload {:post {:amount Long
+                             :paymentMethodId String
+                             (s/optional-key :acceptTerms) Boolean
+                             (s/optional-key :expirationYear) Long
+                             (s/optional-key :expirationMonth) Long
+                             (s/optional-key :sessionId) String}}})
 
 (defn register-physical [store mimi user-store]
   (->
@@ -107,10 +113,7 @@
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:card-id String}
-                            :body {:amount Long
-                                   :paymentMethodId String
-                                   :sessionId String
-                                   }}
+                            :body (-> schema :reload :post)}
                :response (fn [ctx]
                            (->
                             (d/let-flow [profile-data (p/get-deferred-profile store)
