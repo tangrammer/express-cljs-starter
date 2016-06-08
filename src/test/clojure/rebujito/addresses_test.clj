@@ -4,7 +4,7 @@
    [rebujito.protocols :as p]
    [rebujito.mongo :as m]
    [rebujito.config :refer (config)]
-   [rebujito.api-test :refer (system-fixture *system*)]
+   [rebujito.base-test :refer (system-fixture *system*)]
    [rebujito.api.resources.addresses :as addresses]))
 
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
