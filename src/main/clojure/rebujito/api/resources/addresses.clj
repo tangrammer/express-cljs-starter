@@ -57,9 +57,9 @@
                                            address-id (-> ctx :parameters :path :address-id)
                                            user-id (:_id auth-user)
                                            addresses (:addresses (p/find user-store user-id))]
-                                          (util/>200 ctx (some #(and (= address-id (:addressId %)) %) addresses)))
+                                (util/>200 ctx (some #(and (= address-id (:addressId %)) %) addresses)))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
-                                    (domain-exception ctx (ex-data exception-info))))
-                              ))}}}
+                                    (domain-exception ctx (ex-data exception-info))))))}}}
+
      (merge (util/common-resource :addresses))))
