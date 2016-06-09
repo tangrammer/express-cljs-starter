@@ -75,7 +75,7 @@
   (start [this]
     (let [this*  (start* this)]
       (doseq [[k v]  counters]
-        (when-not (first (find this* {:counter-name k} ))
+        (when-not (first (protocols/find this* {:counter-name k} ))
           (protocols/get-and-insert! this* {:counter-name k})))
       this*))
   (stop [this] this)
