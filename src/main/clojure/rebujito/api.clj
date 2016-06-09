@@ -39,7 +39,8 @@
         ["devices/register" (->  (devices/register store)
                                 (assoc :id ::devices/register))]
         ["stores/region" (-> (stores/by-region)
-                             (assoc :id ::stores/region))]
+                             (assoc :id ::stores/region
+                                    :oauth {:get scopes/application}))]
         ["me" [
                ["" (-> (account/me store mimi user-store app-config)
                        (assoc :id ::account/me
