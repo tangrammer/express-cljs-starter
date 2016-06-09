@@ -39,6 +39,27 @@
                                     (assoc-in [:headers :location] (str "/me/addresses/" uuid))))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
-                                     (domain-exception ctx (ex-data exception-info))))))}}}
-
+                                     (domain-exception ctx (ex-data exception-info))))))}
+        :get {:parameters {:query {:access_token String}}
+              :response (fn [ctx]
+                          (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                           user-id (:_id auth-user)
+                                           addresses (:addresses (p/find user-store user-id))]
+                               (util/>200 ctx addresses))))}}}
       (merge (util/common-resource :addresses))))
+
+(defn get-one [user-store]
+  (-> {:methods
+       {:get {:parameters {:path {:address-uuid String}
+                           :query {:access_token String}}
+              :response (fn [ctx]
+                          (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                           address-uuid (-> ctx :parameters :path :address-uuid)
+                                           user-id (:_id auth-user)
+                                           addresses (:addresses (p/find user-store user-id))]
+                                          (util/>200 ctx (some #(and (= address-uuid (:uuid %)) %) addresses)))
+                              (d/catch clojure.lang.ExceptionInfo
+                                  (fn [exception-info]
+                                    (domain-exception ctx (ex-data exception-info))))
+                              ))}}}
+     (merge (util/common-resource :addresses))))
