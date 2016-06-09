@@ -4,6 +4,7 @@
    [com.stuartsierra.component  :as component]
    [monger.collection :as mc]
    [monger.conversion :refer [from-db-object]]
+   [monger.operators :refer [$inc]]
    [monger.core :as mg]
    [monger.json :as mj]
    [monger.result :refer [acknowledged?]]
@@ -66,6 +67,47 @@
       c
       ))
 
+(defn- adapt-counter [index init]
+  (+ (or index 0) init))
+
+(defrecord CounterStorage [db-conn collection secret-key ephemeral? counters]
+  component/Lifecycle
+  (start [this]
+    (let [this*  (start* this)]
+      (doseq [[k v]  counters]
+        (when-not (first (find this* {:counter-name k} ))
+          (protocols/get-and-insert! this* {:counter-name k})))
+      this*))
+  (stop [this] this)
+
+  protocols/Counter
+  (increment! [this counter-name]
+    (assert (counter-name (:counters this)) (format "the counter %s  doesn't exist" counter-name))
+    (adapt-counter (:index (mc/find-and-modify (:db this) (:collection this)
+                                 {:counter-name counter-name}
+                                 {$inc {:index 1}}
+                                 {:return-new true}))
+                   (counter-name counters)))
+  (deref [this counter-name]
+    (assert (counter-name (:counters this)) (format "the counter %s  doesn't exist" counter-name))
+    (adapt-counter (:index (first (protocols/find this {:counter-name counter-name})))
+                   (counter-name counters)))
+
+  protocols/MutableStorage
+  (generate-id [this data]
+    (generate-account-id data))
+  (find [this]
+    (find* this))
+  (find [this data]
+    (find* this data))
+  (get-and-insert! [this data]
+    (get-and-insert!* this data))
+  (insert! [this data]
+    (insert!* this data))
+  (update-by-id! [this hex-id data]
+    (update-by-id!* this hex-id data))
+  )
+
 (defrecord UserStorage [db-conn collection secret-key ephemeral?]
   component/Lifecycle
   (start [this]
@@ -124,6 +166,16 @@
                                          }))))))))
 
 
+(defn new-counter-store
+  ([auth-data]
+   (new-counter-store auth-data false ))
+  ([auth-data ephemeral?]
+   (new-counter-store auth-data ephemeral? {:demo 1000} ))
+  ([auth-data ephemeral? counters]
+   (map->CounterStorage {:collection :counters
+                         :secret-key (:secret-key auth-data)
+                         :ephemeral?  ephemeral?
+                         :counters counters})))
 
 (defn new-user-store
   ([auth-data]
@@ -162,6 +214,10 @@
   [mutable-storage data]
   (mc/find-maps (:db mutable-storage) (:collection mutable-storage) data))
 
+
+(defmethod clojure.core/print-method CounterStorage
+  [storage ^java.io.Writer writer]
+  (.write writer (str "#<CounterStorage> Collection: " (:collection storage))))
 
 (defmethod clojure.core/print-method UserStorage
   [storage ^java.io.Writer writer]

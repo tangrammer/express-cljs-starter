@@ -1,5 +1,5 @@
 (ns rebujito.protocols
-  (:refer-clojure :exclude (find send)))
+  (:refer-clojure :exclude (find send deref)))
 
 (defprotocol Store
   (get-cards [this])
@@ -62,6 +62,10 @@
 
 (defprotocol ApiClient
   (login [this id pw]))
+
+(defprotocol Counter
+  (increment! [this counter-name])
+  (deref [this counter-name]))
 
 (defprotocol MailService
   (send [this data]))
