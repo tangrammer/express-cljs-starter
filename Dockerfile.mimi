@@ -1,28 +1,38 @@
 FROM naartjie/alpine-lein-node
 
-WORKDIR /src/mimi
+WORKDIR /src
 
 # add deploy key for npm 'private' modules on github
 COPY ./mimi/deploy.ssh /root/.ssh/
 RUN chmod 600 /root/.ssh/*
 
+##
 # dependencies before code trick: http://bit.ly/1QfnlUR
+##
+
+# npm dependencies
 COPY ./mimi/package.json /tmp/package.json
-RUN cd /tmp && NODE_ENV=production npm install
-RUN cp -a /tmp/node_modules /src/mimi/node_modules
+RUN cd /tmp && \
+    NODE_ENV=production npm install && \
+    cp -a /tmp/node_modules /src/node_modules && \
+    rm -rf /root/.ssh/
 
-RUN rm -rf /root/.ssh/
+# lein dependencies
+COPY ./mimi/project.clj /tmp/project.clj
+RUN cd /tmp && \
+    lein deps
 
-COPY . /src
+# build cljs
+COPY ./mimi .
+RUN lein cljsbuild once prod
 
 # version info
-RUN cd /src && \
+COPY . /tmp/src
+RUN cd /tmp/src && \
   VERSION=$(git rev-parse --short HEAD) && \
   DATE=$(date +%Y-%m-%dT%H:%M:%S) && \
   if ! [[ -z "`git status -s`" ]]; then VERSION="!! DIRTY ${VERSION}"; fi && \
-  sed -i "s/@@__VERSION__@@/${VERSION}/g;s/@@__BUILT__@@/${DATE}/g" ./mimi/VERSION.json
-
-RUN lein cljsbuild once prod
+  sed -i "s/@@__VERSION__@@/${VERSION}/g;s/@@__BUILT__@@/${DATE}/g" /src/VERSION.json
 
 EXPOSE 3000
 CMD ["npm", "start"]
