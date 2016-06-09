@@ -18,7 +18,6 @@
      [profile :as profile]
      [rewards :as rewards]
      [social-profile :as social-profile]
-     [stores :as stores]
      [content :as content]
      ]))
 
@@ -39,9 +38,6 @@
                                              :oauth {:post scopes/application}))]
         ["devices/register" (->  (devices/register store)
                                 (assoc :id ::devices/register))]
-        ["stores/region" (-> (stores/by-region)
-                             (assoc :id ::stores/region
-                                    :oauth {:get scopes/application}))]
         [["content/sitecore/content/" :market "/3rd%20Party%20Mobile%20Content/iOS-Account/Terms%20of%20Use"]
                                       (-> (content/terms)
                                           (assoc :id ::content/terms))]
