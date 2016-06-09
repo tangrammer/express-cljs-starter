@@ -15,7 +15,7 @@
    [rebujito.webserver.handler :as wh]
    [rebujito.logging :as log-levels]
    [rebujito.store :as store]
-   [rebujito.mongo :refer (new-user-store new-api-key-store)]
+   [rebujito.mongo :refer (new-user-store new-api-key-store new-counter-store)]
    [rebujito.mailer :refer (new-prod-mailer)]
    [rebujito.mimi :as mimi]
    [taoensso.timbre :as log])
@@ -52,6 +52,8 @@
 
                   :store (store/new-prod-store)
 
+                  :counter-store (new-counter-store (:auth config) false {:digital-card-number (read-string (format "96235709%05d" 0))})
+
                   :user-store (new-user-store (:auth config))
 
                   :api-client-store (new-api-key-store (:auth config))
@@ -84,6 +86,7 @@
   {
    :webserver {:request-handler :docsite-router}
    :db-conn {:database :db}
+   :counter-store [:db-conn]
    :user-store [:db-conn]
    :api-client-store [:db-conn]
    :authorizer [:authenticator]

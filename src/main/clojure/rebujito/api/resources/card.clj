@@ -58,12 +58,12 @@
     {:post {:parameters {:query {:access_token String}
                          :body (-> schema :register-physical :post)}
             :response (fn [ctx]
-                        (let [cardNumber #_(str (+ (rand-int 1000) (read-string (format "96235709%05d" 0))))
+                        (let [card-number #_(str (+ (rand-int 1000) (read-string (format "96235709%05d" 0))))
                               (get-in ctx [:parameters :body :cardNumber])]
-                          (-> (d/let-flow [mimi-res (p/register-physical-card mimi {:cardNumber cardNumber
+                          (-> (d/let-flow [mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                     :customerId (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
                                            card (p/get-deferred-card store {})]
-                                          (util/>200 ctx (assoc card :cardNumber cardNumber)))
+                                          (util/>200 ctx (assoc card :cardNumber card-number)))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
                                     (domain-exception ctx (ex-data  exception-info))))))
