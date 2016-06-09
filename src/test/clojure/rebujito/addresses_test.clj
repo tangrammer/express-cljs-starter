@@ -38,5 +38,5 @@
 
         (is (not (nil? user)))
         (is (= 1 (count addresses)))
-        (is (= (assoc payload :address-id address-id)
+        (is (= (assoc payload :addressId address-id)
               address))))))

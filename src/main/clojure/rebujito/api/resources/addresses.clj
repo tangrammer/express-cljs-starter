@@ -22,7 +22,7 @@
 
 (defn insert-address [user-store user-id address]
   (let [address-id (str (java.util.UUID/randomUUID))
-        address (assoc address :address-id address-id)]
+        address (assoc address :addressId address-id)]
     (p/update-by-id! user-store user-id {$push {:addresses address}})
     address-id))
 
@@ -57,7 +57,7 @@
                                            address-id (-> ctx :parameters :path :address-id)
                                            user-id (:_id auth-user)
                                            addresses (:addresses (p/find user-store user-id))]
-                                          (util/>200 ctx (some #(and (= address-id (:address-id %)) %) addresses)))
+                                          (util/>200 ctx (some #(and (= address-id (:addressId %)) %) addresses)))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
                                     (domain-exception ctx (ex-data exception-info))))
