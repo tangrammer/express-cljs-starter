@@ -49,8 +49,7 @@
                               ["" (-> (addresses/create user-store)
                                       (assoc :id ::addresses/create
                                               :oauth {:post scopes/user
-                                                      ; :get scopes/user
-                                                      }))]
+                                                      :get scopes/user}))]
                               [["/" :address-id] (-> (addresses/get-one user-store)
                                                        (assoc :id ::addresses/get
                                                               :oauth {:get scopes/user}))]]]
