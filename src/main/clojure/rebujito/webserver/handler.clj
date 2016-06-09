@@ -38,7 +38,8 @@
                                  :charset "UTF-8"}]}}}
 
                (merge (util/common-resource :not-found-default))
-               (merge util/access-control)))]]]))
+               (merge util/access-control)
+               (merge {:produces #{"application/json" "text/html" "text/plain"}})))]]]))
 
 (defn handler [config]
   (map->Handler config))
