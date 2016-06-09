@@ -31,12 +31,12 @@
     (testing "insert-address"
       (let [user (create-fake-user user-store)
             user-id (str (:_id user))
-            uuid (addresses/insert-address user-store user-id payload)
+            address-id (addresses/insert-address user-store user-id payload)
             user (first (p/find user-store user))
             addresses (:addresses user)
             address (first addresses)]
-            
+
         (is (not (nil? user)))
         (is (= 1 (count addresses)))
-        (is (= (assoc payload :uuid uuid)
+        (is (= (assoc payload :addressId address-id)
               address))))))

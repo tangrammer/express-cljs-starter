@@ -21,10 +21,10 @@
                     :country String}})
 
 (defn insert-address [user-store user-id address]
-  (let [uuid (str (java.util.UUID/randomUUID))
-        address (assoc address :uuid uuid)]
+  (let [address-id (str (java.util.UUID/randomUUID))
+        address (assoc address :addressId address-id)]
     (p/update-by-id! user-store user-id {$push {:addresses address}})
-    uuid))
+    address-id))
 
 (defn create [user-store]
   (-> {:methods
@@ -33,10 +33,10 @@
                :response (fn [ctx]
                            (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                             address (-> ctx :body)
-                                            uuid (insert-address user-store (:_id auth-user) address)]
+                                            address-id (insert-address user-store (:_id auth-user) address)]
                                 (-> ctx :response (assoc :status 201)
                                     ; TODO use ::resource/addresses to generate :location
-                                    (assoc-in [:headers :location] (str "/me/addresses/" uuid))))
+                                    (assoc-in [:headers :location] (str "/me/addresses/" address-id))))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}
@@ -50,16 +50,16 @@
 
 (defn get-one [user-store]
   (-> {:methods
-       {:get {:parameters {:path {:address-uuid String}
+       {:get {:parameters {:path {:address-id String}
                            :query {:access_token String}}
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                           address-uuid (-> ctx :parameters :path :address-uuid)
+                                           address-id (-> ctx :parameters :path :address-id)
                                            user-id (:_id auth-user)
                                            addresses (:addresses (p/find user-store user-id))]
-                                          (util/>200 ctx (some #(and (= address-uuid (:uuid %)) %) addresses)))
+                                (util/>200 ctx (some #(and (= address-id (:addressId %)) %) addresses)))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
-                                    (domain-exception ctx (ex-data exception-info))))
-                              ))}}}
+                                    (domain-exception ctx (ex-data exception-info))))))}}}
+
      (merge (util/common-resource :addresses))))

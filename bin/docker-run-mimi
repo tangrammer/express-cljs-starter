@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker build -f Dockerfile.mimi -t mimi .
+docker run -tip 3030:3030 -e PORT=3030 mimi

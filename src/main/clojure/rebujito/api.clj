@@ -47,7 +47,7 @@
                                               :oauth {:post scopes/user
                                                       ; :get scopes/user
                                                       }))]
-                              [["/" :address-uuid] (-> (addresses/get-one user-store)
+                              [["/" :address-id] (-> (addresses/get-one user-store)
                                                        (assoc :id ::addresses/get
                                                               :oauth {:get scopes/user}))]]]
                             ;  ]]

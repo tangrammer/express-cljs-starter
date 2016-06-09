@@ -47,6 +47,7 @@
                                         :pin String}}
              :reload {:post {:amount Long
                              :paymentMethodId String
+                             (s/optional-key :risk) s/Any
                              (s/optional-key :acceptTerms) Boolean
                              (s/optional-key :expirationYear) Long
                              (s/optional-key :expirationMonth) Long
@@ -58,8 +59,8 @@
     {:post {:parameters {:query {:access_token String}
                          :body (-> schema :register-physical :post)}
             :response (fn [ctx]
-                        (let [card-number #_(str (+ (rand-int 1000) (read-string (format "96235709%05d" 0))))
-                              (get-in ctx [:parameters :body :cardNumber])]
+
+                        (let [card-number (get-in ctx [:parameters :body :cardNumber])]
                           (-> (d/let-flow [mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                     :customerId (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
                                            card (p/get-deferred-card store {})]
@@ -128,8 +129,8 @@
                                                                           :cvn (-> payment-method-data :cvn)
                                                                           :transactionId "12345"
                                                                           :currency (-> card-data :balanceCurrencyCode)
-                                                                          :amount (-> ctx :parameters :body :amount)
-                                                                          })
+                                                                          :amount (-> ctx :parameters :body :amount)})
+
                                          mimi-card-data (p/load-card mimi (-> ctx :parameters :body :card-id)
                                                                      (-> ctx :parameters :body :amount))]
                                         (util/>200 ctx {:cardId nil

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+open "https://hub.docker.com/r/swarmapps/rebujito/builds"
+open "https://hub.docker.com/r/swarmapps/mimi/builds"
