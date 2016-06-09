@@ -17,9 +17,9 @@
   (routes [_]
     ["" [[base-url (yada/swaggered
                             (:routes api)
-                            {:info     {:title       "Rebujito REST API"
+                            {:info     {:title       "Starbucks API"
                                         :version     "1.0"
-                                        :description "Having good times with clojure and rest"}
+                                        :description "SWARM Implementation"}
                              :basePath base-url})]
          [true
 
