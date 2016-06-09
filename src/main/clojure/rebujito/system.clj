@@ -91,7 +91,7 @@
    :api-client-store [:db-conn]
    :authorizer [:authenticator]
    :store []
-   :api [:store :mimi :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer]
+   :api [:store :mimi :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

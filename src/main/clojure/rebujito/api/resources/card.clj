@@ -22,9 +22,8 @@
                              (s/optional-key :expirationMonth) Long
                              (s/optional-key :sessionId) String}}})
 
-(defn get-next-card-number []
-  ; "9623570900021"
-  "9623570900023")
+(defn get-next-card-number [counter-store]
+  (str (p/increment! counter-store :digital-card-number)))
 
 (defn insert-card! [user-store user-id card]
   (let [card-id (str (java.util.UUID/randomUUID))
@@ -98,12 +97,12 @@
 
    (merge (util/common-resource :me/cards))))
 
-(defn register-digital-card [store mimi user-store]
+(defn register-digital-card [store mimi user-store counter-store]
   (->
    {:methods
     {:post {:parameters {:query {:access_token String}}
             :response (fn [ctx]
-                        (-> (d/let-flow [card-number (get-next-card-number)
+                        (-> (d/let-flow [card-number (get-next-card-number counter-store)
                                          user-id  (-> (p/find user-store) first (get "_id") str)
                                          mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                   :customerId  (id>mimi-id user-id)})

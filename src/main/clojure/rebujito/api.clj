@@ -20,7 +20,7 @@
      [social-profile :as social-profile]
      ]))
 
-(defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config]
+(defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store]
   ["/" [["health"  (-> {:id :jolin
                         :methods
                                 {:get {:consumes [{:media-type #{"application/json"}
@@ -72,7 +72,7 @@
                   (-> (card/register-physical store mimi user-store)
                       (assoc :id ::card/register-physical))]
 
-                 ["/register-digital" (-> (card/register-digital-card store mimi user-store)
+                 ["/register-digital" (-> (card/register-digital-card store mimi user-store counter-store)
                                           (assoc :id ::card/register-digital-cards))]
 
                  ["/" [
@@ -119,10 +119,10 @@
                        data)))
       %) d))
 
-(s/defrecord ApiComponent [app-config store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer]
+(s/defrecord ApiComponent [app-config store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (dynamic-resource (api store mimi  user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config) authenticator authorizer)))
+    (assoc component :routes (dynamic-resource (api store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store) authenticator authorizer)))
   (stop [component]
         component))
 
