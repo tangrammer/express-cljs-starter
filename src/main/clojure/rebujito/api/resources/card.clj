@@ -58,8 +58,7 @@
     {:post {:parameters {:query {:access_token String}
                          :body (-> schema :register-physical :post)}
             :response (fn [ctx]
-                        (let [cardNumber #_(str (+ (rand-int 1000) (read-string (format "96235709%05d" 0))))
-                              (get-in ctx [:parameters :body :cardNumber])]
+                        (let [cardNumber (get-in ctx [:parameters :body :cardNumber])]
                           (-> (d/let-flow [mimi-res (p/register-physical-card mimi {:cardNumber cardNumber
                                                                                     :customerId (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
                                            card (p/get-deferred-card store {})]
