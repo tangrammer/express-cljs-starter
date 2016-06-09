@@ -19,6 +19,7 @@
      [rewards :as rewards]
      [social-profile :as social-profile]
      [stores :as stores]
+     [content :as content]
      ]))
 
 (defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store]
@@ -41,6 +42,9 @@
         ["stores/region" (-> (stores/by-region)
                              (assoc :id ::stores/region
                                     :oauth {:get scopes/application}))]
+        [["content/sitecore/content/" :market "/3rd%20Party%20Mobile%20Content/iOS-Account/Terms%20of%20Use"]
+                                      (-> (content/terms)
+                                          (assoc :id ::content/terms))]
         ["me" [
                ["" (-> (account/me store mimi user-store app-config)
                        (assoc :id ::account/me

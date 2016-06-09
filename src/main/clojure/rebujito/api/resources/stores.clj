@@ -1,10 +1,6 @@
 (ns rebujito.api.resources.stores
   (:require
-   [taoensso.timbre :as log]
-   [rebujito.api.util :as util]
-   [rebujito.store.mocks :as mocks]
-   [cheshire.core :as json]
-   [yada.resource :refer [resource]]))
+   [rebujito.api.util :as util]))
 
 (defn by-region []
   (->
