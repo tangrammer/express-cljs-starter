@@ -128,8 +128,8 @@
                                                                           :cvn (-> payment-method-data :cvn)
                                                                           :transactionId "12345"
                                                                           :currency (-> card-data :balanceCurrencyCode)
-                                                                          :amount (-> ctx :parameters :body :amount)
-                                                                          })
+                                                                          :amount (-> ctx :parameters :body :amount)})
+
                                          mimi-card-data (p/load-card mimi (-> ctx :parameters :body :card-id)
                                                                      (-> ctx :parameters :body :amount))]
                                         (util/>200 ctx {:cardId nil
