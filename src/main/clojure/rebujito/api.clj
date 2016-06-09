@@ -18,6 +18,7 @@
      [profile :as profile]
      [rewards :as rewards]
      [social-profile :as social-profile]
+     [stores :as stores]
      ]))
 
 (defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store]
@@ -37,6 +38,8 @@
                                              :oauth {:post scopes/application}))]
         ["devices/register" (->  (devices/register store)
                                 (assoc :id ::devices/register))]
+        ["stores/region" (-> (stores/by-region)
+                             (assoc :id ::stores/region))]
         ["me" [
                ["" (-> (account/me store mimi user-store app-config)
                        (assoc :id ::account/me
