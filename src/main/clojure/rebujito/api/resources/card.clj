@@ -5,14 +5,50 @@
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.protocols :as p]
    [rebujito.api.util :as util]
-   [rebujito.mongo :as mongo]
+   [rebujito.mongo :refer [id>mimi-id]]
+   [rebujito.store.mocks :as mocks]
+   [monger.operators :refer [$push]]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
+(def schema {:register-physical {:post {:cardNumber String}
+                                       :pin String}
+             :reload {:post {:amount Long
+                             :paymentMethodId String
+                             (s/optional-key :risk) s/Any
+                             (s/optional-key :acceptTerms) Boolean
+                             (s/optional-key :expirationYear) Long
+                             (s/optional-key :expirationMonth) Long
+                             (s/optional-key :sessionId) String}}})
+
 (defn get-next-card-number []
   ; "9623570900021"
-  "9623570900022")
+  "9623570900023")
+
+(defn insert-card! [user-store user-id card]
+  (let [card-id (str (java.util.UUID/randomUUID))
+        card (assoc card :cardId card-id)]
+    (p/update-by-id! user-store user-id {$push {:cards card}})
+    card-id))
+
+(defn new-physical-card [data]
+  (merge data {:digital false}))
+
+(defn new-digital-card [data]
+  (merge data {:digital true}))
+
+(def dummy-card-data {:balance 0
+                      :primary false
+                      :cardNumber nil
+                      :cardCurrency "ZA"
+                      :nickname "My Card"
+                      :type "Standard"
+                      :actions ["Reload"]
+                      :submarketCode "ZA"
+                      :cardId nil
+                      :balanceDate nil
+                      :balanceCurrencyCode "ZA"})
 
 (defn get-cards [store]
   (->
@@ -21,8 +57,6 @@
            :consumes [{:media-type #{"application/json"}
                        :charset "UTF-8"}]
            :response (fn [ctx]
-                                        ; TODO
-                                        ;  (>200 ctx [(p/get-cards store)])
                        (util/>200 ctx []))}}}
    (merge (util/common-resource :me/cards))))
 
@@ -43,32 +77,24 @@
 
    (merge (util/common-resource :me/cards))))
 
-(def schema {:register-physical {:post {:cardNumber String
-                                        :pin String}}
-             :reload {:post {:amount Long
-                             :paymentMethodId String
-                             (s/optional-key :risk) s/Any
-                             (s/optional-key :acceptTerms) Boolean
-                             (s/optional-key :expirationYear) Long
-                             (s/optional-key :expirationMonth) Long
-                             (s/optional-key :sessionId) String}}})
-
 (defn register-physical [store mimi user-store]
   (->
    {:methods
     {:post {:parameters {:query {:access_token String}
                          :body (-> schema :register-physical :post)}
             :response (fn [ctx]
+                        (-> (d/let-flow [card-number (-> ctx :parameters :body :cardNumber)
+                                         user-id  (-> (p/find user-store) first (get "_id") str)
+                                         mimi-res (p/register-physical-card mimi {:cardNumber card-number
+                                                                                  :customerId (id>mimi-id user-id)})
+                                         card (new-physical-card {:cardNumber card-number})
+                                         card-id (insert-card! user-store user-id card)
+                                         card (assoc card :cardId card-id)]
+                              (util/>200 ctx (merge mocks/card dummy-card-data card)))
 
-                        (let [card-number (get-in ctx [:parameters :body :cardNumber])]
-                          (-> (d/let-flow [mimi-res (p/register-physical-card mimi {:cardNumber card-number
-                                                                                    :customerId (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
-                                           card (p/get-deferred-card store {})]
-                                          (util/>200 ctx (assoc card :cardNumber card-number)))
-                              (d/catch clojure.lang.ExceptionInfo
-                                  (fn [exception-info]
-                                    (domain-exception ctx (ex-data  exception-info))))))
-                        )}}}
+                            (d/catch clojure.lang.ExceptionInfo
+                                (fn [exception-info]
+                                  (domain-exception ctx (ex-data  exception-info))))))}}}
 
    (merge (util/common-resource :me/cards))))
 
@@ -77,18 +103,18 @@
    {:methods
     {:post {:parameters {:query {:access_token String}}
             :response (fn [ctx]
-                        (let [cardNumber (get-next-card-number)]
-                          (-> (d/let-flow [mimi-res (p/register-physical-card mimi {:cardNumber cardNumber
-                                                                                    :customerId  (-> (p/find user-store) last (get "_id") str mongo/id>mimi-id)})
-                                           card (p/get-deferred-card store {})]
+                        (-> (d/let-flow [card-number (get-next-card-number)
+                                         user-id  (-> (p/find user-store) first (get "_id") str)
+                                         mimi-res (p/register-physical-card mimi {:cardNumber card-number
+                                                                                  :customerId  (id>mimi-id user-id)})
+                                         card (new-digital-card {:cardNumber card-number})
+                                         card-id (insert-card! user-store user-id card)
+                                         card (assoc card :cardId card-id)]
+                              (util/>200 ctx (merge mocks/card dummy-card-data card)))
 
-                                          (util/>200 ctx (assoc card :cardNumber cardNumber)))
-
-                              (d/catch clojure.lang.ExceptionInfo
-                                  (fn [exception-info]
-                                    (domain-exception ctx (ex-data  exception-info))))
-                              ))
-                        )}}}
+                            (d/catch clojure.lang.ExceptionInfo
+                                (fn [exception-info]
+                                  (domain-exception ctx (ex-data  exception-info))))))}}}
 
    (merge (util/common-resource :me/cards))))
 
