@@ -33,6 +33,51 @@ A clojure starbucks api ([wiki](https://github.com/naartjie/rebujito/wiki)).
 ``` 
 
 
+# auto-increment sequence in mongo
+
+The rebujito/system now includes :counter-store
+
+```clojure
+
+  :counter-store (new-counter-store (:auth config) false {:digital-card-number (read-string (format "96235709%05d" 0))})
+
+```
+
+This component has to include in the construcor a map with the counter-ids and counter-initial-values
+ `{:digital-card-number 100 :other 35 :more 45}`
+ 
+Then you can use the protocol/Counter with this component
+
+```clojure 
+
+(defprotocol Counter
+  (increment! [this counter-name])
+  (deref [this counter-name])) ;; idempotent
+
+```
+
+so ...
+
+```clojure
+
+dev> (p/increment! (:counter-store system) :digital-card-number)
+9623570900001
+
+dev> (p/deref (:counter-store system) :digital-card-number)
+9623570900001
+
+dev> (p/deref (:counter-store system) :digital-card-number)
+9623570900001
+
+dev> (p/increment! (:counter-store system) :digital-card-number)
+9623570900002
+
+dev> (p/deref (:counter-store system) :digital-card-number)
+9623570900002
+
+
+```
+
 
 # development flow
 
