@@ -22,28 +22,23 @@
                                         :description "SWARM Implementation"}
                              :basePath base-url})]
          [true
-
           (resource
-   (-> {:methods
-        {:* {
-             :response (fn [ctx]
-                               (println ">>>>>>NOT_FOUND")
-                               (clojure.pprint/pprint ctx)
-                               (when (= manifold.stream.BufferedStream (type (:body ctx)))
-                                 (print "BODY: ")
-                                 (clojure.pprint/pprint (-> ctx :body bs/to-string))
-                                 )
-                               (println ">>>" )
-                               (util/>404 ctx "Not Found"))
-             :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
-                         :charset "UTF-8"}]
-              }}}
+           (-> {:methods
+                {:* {
+                     :response (fn [ctx]
+                                 (println ">>>>>>NOT_FOUND")
+                                 (clojure.pprint/pprint ctx)
+                                 (when (= manifold.stream.BufferedStream (type (:body ctx)))
+                                   (print "BODY: ")
+                                   (clojure.pprint/pprint (-> ctx :body bs/to-string)))
 
+                                 (println ">>>")
+                                 (util/>404 ctx "Not Found"))
+                     :consumes [{:media-type #{"application/x-www-form-urlencoded" "application/json"}
+                                 :charset "UTF-8"}]}}}
 
-       (merge (util/common-resource :not-found-default))
-       (merge util/access-control)))
-]]
-     ]))
+               (merge (util/common-resource :not-found-default))
+               (merge util/access-control)))]]]))
 
 (defn handler [config]
   (map->Handler config))
