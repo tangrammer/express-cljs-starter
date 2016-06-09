@@ -1,8 +1,0 @@
-{:port 9500
- :vhosts #cond {:dev ["http://localhost:9500"]}
- :entries {1 {:username "Malcolm Sparks"
-              :userid "mspar"
-              :password "1234"}
-           2 {:username "Jon Pither"
-              :userid "jpit"
-              :password "5678"}}}
