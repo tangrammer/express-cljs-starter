@@ -45,6 +45,7 @@
                                    :content-type :application/x-www-form-urlencoded})
                       ;;                        print-body
                       :status)))
+      ;; trying to create an account with same email should return 400
       (is (= 400  (-> @(http/post url
                                   {:throw-exceptions false
                                    :body (json/generate-string new-account)
@@ -115,6 +116,34 @@
 ;;                          (println "\n >>>> password client_credentials "@access_token "\n")
                           r)
                         :status)))
+         ;; :grant_type ""client_credentials"" wrong client_id invalid hex id
+         (is (= 400 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                            {:throw-exceptions false
+                                             :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
+                                                                 :grant_type "client_credentials"
+                                                                 :client_id "xxx"
+                                                                 :client_secret "xxx")
+                                             :body-encoding "UTF-8"
+                                             :content-type :application/x-www-form-urlencoded})
+                              body (-> r :body bs/to-string (json/parse-string true))]
+                          (println body)
+                          r)
+                        :status)))
+
+                  ;; :grant_type ""client_credentials"" good client_id invalid pw
+         (is (= 400 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                            {:throw-exceptions false
+                                             :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
+                                                                 :grant_type "client_credentials"
+                                                                 :client_id (:key (api-config))
+                                                                 :client_secret "xxx")
+                                             :body-encoding "UTF-8"
+                                             :content-type :application/x-www-form-urlencoded})
+                              body (-> r :body bs/to-string (json/parse-string true))]
+                                                    (println body)
+                          r)
+                        :status)))
+
          ;; body conform :token-resource-owner schema
          ;; :grant_type "refresh_token"
          (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
