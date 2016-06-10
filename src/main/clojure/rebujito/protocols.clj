@@ -59,6 +59,8 @@
     "sync, the result is the new document")
   (update-by-id! [this id data]))
 
+(defprotocol UserStore
+  (add-new-payment-method [this oid p]))
 (defprotocol ApiClient
   (login [this id pw]))
 

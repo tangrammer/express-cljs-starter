@@ -2,6 +2,30 @@
   (:require [schema.core :as s]))
 ;;              :_id
 
+
+(def PaymentMethodMongo
+  {
+   :accountNumberLastFour String
+   :billingAddressId String
+   :default String
+   :expirationMonth Long
+   :expirationYear Long
+   :fullName String
+   (s/optional-key :nickName) s/Any
+   :paymentType String
+   :paymentMethodId String
+   :routingNumber String
+   })
+
+(def PaymentMethodRes
+  (-> PaymentMethodMongo
+      (assoc :accountNumber nil
+             :bankName nil
+             :paymentMethodId String
+             :isDefault Boolean)
+      (dissoc :default
+              :_id)))
+
 (def UserProfileData
   {:emailAddress String
    :firstName String

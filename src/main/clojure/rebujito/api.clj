@@ -91,7 +91,7 @@
                ["/devices/register" (-> (devices/register store )
                                                  (assoc :id ::devices/me/register))]
 
-               ["/paymentmethods" [["" (-> (payment/methods store payment-gateway)
+               ["/paymentmethods" [["" (-> (payment/methods user-store payment-gateway)
                                            (assoc :id ::payment/methods
                                                   :oauth {:get  scopes/user
                                                           :post scopes/user}))]
