@@ -3,6 +3,7 @@
   not be included in a production build of the application."
   (:import [java.util Locale])
   (:require
+   [rebujito.base-test :refer (new-account-sb)]
    [frak :as frak]
    [manifold.stream :as s]
    [rebujito.api.resources.account :as ac]
@@ -131,7 +132,7 @@
 
 (defn check-mobile-user []
   (try
-    (let [u (-> (rebujito.base-test/new-account-sb)
+    (let [u (-> (new-account-sb)
                (merge
                 {:emailAddress "stephan+starbucks_fr_02@mediamonks.com" :password "#myPassword01"}))]
      (if-let [res (first (p/find (-> system :user-store) (select-keys u [:emailAddress]) ))]
