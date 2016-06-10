@@ -4,6 +4,7 @@
    [taoensso.timbre :as log]
    [rebujito.api.util :as util]
    [rebujito.mimi :as mim]
+   [rebujito.schemas :refer (MongoUser)]
    [rebujito.scopes :as scopes]
    [rebujito.protocols :as p]
    [rebujito.api.resources :refer (domain-exception)]
@@ -59,6 +60,7 @@
         mongo-account-data (-> data-account
                                (assoc :_id mongo-id)
                                (assoc :password (p/sign crypto (:password data-account)) ))]
+    (s/validate MongoUser mongo-account-data)
     (p/get-and-insert! user-store mongo-account-data)))
 
 (defn check-account-mongo [data-account user-store]
@@ -98,10 +100,7 @@
                                    (s/optional-key :select) String
                                    (s/optional-key :ignore) String}}
               :response (fn [ctx]
-                          (try
-                            (let [auth-user (util/authenticated-user ctx)]
-                              (util/>201 ctx (util/generate-user-data auth-user (:sub-market app-config))))
-                            (catch Exception e
-                              (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
+                          (let [auth-user (util/authenticated-user ctx)]
+                            (util/>201 ctx (util/generate-user-data auth-user (:sub-market app-config)))))}}}
 
       (merge (util/common-resource :account))))

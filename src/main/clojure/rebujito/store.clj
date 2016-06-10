@@ -14,7 +14,7 @@
   protocols/Store
   (get-cards [this]
     (assoc mocks/card :target-environment :prod))
-  (get-deferred-card [this data]
+  #_(get-deferred-card [this data]
     (let [d* (d/deferred)]
       (if-let [card-data (assoc mocks/card :target-environment :prod)]
         (d/success! d* card-data)
@@ -49,7 +49,7 @@
     (assoc mocks/post-token-resource-owner :target-environment :prod))
   (post-refresh-token [this]
     (assoc mocks/post-refresh-token :target-environment :prod))
-  (get-deferred-profile [this]
+  (get-profile [this]
     (let [d* (d/deferred)]
       (if-let [profile-data (assoc mocks/me-profile :target-environment :prod)]
         (d/success! d* profile-data)
@@ -67,7 +67,7 @@
   protocols/Store
   (get-cards [this]
     (assoc mocks/card :target-environment :dev))
-  (get-deferred-card [this data]
+  #_(get-deferred-card [this data]
     (let [d* (d/deferred)]
       (if-let [card-data (assoc mocks/card :target-environment :dev)]
         (d/success! d* card-data)
@@ -102,7 +102,7 @@
     (assoc mocks/post-token-resource-owner  :target-environment :dev))
   (post-refresh-token [this]
     (assoc mocks/post-refresh-token :target-environment :dev))
-  (get-deferred-profile [this]
+  (get-profile [this]
     (let [d* (d/deferred)]
       (if-let [profile-data (assoc mocks/me-profile :target-environment :dev)]
         (d/success! d* profile-data)

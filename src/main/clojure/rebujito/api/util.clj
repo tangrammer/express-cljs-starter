@@ -2,7 +2,9 @@
   (:require [clj-bugsnag.core :as bugsnag]
             [rebujito.config :as config]
             [manifold.deferred :as d]
+            [rebujito.schemas :refer (UserProfileData)]
             [rebujito.protocols :as p]
+            [schema.core :as s]
             [manifold.stream :as stream]
             [byte-streams :as bs]
             [yada.handler :as yh]
@@ -141,7 +143,13 @@
 
 
 (defn generate-user-data [readed-jwt sub-market]
-  (merge (select-keys readed-jwt [:firstName :lastName :emailAddress])
+  (merge (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress]))
          {:subMarket sub-market
           :exId nil
           :partner false}))
+
+
+(defn user-profile-data [ctx user-store submarket]
+  (let [auth-user (authenticated-user ctx)
+        mongo-user (p/find user-store (:_id auth-user))]
+    (generate-user-data mongo-user submarket)))

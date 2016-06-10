@@ -28,7 +28,7 @@
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                            user-data (util/generate-user-data auth-user (:sub-market app-config))
-                                           profile-data (p/get-deferred-profile store) ]
+                                           profile-data (p/get-profile store) ]
                                           (util/>200 ctx (-> profile-data
                                                              (merge {:user user-data})
                                                              (merge {:rewardsSummary @(p/rewards mimi {})})

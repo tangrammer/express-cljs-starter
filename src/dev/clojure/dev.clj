@@ -3,6 +3,7 @@
   not be included in a production build of the application."
   (:import [java.util Locale])
   (:require
+   [frak :as frak]
    [manifold.stream :as s]
    [rebujito.api.resources.account :as ac]
    [schema-generators.generators :as g]
@@ -130,12 +131,15 @@
 
 (defn check-mobile-user []
   (try
-    (let [u (-> (g/generate (ac/schema :post))
+    (let [u (-> (rebujito.base-test/new-account-sb)
                (merge
                 {:emailAddress "stephan+starbucks_fr_02@mediamonks.com" :password "#myPassword01"}))]
      (if-let [res (first (p/find (-> system :user-store) (select-keys u [:emailAddress]) ))]
        (println (str "default mobile user exists in db"  #_res))
-       (do ((ac/create-account-mongo! u [(str (rand-int 1000000))] (-> system :user-store) (:crypto system)))
+       (do (ac/create-account-mongo! u [(str (rand-int 1000000))] (-> system :user-store) (:crypto system))
            (println "inserting default mobile user in db => " u))))
-    (catch Exception e (do (println (.getMessage e))
-                           (check-mobile-user)))))
+    (catch Exception e (do
+                         (println (type  e) (.getMessage e))
+                         (.printStackTrace e)
+                         (pst e)
+                         (check-mobile-user)))))
