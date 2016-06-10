@@ -1,13 +1,17 @@
-(ns rebujito.api.resources.content
-  (:require
-   [schema.core :as s]
-   [rebujito.api.util :as util]))
+(ns rebujito.api.resources.content)
 
-(defn terms []
-  (->
-   {:methods
-    {:get {:parameters {:query {:access_token String
-                                (s/optional-key :locale) String}}
-           :response (slurp (clojure.java.io/resource "mocks/lorem_ipsum.html"))}}}
-   (merge (util/common-resource :content/terms)
-          {:produces "application/json"})))
+(def terms-json {:name "Terms of Use"
+              	 :item {
+              		 :id nil
+              		 :templateId nil
+              		 :templateName "Mobile Content"
+              		 :displayname "Terms of Use"
+              		 :headline ""
+              		 :image ""
+              		 :imagehires ""
+              		 :key ""
+              		 :sharetext ""
+              		 :text (slurp (clojure.java.io/resource "mocks/lorem_ipsum.html"))
+              		 :updated nil
+              	 }
+              	 :children []})
