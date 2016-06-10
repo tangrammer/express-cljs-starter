@@ -73,61 +73,6 @@
                                         ;                        print-body
                         :status)))))
 
-     (testing ::card/get-cards
-       (let [path (get-path ::card/get-cards)]
-         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                   {:throw-exceptions false
-                                    :body-encoding "UTF-8"
-                                    :content-type :json})
-                        :status)))))
-
-     (testing ::card/register-physical
-       (let [path (get-path ::card/register-physical)]
-                                        ;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                    {:throw-exceptions false
-                                     :body-encoding "UTF-8"
-                                     :body (json/generate-string
-                                            (assoc (g/generate (-> card/schema :register-physical :post))
-                                                   :cardNumber (str (+ (rand-int 1000) (read-string (format "96235709%05d" 0)))))
-                                            )
-                                     :content-type :json})
-                        ;;                        print-body
-                        :status)))))
-
-     (testing ::card/register-digital-cards
-       (let [path (get-path ::card/register-digital-cards)]
-         ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                    {:throw-exceptions false
-                                     :body-encoding "UTF-8"
-                                     :content-type :json})
-                        :status)))))
-
-     (testing ::card/unregister
-       (let [api-id ::card/unregister
-             path (bidi/path-for r api-id :card-id 123)]
-         (is (= 200 (-> @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                      {:throw-exceptions false
-                                       :body-encoding "UTF-8"
-                                       :content-type :json})
-                        :status)))))
-
-     (testing ::card/reload
-       (let [api-id ::card/reload
-             path (bidi/path-for r api-id :card-id 123)]
-         ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                   {:throw-exceptions false
-                                    :body-encoding "UTF-8"
-                                    :body (json/generate-string
-                                           {
-                                            :amount 15
-                                            :paymentMethodId "1234567"
-                                            :sessionId ""
-                                            })
-                                    :content-type :json})
-                       :status)))))
 
 
      (testing ::payment/method-detail

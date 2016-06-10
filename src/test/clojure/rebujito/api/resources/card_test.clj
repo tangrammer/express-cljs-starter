@@ -1,0 +1,88 @@
+(ns rebujito.api.resources.card-test
+  (:require
+   [bidi.bidi :as bidi]
+   [rebujito.protocols :as p]
+   [schema-generators.generators :as g]
+   [rebujito.api-test :refer (print-body)]
+   [rebujito.api.resources.account :as account]
+   [rebujito.api.resources.card :as card]
+   [rebujito.base-test :refer (system-fixture *app-access-token* *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
+   [aleph.http :as http]
+   [clojure.pprint :refer (pprint)]
+   [cheshire.core :as json]
+   [clojure.test :refer :all]
+   ))
+
+(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
+
+(deftest test-create-account
+  (testing ::account/create
+    (let [port (-> *system*  :webserver :port)
+          path (get-path ::account/create)
+          r (-> *system* :docsite-router :routes)
+          account-data (assoc (new-account-sb)
+                              ;; string or int should both work here
+                              :birthDay "1"
+                              :birthMonth 1)
+          users (seq (p/find (-> *system*  :user-store)))
+          ]
+           (testing ::card/get-cards
+       (let [path (get-path ::card/get-cards)]
+         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *app-access-token*)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
+                        :status)))))
+
+     (testing ::card/register-physical
+       (let [path (get-path ::card/register-physical)]
+                                        ;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *app-access-token*)
+                                    {:throw-exceptions false
+                                     :body-encoding "UTF-8"
+                                     :body (json/generate-string
+                                            (assoc (g/generate (-> card/schema :register-physical :post))
+                                                   :cardNumber (str (+ (rand-int 1000) (read-string (format "96235709%05d" 0)))))
+                                            )
+                                     :content-type :json})
+                        ;;                        print-body
+                        :status)))))
+
+     (testing ::card/register-digital-cards
+       (let [path (get-path ::card/register-digital-cards)]
+         ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *app-access-token*)
+                                    {:throw-exceptions false
+                                     :body-encoding "UTF-8"
+                                     :content-type :json})
+                        :status)))))
+
+     (testing ::card/unregister
+       (let [api-id ::card/unregister
+             path (bidi/path-for r api-id :card-id 123)]
+         (is (= 200 (-> @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path 123)
+                                      {:throw-exceptions false
+                                       :body-encoding "UTF-8"
+                                       :content-type :json})
+                        :status)))))
+
+     (testing ::card/reload
+       (let [api-id ::card/reload
+             path (bidi/path-for r api-id :card-id 123)]
+         ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :body (json/generate-string
+                                           {
+                                            :amount 15
+                                            :paymentMethodId "1234567"
+                                            :sessionId ""
+                                            })
+                                    :content-type :json})
+                       (print-body)
+                       :status)))))
+
+          ))
+
+)

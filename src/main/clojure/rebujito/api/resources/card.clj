@@ -144,24 +144,29 @@
                :response (fn [ctx]
                            (->
                             (d/let-flow [profile-data (util/user-profile-data ctx user-store (:sub-market app-config))
-                                         payment-method-data (p/get-deferred-payment-method-detail
-                                                              store (-> ctx :parameters :body :paymentMethodId))
+                                         auth-user (util/authenticated-user ctx)
+                                         payment-method-data (first (filter #(= (:paymentMethodId %)
+                                                                          (-> ctx :parameters :body :paymentMethodId))
+                                                                            (:paymentMethods (p/find user-store (:_id auth-user) ))))
+                                         _ (log/info ">>>> payment-method-data::::" payment-method-data)
+
                                          payment-data (p/execute-payment
                                                        payment-gateway
                                                        (merge (select-keys profile-data [:emailAddress :lastName :firstName])
                                                               {:amount (-> ctx :parameters :body :amount)
                                                                :currency (:currency-code app-config)
-                                                               :cvn (-> payment-method-data :cvn)
+                                                               :cvn "123"
                                                                :routingNumber (-> payment-method-data :routingNumber)
                                                                :transactionId "12345"}))
-
+                                         _ (log/info ">>>> payment-data::::" payment-data)
                                          mimi-card-data (p/load-card mimi (-> ctx :parameters :body :card-id)
                                                                      (-> ctx :parameters :body :amount))]
-                                        (util/>200 ctx {:cardId nil
-                                                        :balance 416.02
-                                                        :balanceDate "2014-03-03T20:17:51.4329837Z"
-                                                        :balanceCurrencyCode "ZAR"
-                                                        :cardNumber "7777064158671182"}))
+                                        (util/>200 ctx (-> (select-keys mimi-card-data [:balance :balanceDate ])
+                                                           (assoc :cardId nil #_(-> ctx :parameters :body :card-id)
+                                                                  :balanceCurrencyCode (:currency mimi-card-data)
+                                                                  :cardNumber "7777064158671182" ;; TODO: ASK AHOUT card-number
+                                                                  )
+                                                           )))
                             (d/catch clojure.lang.ExceptionInfo
                                 (fn [exception-info]
                                   (domain-exception ctx (ex-data exception-info))))))}}}

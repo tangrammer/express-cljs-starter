@@ -1,5 +1,6 @@
 (ns rebujito.api.resources.payment-test
   (:require
+   [schema-generators.generators :as g]
    [byte-streams :as bs]
    [bidi.bidi :as bidi]
    [rebujito.config :refer (config)]
@@ -12,6 +13,7 @@
    [aleph.http :as http]
    [rebujito.api.resources
     [payment :as payment]
+    [card :as card]
     [account :as account]
     [oauth :as oauth]
     [login :as login]]
@@ -22,13 +24,15 @@
 
 (deftest payment-resource
   (testing ::payment/methods
-    (let [port (-> *system*  :webserver :port)]
+    (let [port (-> *system*  :webserver :port)
+          payment-method-id (atom "")]
       (let [path (get-path ::payment/methods)]
        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
        (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                  {:throw-exceptions false
                                   :body-encoding "UTF-8"
                                   :content-type :json})
+                      (print-body)
                       :status)))
        (let [{:keys [status body]}
              (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -48,13 +52,39 @@
                                       }
                                      )
                               :content-type :json}))
+             _          (is (= status 200))
              body (-> (bs/to-string body)
                       (json/parse-string true))
              ]
-         (is (= status 200))
+
 
          (clojure.pprint/pprint body)
          (is  (:paymentMethodId body))
-         ))))
+         (reset! payment-method-id (:paymentMethodId body))
+
+         ))
+
+      ;; ::card/reload
+
+      (let [api-id ::card/reload
+            r (-> *system* :docsite-router :routes)
+            path (bidi/path-for r api-id :card-id 123)]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+        (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :body (json/generate-string
+                                          {
+                                           :amount 15
+                                           :paymentMethodId @payment-method-id
+                                           :sessionId ""
+                                           })
+                                   :content-type :json})
+                      (print-body)
+                      :status)))))
+    )
+
+
+
 
   )
