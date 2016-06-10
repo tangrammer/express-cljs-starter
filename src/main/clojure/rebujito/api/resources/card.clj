@@ -136,26 +136,25 @@
 
    (merge (util/common-resource :me/cards))))
 
-(defn reload [store payment-gateway mimi]
+(defn reload [user-store store payment-gateway mimi app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:card-id String}
                             :body (-> schema :reload :post)}
                :response (fn [ctx]
                            (->
-                            (d/let-flow [profile-data (p/get-deferred-profile store)
+                            (d/let-flow [profile-data (util/user-profile-data ctx user-store (:sub-market app-config))
                                          card-data (p/get-deferred-card store (-> ctx :parameters :body :card-id))
                                          payment-method-data (p/get-deferred-payment-method-detail
                                                               store (-> ctx :parameters :body :paymentMethodId))
-                                         payment-data (p/execute-payment payment-gateway
-                                                                         {:firstName (-> profile-data :user :firstName)
-                                                                          :lastName (-> profile-data :user :lastName)
-                                                                          :emailAddress (-> profile-data :user :email)
-                                                                          :routingNumber (-> payment-method-data :routingNumber)
-                                                                          :cvn (-> payment-method-data :cvn)
-                                                                          :transactionId "12345"
-                                                                          :currency (-> card-data :balanceCurrencyCode)
-                                                                          :amount (-> ctx :parameters :body :amount)})
+                                         payment-data (p/execute-payment
+                                                       payment-gateway
+                                                       (merge (select-keys profile-data [:emailAddress :lastName :firstName])
+                                                              {:amount (-> ctx :parameters :body :amount)
+                                                               :currency (-> card-data :balanceCurrencyCode)
+                                                               :cvn (-> payment-method-data :cvn)
+                                                               :routingNumber (-> payment-method-data :routingNumber)
+                                                               :transactionId "12345"}))
 
                                          mimi-card-data (p/load-card mimi (-> ctx :parameters :body :card-id)
                                                                      (-> ctx :parameters :body :amount))]

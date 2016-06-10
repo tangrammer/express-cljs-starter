@@ -79,7 +79,7 @@
                        [
                         ["" :card-id] [
                                        ["" (-> (card/unregister store) (assoc :id ::card/unregister))]
-                                       ["/reload" (-> (card/reload store payment-gateway mimi)
+                                       ["/reload" (-> (card/reload user-store store payment-gateway mimi app-config)
                                                       (assoc :id ::card/reload))]
                                        ]
                         ]
