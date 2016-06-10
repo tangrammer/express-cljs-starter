@@ -1,17 +1,20 @@
 (ns rebujito.mongo
   (:require
+   [schema.core :as s]
    [manifold.deferred :as d]
    [com.stuartsierra.component  :as component]
    [monger.collection :as mc]
    [monger.conversion :refer [from-db-object]]
-   [monger.operators :refer [$inc $set]]
+   [monger.operators :refer [$inc $set $push]]
    [monger.core :as mg]
    [monger.json :as mj]
    [monger.result :refer [acknowledged?]]
    [rebujito.protocols :as protocols]
+   [rebujito.schemas :refer (PaymentMethodMongo)]
    [rebujito.mongo.schemas :refer (query-by-example-coercer)]
    [taoensso.timbre :as log])
-  (:import [org.bson.types ObjectId]))
+  (:import [org.bson.types ObjectId]
+           [java.util UUID]))
 
 (defn to-mongo-id-hex-string [s]
   (format "%024x"  (read-string s)))
@@ -37,6 +40,7 @@
           (str "Not ready to db-find using: " (type data)))))
 
 (defn- update!* [this data-query data-update]
+
   (mc/update (:db this) (:collection this) data-query {$set  data-update} {:multi true}))
 
 (defn- update-by-id!* [this hex-id data]
@@ -109,6 +113,49 @@
     (insert!* this data))
   (update! [this data-query data-update]
     (update!* this data-query data-update))
+  (update-by-id! [this hex-id data]
+    (update-by-id!* this hex-id data))
+  )
+
+
+(defrecord UserStorage [db-conn collection secret-key ephemeral?]
+  component/Lifecycle
+  (start [this]
+    (start* this))
+  (stop [this] this)
+
+  protocols/UserStore
+  (add-new-payment-method [this oid p]
+    (try
+      (let [uuid (str (UUID/randomUUID))
+            p (assoc p :paymentMethodId  uuid)]
+        (log/info ">>>>" oid p)
+        (s/validate PaymentMethodMongo p)
+        (when (pos? (.getN (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})))
+          {:paymentMethodId uuid}))
+
+      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
+                                                    {:type :store
+                                                     :status 500
+                                                     :body (.getMessage e)
+                                                     :message (.getMessage e)
+                                                     })))))
+
+
+  protocols/MutableStorage
+  (generate-id [this data]
+    (generate-account-id data))
+  (find [this]
+    (find* this))
+  (find [this data]
+    (find* this data))
+  (get-and-insert! [this data]
+    (get-and-insert!* this data))
+  (insert! [this data]
+    (insert!* this data))
+  (update! [this data-query data-update]
+    (update!* this data-query data-update))
+
   (update-by-id! [this hex-id data]
     (update-by-id!* this hex-id data))
   )
@@ -201,7 +248,7 @@
   ([auth-data]
    (new-user-store auth-data false))
   ([auth-data ephemeral?]
-   (map->BaseStorage {:collection :users
+   (map->UserStorage {:collection :users
                        :secret-key (:secret-key auth-data)
                        :ephemeral?  ephemeral?})))
 

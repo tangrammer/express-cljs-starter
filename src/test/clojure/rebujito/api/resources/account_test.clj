@@ -5,6 +5,7 @@
    [rebujito.api.resources.account :as account]
    [rebujito.base-test :refer (system-fixture *app-access-token* *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
+   [clojure.pprint :refer (pprint)]
    [cheshire.core :as json]
    [clojure.test :refer :all]
    ))
@@ -21,6 +22,7 @@
                               :birthMonth 1)
           users (seq (p/find (-> *system*  :user-store)))
           ]
+      (pprint (first users))
           (is (= 201  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path *app-access-token* 1234)
                                       {:throw-exceptions false
                                        :body (json/generate-string account-data)
@@ -28,7 +30,7 @@
                                        :content-type :json})
                           ;;                         print-body
                           :status)))
-
+          (pprint (first (seq (p/find (-> *system*  :user-store)))))
           (is (= (count (seq (p/find (-> *system*  :user-store)))) (inc (count users))))
           ;; same account throws error
           (is (= 400  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path *app-access-token* 1234)

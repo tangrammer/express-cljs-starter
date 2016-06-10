@@ -104,54 +104,60 @@
 
    (merge (util/common-resource "me/payment-methods/{payment-method-id}"))))
 
-(defn methods [store payment-gateway]
+(defn- take-last* [s n]
+  (apply str (take-last n s)))
+
+
+
+(defn methods [user-store payment-gateway]
   (-> {:methods
        {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
               :response (fn [ctx]
-                          (let [paymentMethods (p/get-payment-method store)]
-                            (println "paymentMethods" paymentMethods)
-                            (if paymentMethods
-                              (util/>200 ctx paymentMethods)
-                              (util/>500 ctx ["An unexpected error occurred processing the request."]))))}
+                          (let [payment-methods (:paymentMethods (p/find user-store "xxx"))]
+                            (log/info  "paymentMethods GET" payment-methods)
+                            (util/>200 ctx payment-methods)))}
 
         :post {:parameters {:query {:access_token String}
                             :body (-> schema :methods :post)}
                :response (fn [ctx]
                            (-> (d/let-flow [request (get-in ctx [:parameters :body])
+                                            auth-user (util/authenticated-user ctx)
                                             card-token (p/create-card-token payment-gateway
                                                                             {:cardNumber (-> request :accountNumber)
                                                                              :expirationMonth (-> request :expirationMonth)
                                                                              :expirationYear (-> request :expirationYear)
                                                                              :cvn (-> request :cvn)})
-                                            new-payment-method (p/post-payment-method
-                                                                store
-                                                                {:nickName (-> request :nickName)
-                                                                 :paymentType (-> request :paymentType)
-                                                                 :fullName (-> request :fullName)
+
+                                            new-payment-method (p/add-new-payment-method
+                                                                user-store
+                                                                (:_id auth-user)
+                                                                {
+                                                                 :accountNumberLastFour (take-last* (-> request :accountNumber) 4)
+                                                                 :billingAddressId (-> request :billingAddressId)
                                                                  :default (-> request :default)
-                                                                 :accountNumber "****************"
-                                                                 :accountNumberLastFour "****"
-                                                                 :cvn (-> request :cvn)
                                                                  :expirationMonth (-> request :expirationMonth)
                                                                  :expirationYear (-> request :expirationYear)
-                                                                 :billingAddressId (-> request :billingAddressId)
+                                                                 :fullName (-> request :fullName)
+                                                                 :nickName (-> request :nickName)
+                                                                 :paymentType (-> request :paymentType)
                                                                  :routingNumber (:card-token card-token)
                                                                  })]
-                                        ; Create a new payment method with the Token
-                                           (util/>200 ctx {:fullName (-> new-payment-method :fullName)
-                                                           :billingAddressId (-> new-payment-method :billingAddressId)
-                                                           :accountNumber (-> new-payment-method :accountNumber)
-                                                           :default (-> new-payment-method :default)
+                                           (util/>200 ctx {
+                                                           :accountNumber nil
+                                                           :accountNumberLastFour (take-last* (-> request :accountNumber) 4)
+                                                           :bankName nil
+                                                           :billingAddressId (-> request :billingAddressId)
+                                                           :cvn nil
+                                                           :default (-> request :default)
+                                                           :expirationMonth (-> request :expirationMonth)
+                                                           :expirationYear (-> request :expirationYear)
+                                                           :fullName (-> request :fullName)
+
+                                                           :isTemporary true ;;TODO: ;(-> new-payment-method :isTemporary)
+                                                           :nickname (-> request :nickname)
                                                            :paymentMethodId (-> new-payment-method :paymentMethodId)
-                                                           :nickname (-> new-payment-method :nickname)
-                                                           :paymentType (-> new-payment-method :paymentType)
-                                                           :accountNumberLastFour (-> new-payment-method :accountNumberLastFour)
-                                                           :cvn (-> new-payment-method :cvn)
-                                                           :expirationYear (-> new-payment-method :expirationYear)
-                                                           :expirationMonth (-> new-payment-method :expirationMonth)
-                                                           :isTemporary (-> new-payment-method :isTemporary)
-                                                           :bankName (-> new-payment-method :bankName)
-                                                           :routingNumber (-> new-payment-method :routingNumber)
+                                                           :paymentType (-> request :paymentType)
+                                                           :routingNumber nil
                                                            }))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
