@@ -81,10 +81,10 @@
                                     :content-type :json})
                         :status)))))
 
-     (testing ::card/register-physical
+     #_(testing ::card/register-physical
        (let [path (get-path ::card/register-physical)]
                                         ;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :body (json/generate-string
@@ -95,10 +95,10 @@
                         ;;                        print-body
                         :status)))))
 
-     (testing ::card/register-digital-cards
+     #_(testing ::card/register-digital-cards
        (let [path (get-path ::card/register-digital-cards)]
          ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
+         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :content-type :json})
