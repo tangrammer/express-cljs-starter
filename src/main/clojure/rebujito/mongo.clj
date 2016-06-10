@@ -208,8 +208,8 @@
    (new-api-key-store auth-data false))
   ([auth-data ephemeral?]
    (map->ApiKeyStorage {:collection :api-keys
-                         :secret-key (:secret-key auth-data)
-                               :ephemeral?  ephemeral?})))
+                        :secret-key (:secret-key auth-data)
+                        :ephemeral?  ephemeral?})))
 
 (defn- find-map-by-id [mutable-storage id]
   (mc/find-map-by-id (:db mutable-storage) (:collection mutable-storage) id))
