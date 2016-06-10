@@ -37,17 +37,18 @@
 (defn new-digital-card [data]
   (merge data {:digital true}))
 
-(def dummy-card-data {:cardNumber nil
-                      :cardId nil
-                      :balance 0
-                      :primary false
-                      :cardCurrency "ZAR"
-                      :nickname "My Card"
-                      :type "Standard"
-                      :actions ["Reload"]
-                      :submarketCode "ZA"
-                      :balanceDate (.toString (java.time.Instant/now))
-                      :balanceCurrencyCode "ZA"})
+(defn dummy-card-data []
+  {:cardNumber nil
+   :cardId nil
+   :balance 0
+   :primary false
+   :cardCurrency "ZAR"
+   :nickname "My Card"
+   :type "Standard"
+   :actions ["Reload"]
+   :submarketCode "ZA"
+   :balanceDate (.toString (java.time.Instant/now))
+   :balanceCurrencyCode "ZA"})
 
 (defn get-cards [store]
   (->
@@ -89,7 +90,7 @@
                                          card (new-physical-card {:cardNumber card-number})
                                          card-id (insert-card! user-store user-id card)
                                          card (assoc card :cardId card-id)]
-                              (util/>200 ctx (merge mocks/card dummy-card-data card)))
+                              (util/>200 ctx (merge mocks/card (dummy-card-data) card)))
 
                             (d/catch clojure.lang.ExceptionInfo
                                 (fn [exception-info]
@@ -109,7 +110,7 @@
                                          card (new-digital-card {:cardNumber card-number})
                                          card-id (insert-card! user-store user-id card)
                                          card (assoc card :cardId card-id)]
-                              (util/>200 ctx (merge mocks/card dummy-card-data card)))
+                              (util/>200 ctx (merge mocks/card (dummy-card-data) card)))
 
                             (d/catch clojure.lang.ExceptionInfo
                                 (fn [exception-info]
