@@ -197,7 +197,7 @@
 
 (defn new-token-store
   ([auth-data]
-   (new-user-store auth-data false))
+   (new-token-store auth-data false))
   ([auth-data ephemeral?]
    (map->BaseStorage {:collection :tokens
                       :secret-key (:secret-key auth-data)
