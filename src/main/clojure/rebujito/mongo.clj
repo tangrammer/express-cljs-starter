@@ -173,7 +173,17 @@
                                          :status 400
                                          :body (format "api client-id and client-secret: %s :: %s not valid  " id pw)
                                          :message (format "api client-id and client-secret: %s :: %s not valid  " id pw)
-                                         }))))))))
+                                         })))))
+        (d/catch Exception
+            (fn [e]
+              (d/error-deferred (ex-info (str "Store ERROR!")
+                                        {:type :store
+                                         :status 400
+                                         :body (str (format "api client-id and client-secret: %s :: %s not valid  " id pw)
+                                                    " " (.getMessage e))
+                                         :message (str (format "api client-id and client-secret: %s :: %s not valid  " id pw)
+                                                    " " (.getMessage e))
+                                         })))))))
 
 
 (defn new-counter-store

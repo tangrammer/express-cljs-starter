@@ -54,10 +54,6 @@
 
 (defmethod get-token :client_credentials ; docs -> http://bit.ly/1sLcJZO
   [ctx store token-store user-store authenticator authorizer crypto api-client-store]
-  (>201 ctx (p/grant authorizer {} #{scopes/application})))
-
-(defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
-  [ctx store token-store user-store authenticator authorizer crypto api-client-store]
   (d/let-flow [api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
                                    (get-in ctx [:parameters :body :client_secret]))
@@ -65,6 +61,21 @@
                    (get-in ctx [:parameters :query :sig])
                    (get-in ctx [:parameters :body :client_id])
                    (get-in ctx [:parameters :body :client_secret]))]
+              (log/debug api-client c)
+              (>201 ctx (p/grant authorizer {} #{scopes/application})))
+)
+
+(defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
+  [ctx store token-store user-store authenticator authorizer crypto api-client-store]
+  (d/let-flow [
+               api-client (p/login api-client-store
+                                   (get-in ctx [:parameters :body :client_id])
+                                   (get-in ctx [:parameters :body :client_secret]))
+               c (api-sig/deferred-check
+                   (get-in ctx [:parameters :query :sig])
+                   (get-in ctx [:parameters :body :client_id])
+                   (get-in ctx [:parameters :body :client_secret]))
+               ]
               (if-let [user (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
                                                      :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
                                  first
@@ -76,9 +87,18 @@
   ; TODO verify refresh token #39
   ; https://github.com/naartjie/rebujito/issues/39
   [ctx store token-store user-store authenticator authorizer crypto api-client-store]
-  (let [refresh-token (get-in ctx [:parameters :body :refresh_token])
-        data-refresh-token (p/read-token authenticator refresh-token)
-        mongo-token (first  (p/find token-store {:refresh-token refresh-token}))]
+  (d/let-flow [
+               api-client (p/login api-client-store
+                                   (get-in ctx [:parameters :body :client_id])
+                                   (get-in ctx [:parameters :body :client_secret]))
+               c (api-sig/deferred-check
+                   (get-in ctx [:parameters :query :sig])
+                   (get-in ctx [:parameters :body :client_id])
+                   (get-in ctx [:parameters :body :client_secret]))
+
+               refresh-token (get-in ctx [:parameters :body :refresh_token])
+               data-refresh-token (p/read-token authenticator refresh-token)
+               mongo-token (first  (p/find token-store {:refresh-token refresh-token}))]
 ;;    (log/info "*refresh_token>>>" mongo-token)
     (if (:valid mongo-token)
       (let [user-data (-> (p/find user-store (:user-id mongo-token))
