@@ -79,11 +79,14 @@
                                     (s/optional-key :platform) String}
                             :body (:post schema)}
                :response (fn [ctx]
-                           (-> (d/let-flow [email-exists? (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
-                                            mimi-account (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))
+                           (-> (d/let-flow [mimi-account (d/chain
+                                                          (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
+                                                          (fn [b]
+                                                            (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))))
+
                                             mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
-                                           (when-not email-exists?
-                                            (util/>201 ctx (dissoc  mongo-account :password))))
+
+                                           (util/>201 ctx (dissoc  mongo-account :password)))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}}}

@@ -38,20 +38,13 @@
                                    :content-type :json})
                       ;;                        print-body
                       :status)))
+      ;; wrong access-token
       (is (= 401  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path "wrong_access_token" 1234)
                                   {:throw-exceptions false
                                    :form-params new-account
                                    :body-encoding "UTF-8"
                                    :content-type :application/x-www-form-urlencoded})
-                      ;;                        print-body
-                      :status)))
-      ;; trying to create an account with same email should return 400
-      (is (= 400  (-> @(http/post url
-                                  {:throw-exceptions false
-                                   :body (json/generate-string new-account)
-                                   :body-encoding "UTF-8"
-                                   :content-type :json})
-                      ;;                        print-body
+                      print-body
                       :status)))
 
       )))
