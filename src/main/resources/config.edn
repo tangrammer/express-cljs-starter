@@ -2,7 +2,9 @@
  :app-config {:sub-market #profile {:prod "ZA"
                                     :test "FR"
                                     :dev "FR"
-                                    :default "FR"}}
+                                    :default "FR"}
+              :currency-code  #profile {:default "ZAR"}
+              }
  :cookie-name "rebujito-cookie"
 
  :env-type #profile {:dev :dev :test :test :prod :prod}

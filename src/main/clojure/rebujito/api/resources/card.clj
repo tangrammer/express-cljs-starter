@@ -144,14 +144,13 @@
                :response (fn [ctx]
                            (->
                             (d/let-flow [profile-data (util/user-profile-data ctx user-store (:sub-market app-config))
-                                         card-data (p/get-deferred-card store (-> ctx :parameters :body :card-id))
                                          payment-method-data (p/get-deferred-payment-method-detail
                                                               store (-> ctx :parameters :body :paymentMethodId))
                                          payment-data (p/execute-payment
                                                        payment-gateway
                                                        (merge (select-keys profile-data [:emailAddress :lastName :firstName])
                                                               {:amount (-> ctx :parameters :body :amount)
-                                                               :currency (-> card-data :balanceCurrencyCode)
+                                                               :currency (:currency-code app-config)
                                                                :cvn (-> payment-method-data :cvn)
                                                                :routingNumber (-> payment-method-data :routingNumber)
                                                                :transactionId "12345"}))

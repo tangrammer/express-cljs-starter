@@ -3,8 +3,7 @@
 
 (defprotocol Store
   (get-cards [this])
-  (get-deferred-card [this data])
-  (get-deferred-profile [this])
+  (get-profile [this])
   (get-deferred-payment-method-detail [this data])
   (put-payment-method-detail [this data])
   (post-payment-method [this data])
