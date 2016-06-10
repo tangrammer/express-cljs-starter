@@ -10,3 +10,4 @@
 **/*.iml
 Clojure REPL
 .secrets.edn
+**/.DS_Store
