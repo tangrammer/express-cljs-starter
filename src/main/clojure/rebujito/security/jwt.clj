@@ -48,8 +48,8 @@
                            (log/error (.getMessage e))
                            nil))
       ))
-  (generate-token [this data]
-    (let [expire-in 1440 ;; 1 day in minutes
+  (generate-token [this data minutes]
+    (let [expire-in minutes ;; 1440 => 1 day in minutes
           token-id (.toString (UUID/randomUUID))]
       (jws-sign (claims data token-id expire-in) secret-key))))
 

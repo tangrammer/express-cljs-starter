@@ -21,7 +21,7 @@
      [content :as content]
      ]))
 
-(defn api [store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store]
+(defn api [store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store]
   ["/" [["health"  (-> {:id :jolin
                         :methods
                                 {:get {:consumes [{:media-type #{"application/json"}
@@ -31,7 +31,7 @@
         ["account/create" (-> (account/create store mimi user-store crypto)
                               (assoc :id ::account/create
                                      :oauth {:post scopes/application}))]
-        ["oauth/token" (->  (oauth/token-resource-owner store user-store authorizer crypto api-client-store)
+        ["oauth/token" (->  (oauth/token-resource-owner store token-store user-store authenticator authorizer crypto api-client-store)
                             (assoc :id ::oauth/token-resource-owner))]
         ["login/forgot-password" (->  (login/forgot-password mailer authorizer)
                                       (assoc :id ::login/forgot-password
@@ -122,10 +122,10 @@
                        data)))
       %) d))
 
-(s/defrecord ApiComponent [app-config store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store]
+(s/defrecord ApiComponent [app-config store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (dynamic-resource (api store mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store) authenticator authorizer)))
+    (assoc component :routes (dynamic-resource (api store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store) authenticator authorizer)))
   (stop [component]
         component))
 

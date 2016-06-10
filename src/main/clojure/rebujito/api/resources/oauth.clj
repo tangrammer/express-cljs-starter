@@ -49,15 +49,15 @@
 
 (defmulti get-token
   "OAuth Token methods: dispatch on grant_type"
-  (fn [ctx store user-store authorizer crypto api-client-store]
+  (fn [ctx store token-store user-store authenticator authorizer crypto api-client-store]
     (keyword (-> ctx :parameters :body :grant_type))))
 
 (defmethod get-token :client_credentials ; docs -> http://bit.ly/1sLcJZO
-  [ctx store user-store authorizer crypto api-client-store]
+  [ctx store token-store user-store authenticator authorizer crypto api-client-store]
   (>201 ctx (p/grant authorizer {} #{scopes/application})))
 
 (defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
-  [ctx store user-store authorizer crypto api-client-store]
+  [ctx store token-store user-store authenticator authorizer crypto api-client-store]
   (d/let-flow [api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
                                    (get-in ctx [:parameters :body :client_secret]))
@@ -75,14 +75,22 @@
 (defmethod get-token :refresh_token ; docs -> http://bit.ly/1sLcWfw
   ; TODO verify refresh token #39
   ; https://github.com/naartjie/rebujito/issues/39
-  [ctx store user-store authorizer crypto api-client-store]
-  (>201 ctx (p/grant authorizer {} #{scopes/application scopes/user})))
+  [ctx store token-store user-store authenticator authorizer crypto api-client-store]
+  (let [refresh-token (get-in ctx [:parameters :body :refresh_token])
+        data-refresh-token (p/read-token authenticator refresh-token)
+        mongo-token (first  (p/find token-store {:refresh-token refresh-token}))]
+;;    (log/info "*refresh_token>>>" mongo-token)
+    (if (:valid mongo-token)
+      (let [user-data (-> (p/find user-store (:user-id mongo-token))
+                          (dissoc :password))]
+        (>201 ctx (p/grant authorizer user-data #{scopes/application scopes/user})))
+      (>403 ctx ["refresh-token not valid!"]))))
 
 (defn check-value [map key value]
   (let [map (clojure.walk/keywordize-keys map)]
     (= ((keyword key) map) value)))
 
-(defn token-resource-owner [store user-store authorizer crypto api-client-store]
+(defn token-resource-owner [store token-store user-store authenticator authorizer crypto api-client-store]
   (-> {:methods
        {:post {:parameters {:query {:sig String
                                     (s/optional-key :platform) String}
@@ -98,7 +106,7 @@
                            :charset "UTF-8"}]
 
                :response (fn [ctx]
-                           (-> (get-token ctx store user-store authorizer crypto api-client-store)
+                           (-> (get-token ctx store token-store user-store authenticator authorizer crypto api-client-store)
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}}}

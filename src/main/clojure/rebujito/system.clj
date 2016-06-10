@@ -15,7 +15,7 @@
    [rebujito.webserver.handler :as wh]
    [rebujito.logging :as log-levels]
    [rebujito.store :as store]
-   [rebujito.mongo :refer (new-user-store new-api-key-store new-counter-store)]
+   [rebujito.mongo :refer (new-user-store new-api-key-store new-counter-store new-token-store)]
    [rebujito.mailer :refer (new-prod-mailer)]
    [rebujito.mimi :as mimi]
    [taoensso.timbre :as log])
@@ -54,6 +54,8 @@
 
                   :counter-store (new-counter-store (:auth config) false {:digital-card-number (read-string (format "96235709%05d" 0))})
 
+                  :token-store (new-token-store (:auth config))
+
                   :user-store (new-user-store (:auth config))
 
                   :api-client-store (new-api-key-store (:auth config))
@@ -87,11 +89,12 @@
    :webserver {:request-handler :docsite-router}
    :db-conn {:database :db}
    :counter-store [:db-conn]
+   :token-store [:db-conn]
    :user-store [:db-conn]
    :api-client-store [:db-conn]
-   :authorizer [:authenticator]
+   :authorizer [:authenticator :token-store]
    :store []
-   :api [:store :mimi :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store]
+   :api [:store :mimi :token-store :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

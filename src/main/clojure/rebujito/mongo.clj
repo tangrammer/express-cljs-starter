@@ -4,7 +4,7 @@
    [com.stuartsierra.component  :as component]
    [monger.collection :as mc]
    [monger.conversion :refer [from-db-object]]
-   [monger.operators :refer [$inc]]
+   [monger.operators :refer [$inc $set]]
    [monger.core :as mg]
    [monger.json :as mj]
    [monger.result :refer [acknowledged?]]
@@ -35,6 +35,9 @@
 (defmethod db-find :default [_ data]
   (throw (IllegalArgumentException.
           (str "Not ready to db-find using: " (type data)))))
+
+(defn- update!* [this data-query data-update]
+  (mc/update (:db this) (:collection this) data-query {$set  data-update} {:multi true}))
 
 (defn- update-by-id!* [this hex-id data]
   (let [id (to-mongo-object-id hex-id)]
@@ -104,11 +107,13 @@
     (get-and-insert!* this data))
   (insert! [this data]
     (insert!* this data))
+  (update! [this data-query data-update]
+    (update!* this data-query data-update))
   (update-by-id! [this hex-id data]
     (update-by-id!* this hex-id data))
   )
 
-(defrecord UserStorage [db-conn collection secret-key ephemeral?]
+(defrecord BaseStorage [db-conn collection secret-key ephemeral?]
   component/Lifecycle
   (start [this]
     (start* this))
@@ -125,6 +130,9 @@
     (get-and-insert!* this data))
   (insert! [this data]
     (insert!* this data))
+  (update! [this data-query data-update]
+    (update!* this data-query data-update))
+
   (update-by-id! [this hex-id data]
     (update-by-id!* this hex-id data))
   )
@@ -147,6 +155,8 @@
     (get-and-insert!* this data))
   (insert! [this data]
     (insert!* this data))
+  (update! [this data-query data-update]
+    (update!* this data-query data-update))
   (update-by-id! [this hex-id data]
     (update-by-id!* this hex-id data))
 
@@ -181,9 +191,17 @@
   ([auth-data]
    (new-user-store auth-data false))
   ([auth-data ephemeral?]
-   (map->UserStorage {:collection :users
+   (map->BaseStorage {:collection :users
                        :secret-key (:secret-key auth-data)
                        :ephemeral?  ephemeral?})))
+
+(defn new-token-store
+  ([auth-data]
+   (new-user-store auth-data false))
+  ([auth-data ephemeral?]
+   (map->BaseStorage {:collection :tokens
+                      :secret-key (:secret-key auth-data)
+                      :ephemeral?  ephemeral?})))
 
 (defn new-api-key-store
   ([auth-data]
@@ -219,7 +237,7 @@
   [storage ^java.io.Writer writer]
   (.write writer (str "#<CounterStorage> Collection: " (:collection storage))))
 
-(defmethod clojure.core/print-method UserStorage
+(defmethod clojure.core/print-method BaseStorage
   [storage ^java.io.Writer writer]
   (.write writer (str "#<UserStorage> Collection: " (:collection storage))))
 

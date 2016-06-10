@@ -36,7 +36,7 @@
 
 (defprotocol Authenticator
   (read-token [this token])
-  (generate-token [this data]))
+  (generate-token [this data minutes]))
 
 (defprotocol MutableStorage
   (find
@@ -52,7 +52,7 @@
     "generate id for this storage")
   (insert! [this data]
     "aysnc, return true/false")
-  (update! [this data]
+  (update! [this data-query data-update]
     "async, return true/false")
   (get-and-update! [this data]
     "sync, the result is the updated document")

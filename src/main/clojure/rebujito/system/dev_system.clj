@@ -25,8 +25,9 @@
         (-> system-map
             (assoc
              :user-store (rebujito.mongo/new-user-store (:auth config) true)
+             :token-store (rebujito.mongo/new-token-store (:auth config) true)
              :counter-store (rebujito.mongo/new-counter-store (:auth config) true {:digital-card-number (read-string (format "96235709%05d" 0))})
-            :api-client-store (rebujito.mongo/new-api-key-store (:auth config) true)))))
+             :api-client-store (rebujito.mongo/new-api-key-store (:auth config) true)))))
     :+mock-mimi
     (fn [config]
       (println "using :+mock-mimi profile in dev-system")
