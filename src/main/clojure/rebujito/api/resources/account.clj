@@ -65,9 +65,9 @@
   (log/info "check-account-mongo" data-account)
   (if (first (p/find user-store data-account))
     (d/error-deferred (ex-info (str "API ERROR!")
-                          {:type :api
-                           :status 400
-                           :body  (format  "Email address %s is not unique" (:emailAddress data-account))}))
+                               {:type :api
+                                :status 400
+                                :body  (format  "Email address %s is not unique" (:emailAddress data-account))}))
     false))
 
 (defn create [store mimi user-store crypto]
@@ -81,9 +81,9 @@
                :response (fn [ctx]
                            (-> (d/let-flow [email-exists? (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
                                             mimi-account (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))
-                                            mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)
-                                            ]
-                                           (util/>201 ctx (dissoc  mongo-account :password)))
+                                            mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
+                                           (when-not email-exists?
+                                            (util/>201 ctx (dissoc  mongo-account :password))))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}}}

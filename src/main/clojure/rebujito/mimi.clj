@@ -60,7 +60,7 @@
   (stop [this] this)
   protocols/Mimi
   (create-account [this data]
-    (log/info (format "%s/account" base-url) data)
+    (log/info "create-account-mimi: " (format "%s/account" base-url) data)
 ;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
       (d/future
