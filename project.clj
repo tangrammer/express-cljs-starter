@@ -86,7 +86,8 @@
                        :aot        :all}
 
              :dev     {:dependencies   [[org.clojure/tools.nrepl "0.2.12"]
-                                        [org.clojure/tools.namespace "0.2.11"]]
+                                        [org.clojure/tools.namespace "0.2.11"]
+                                        [frak "0.1.6"]]
                        :main user
                        :resource-paths ["src/main/resources" "src/test/resources"]
 

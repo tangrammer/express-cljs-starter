@@ -4,6 +4,7 @@
    [taoensso.timbre :as log]
    [rebujito.api.util :as util]
    [rebujito.mimi :as mim]
+   [rebujito.schemas :refer (MongoUser)]
    [rebujito.scopes :as scopes]
    [rebujito.protocols :as p]
    [rebujito.api.resources :refer (domain-exception)]
@@ -59,6 +60,7 @@
         mongo-account-data (-> data-account
                                (assoc :_id mongo-id)
                                (assoc :password (p/sign crypto (:password data-account)) ))]
+    (s/validate MongoUser mongo-account-data)
     (p/get-and-insert! user-store mongo-account-data)))
 
 (defn check-account-mongo [data-account user-store]

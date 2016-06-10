@@ -3,6 +3,7 @@
    [byte-streams :as bs]
    [cheshire.core :as json]
    [bidi.bidi :as bidi]
+   [rebujito.schemas :refer (MongoUser MimiUser)]
    [com.stuartsierra.component :as component]
                [rebujito.system.dev-system :as dev]
                [rebujito.api.sig :as api-sig]
@@ -31,7 +32,8 @@
   )
 
 (defn new-account-sb []
-  {:countrySubdivision "aa",
+  {
+   :countrySubdivision "aa",
    :registrationSource "aa",
    :addressLine1 "zz",
    :addressLine2 "yy",
@@ -45,6 +47,8 @@
    :receiveStarbucksEmailCommunications true,
    :postalCode "41003",
    :country "Spain"})
+
+(s/validate MongoUser (new-account-sb))
 
 (defn api-config []
   (-> (config :test) :api))

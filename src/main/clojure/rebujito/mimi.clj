@@ -2,6 +2,7 @@
   (:require
    [manifold.deferred :as d]
    [rebujito.protocols :as protocols]
+   [rebujito.schemas :refer (MimiUser)]
    [clj-http.client :as http-c]
    [org.httpkit.client :as http]
    [cheshire.core :as json]
@@ -61,6 +62,7 @@
   protocols/Mimi
   (create-account [this data]
     (log/info "create-account-mimi: " (format "%s/account" base-url) data)
+    (s/validate MimiUser data)
 ;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
       (d/future
