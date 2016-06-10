@@ -98,10 +98,7 @@
                                    (s/optional-key :select) String
                                    (s/optional-key :ignore) String}}
               :response (fn [ctx]
-                          (try
-                            (let [auth-user (util/authenticated-user ctx)]
-                              (util/>201 ctx (util/generate-user-data auth-user (:sub-market app-config))))
-                            (catch Exception e
-                              (util/>500 ctx ["An unexpected error occurred processing the request." (str "caught exception: " (.getMessage e))]))))}}}
+                          (let [auth-user (util/authenticated-user ctx)]
+                            (util/>201 ctx (util/generate-user-data auth-user (:sub-market app-config)))))}}}
 
       (merge (util/common-resource :account))))
