@@ -1,4 +1,4 @@
-(ns ^:figwheel-always mimi.tests
+(ns mimi.tests
   (:require
     [mimi.data :refer [validate-create-customer-data]]
     [cljs.test :refer-macros [deftest is testing run-tests]]
@@ -21,6 +21,7 @@
   (is (not (nil? (validate-create-customer-data (dissoc valid-create-customer-data :email)))))
   (is (not (nil? (validate-create-customer-data (assoc (dissoc valid-create-customer-data :email) :extra :field))))))
 
-(nodejs/enable-util-print!)
-(print "\n\nrunning tests...")
-(cljs.test/run-tests)
+(defn run []
+  (nodejs/enable-util-print!)
+  (print "\n\nrunning tests...")
+  (run-tests))

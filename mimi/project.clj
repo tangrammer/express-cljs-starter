@@ -13,15 +13,26 @@
 
   :clean-targets ["target"]
 
-  :cljsbuild {:builds [{:id "dev"
+  :hooks [leiningen.cljsbuild]
+
+  :cljsbuild {:test-commands {"default" ["node" "target/test/index.js"]}
+              :builds [{:id "dev"
                         :source-paths ["src" "test"]
                         :figwheel true
-                        :compiler {:main mimi.core
+                        :compiler {
+                                   :main mimi.core
                                    :output-to "target/dev/server.js"
                                    :output-dir "target/dev"
                                    :target :nodejs
                                    :optimizations :none
                                    :source-map true}}
+                       {:id "test"
+                        :source-paths ["src" "test"]
+                        :compiler {:main mimi.runners.node
+                                   :output-to "target/test/index.js"
+                                   :output-dir "target/test"
+                                   :target :nodejs
+                                   :optimizations :simple}}
                        {:id "prod"
                         :source-paths ["src"]
                         :compiler {:output-to "target/prod/server.js"
