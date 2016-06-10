@@ -32,7 +32,7 @@
           refresh-token (p/generate-token authenticator (merge data scopes) 1440)
           _ (p/update! token-store {:user-id (:_id data)} {:valid false})
           mongo-token (p/get-and-insert! token-store {:access-token access-token :refresh-token refresh-token :user-id (:_id data) :scopes scopes :valid true})]
-      (log/info "MONGO_TOKEN >" mongo-token)
+;      (log/info "MONGO_TOKEN >" mongo-token)
       (merge {:extended nil
               :access_token access-token
               :refresh_token refresh-token

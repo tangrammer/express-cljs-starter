@@ -3,7 +3,7 @@
    [taoensso.timbre :as log]
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
-   [rebujito.api.util :refer :all]
+   [rebujito.api.util :as util]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
@@ -24,11 +24,11 @@
                                (do
                                  (p/send mailer {:what "sending forgot-password"
                                                  :data (get-in ctx [:parameters :body])})
-                                 (>200 ctx ""))
-                               (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"]))))}}}
+                                 (util/>200 ctx ""))
+                               (util/>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"]))))}}}
 
 
-      (merge (common-resource :login))))
+      (merge (util/common-resource :login))))
 
 (defn validate-password [user-store crypto authenticator ]
   (-> {:methods
@@ -38,16 +38,18 @@
                            (let [user (p/read-token authenticator (get-in ctx [:parameters :query :access_token]))
                                  user (p/find user-store (:_id user))]
                              (if (p/check crypto (get-in ctx [:parameters :body :password]) (:password user))
-                               (>200 ctx "")
-                               (>403 ctx ["Forbidden" "password doesn't match"]))))}}}
+                               (util/>200 ctx "")
+                               (util/>403 ctx ["Forbidden" "password doesn't match"]))))}}}
 
 
-      (merge (common-resource :login))))
+      (merge (util/common-resource :login))))
 
-(defn logout [user-store ]
+(defn logout [user-store token-store]
  (-> {:methods
       {:get {:parameters {:query {:access_token String}}
              :response (fn [ctx]
-                         (>200 ctx {:status "ok"}))}}}
 
-     (merge (common-resource :me/login))))
+                         (p/update! token-store {:user-id (:_id (util/authenticated-user ctx))} {:valid false})
+                         (util/>200 ctx {:status "ok"}))}}}
+
+     (merge (util/common-resource :me/login))))

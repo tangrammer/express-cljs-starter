@@ -133,7 +133,42 @@
                           r)
                         :status)))
 
+         ;; GET /logout
+         (is (= 200 (-> (let [r @(http/get (format "http://localhost:%s%s?access_token=%s"  port (bidi/path-for r ::login/logout) @access_token)
+                                            {:throw-exceptions false
+                                             :body-encoding "UTF-8"
+                                             :content-type :json})
+                              body (-> r :body bs/to-string (json/parse-string true))
+                                        ;                    _ (println "*******>>>***" r)
 
+                              ]
+                          ;;(reset! access_token (:access_token body))
+                          ;;(println "\n >>>> password refresh_token "@access_token "\n")
+                                        ;                          (println "refresh_token access-token " (:access_token body))
+                          r)
+                        :status)))
+
+         ;; try refresh after logout => 403
+         (is (= 403 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                            {:throw-exceptions false
+                                             :form-params
+                                             (assoc (g/generate (-> oauth/schema :token-refresh-token))
+                                                    :grant_type "refresh_token"
+                                                    :client_id (:key (api-config))
+                                                    :client_secret (:secret (api-config))
+                                                    :refresh_token @refresh_token
+                                                    )
+                                             :body-encoding "UTF-8"
+                                             :content-type :application/x-www-form-urlencoded})
+                              body (-> r :body bs/to-string (json/parse-string true))
+          ;                    _ (println "*******>>>***" r)
+
+                              ]
+                          ;;(reset! access_token (:access_token body))
+                          ;;(println "\n >>>> password refresh_token "@access_token "\n")
+;                          (println "refresh_token access-token " (:access_token body))
+                          r)
+                        :status)))
          )))))
 
 (deftest test-get-user
