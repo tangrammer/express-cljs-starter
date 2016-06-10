@@ -61,7 +61,6 @@
    (let [r (-> *system* :docsite-router :routes)
          port (-> *system*  :webserver :port)]
 
-
      (testing ::devices/register
        (let [path (get-path ::devices/register)]
                                         ;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
@@ -72,8 +71,6 @@
                                      :content-type :json})
                                         ;                        print-body
                         :status)))))
-
-
 
      (testing ::payment/method-detail
        (let [api-id ::payment/method-detail

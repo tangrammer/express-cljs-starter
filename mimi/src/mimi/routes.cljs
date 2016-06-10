@@ -8,6 +8,7 @@
 
 (def jwt (nodejs/require "express-jwt"))
 (def micros (nodejs/require "micros"))
+(def starbucks-micros (nodejs/require "micros/lib/starbucks"))
 (def moment (nodejs/require "moment"))
 
 (def app-version (nodejs/require "../../VERSION.json"))
@@ -74,10 +75,6 @@
                 (.json res #js {:status "ok"
                                 :customerId (aget result 0)})))))))))
 
-(def codez {:tier (clj->js {:code "MSR001"})
-            :reward (clj->js {:code "MSR002"})
-            :stored-value-card (clj->js {:code "SGC001"})})
-
 (.post app "/mimi/starbucks/account/card"
   (fn
     [req res]
@@ -90,41 +87,26 @@
       (prn payload)
       (if validation-errors
         (.json (.status res 400) (clj->js (assoc invalid-payload :details validation-errors)))
-        (do
+        (let [promise (.ensureAccountExists starbucks-micros card-number)]
+          (log/info "created accounts for" card-number)
+          (.then promise
+            (fn []
+              (link-card customer-id card-number)))
 
-          (print "creating accounts for" card-number)
+          (.then promise
+            (fn []
+              (.json res #js {:status "ok"})))
 
-          ; TODO async this code
-          (.createSingleAccountType micros
-            (:tier codez)
-            card-number
+          (.catch promise
             (fn [err]
-              (if err (log/error "can't create MSR tier" err))))
-
-          (.createSingleAccountType micros
-            (:stored-value-card codez)
-            card-number
-            (fn [err]
-              (if err (log/error "can't create stored value card" err))))
-
-          (.createSingleAccountType micros
-            (:reward codez)
-            card-number
-            (fn [err]
-              (if err (log/error "can't create stored value card" err))))
-
-          (link-card customer-id card-number
-            (fn [err result]
-              (log/debug "got result from micros: err" err "result" result)
-              (if err
-                (.json (.status res 500) #js {:error (.toString err)})
-                (.json res #js {:status "ok"})))))))))
+              (log/error "creating/linking account" err)
+              (.json (.status res 500) #js {:error (.toString err)}))))))))
 
 (.get app "/mimi/starbucks/account/:cardNumber/balances"
   (fn
     [req res]
     "get account balances"
-    (let [card-number (.param req "cardNumber")]
+    (let [card-number (.-params req "cardNumber")]
       (log/info "getting balances for" card-number)
       (.then (get-balances card-number)
         (fn [result]

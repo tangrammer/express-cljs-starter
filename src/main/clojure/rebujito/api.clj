@@ -70,10 +70,12 @@
                       (assoc :id ::card/history))]
                  ["/register"
                   (-> (card/register-physical store mimi user-store)
-                      (assoc :id ::card/register-physical))]
+                      (assoc :id ::card/register-physical
+                             :oauth {:post scopes/user}))]
 
                  ["/register-digital" (-> (card/register-digital-card store mimi user-store counter-store)
-                                          (assoc :id ::card/register-digital-cards))]
+                                          (assoc :id ::card/register-digital-cards
+                                                 :oauth {:post scopes/user}))]
 
                  ["/" [
                        [

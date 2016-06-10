@@ -84,13 +84,13 @@
                          :body (-> schema :register-physical :post)}
             :response (fn [ctx]
                         (-> (d/let-flow [card-number (-> ctx :parameters :body :cardNumber)
-                                         user-id  (-> (p/find user-store) first (get "_id") str)
+                                         auth-user (util/authenticated-user ctx)
+                                         user-id (:_id auth-user)
                                          mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                   :customerId (id>mimi-id user-id)})
                                          card (new-physical-card {:cardNumber card-number})
-                                         card-id (insert-card! user-store user-id card)
-                                         card (assoc card :cardId card-id)]
-                              (util/>200 ctx (merge mocks/card (dummy-card-data) card)))
+                                         card-id (insert-card! user-store user-id card)]
+                              (util/>200 ctx (merge mocks/card (dummy-card-data) (assoc card :cardId card-id))))
 
                             (d/catch clojure.lang.ExceptionInfo
                                 (fn [exception-info]
@@ -104,13 +104,13 @@
     {:post {:parameters {:query {:access_token String}}
             :response (fn [ctx]
                         (-> (d/let-flow [card-number (get-next-card-number counter-store)
-                                         user-id  (-> (p/find user-store) first (get "_id") str)
+                                         auth-user (util/authenticated-user ctx)
+                                         user-id (:_id auth-user)
                                          mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                   :customerId  (id>mimi-id user-id)})
                                          card (new-digital-card {:cardNumber card-number})
-                                         card-id (insert-card! user-store user-id card)
-                                         card (assoc card :cardId card-id)]
-                              (util/>200 ctx (merge mocks/card (dummy-card-data) card)))
+                                         card-id (insert-card! user-store user-id card)]
+                              (util/>200 ctx (merge mocks/card (dummy-card-data) (assoc card :cardId card-id))))
 
                             (d/catch clojure.lang.ExceptionInfo
                                 (fn [exception-info]
