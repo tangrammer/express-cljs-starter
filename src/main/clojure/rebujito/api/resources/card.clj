@@ -37,16 +37,16 @@
 (defn new-digital-card [data]
   (merge data {:digital true}))
 
-(def dummy-card-data {:balance 0
+(def dummy-card-data {:cardNumber nil
+                      :cardId nil
+                      :balance 0
                       :primary false
-                      :cardNumber nil
-                      :cardCurrency "ZA"
+                      :cardCurrency "ZAR"
                       :nickname "My Card"
                       :type "Standard"
                       :actions ["Reload"]
                       :submarketCode "ZA"
-                      :cardId nil
-                      :balanceDate nil
+                      :balanceDate (.toString (java.time.Instant/now))
                       :balanceCurrencyCode "ZA"})
 
 (defn get-cards [store]
