@@ -108,7 +108,7 @@
   (fn
     [req res]
     "get account balances"
-    (let [card-number (.-params req "cardNumber")]
+    (let [card-number (-> req .-params .-cardNumber)]
       (log/info "getting balances for" card-number)
       (.then (get-balances card-number)
         (fn [result]
