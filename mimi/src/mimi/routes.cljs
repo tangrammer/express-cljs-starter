@@ -92,9 +92,11 @@
 
           (let [p2 (.then promise
                       (fn []
+                        (log/info "linking card" card-number "to" customer-id)
                         (link-card customer-id card-number)))]
             (.then p2
               (fn []
+                (log/info "great success for linking card" card-number)
                 (.json res #js {:status "ok"})))
 
             (.catch p2
