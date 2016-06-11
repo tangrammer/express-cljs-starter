@@ -88,19 +88,19 @@
       (if validation-errors
         (.json (.status res 400) (clj->js (assoc invalid-payload :details validation-errors)))
         (let [promise (.ensureAccountExists starbucks-micros card-number)]
-          (log/info "created accounts for" card-number)
-          (.then promise
-            (fn []
-              (link-card customer-id card-number)))
+          (log/info "creating accounts for" card-number)
 
-          (.then promise
-            (fn []
-              (.json res #js {:status "ok"})))
+          (let [p2 (.then promise
+                      (fn []
+                        (link-card customer-id card-number)))]
+            (.then p2
+              (fn []
+                (.json res #js {:status "ok"})))
 
-          (.catch promise
-            (fn [err]
-              (log/error "creating/linking account" err)
-              (.json (.status res 500) #js {:error (.toString err)}))))))))
+            (.catch p2
+              (fn [err]
+                (log/error "creating/linking account" err)
+                (.json (.status res 500) #js {:error (.toString err)})))))))))
 
 (.get app "/mimi/starbucks/account/:cardNumber/balances"
   (fn
