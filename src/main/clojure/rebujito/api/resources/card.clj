@@ -181,3 +181,26 @@
                                   (domain-exception ctx (ex-data exception-info))))))}}}
 
       (merge (util/common-resource :me/cards))))
+
+
+
+(defn balance [user-store mimi]
+  (-> {:methods
+       {:get {:parameters {:query {:access_token String}
+                          :path {:card-id String}}
+              :response (fn [ctx]
+                         (d/let-flow [user-id (:_id (util/authenticated-user ctx))
+                                      cards (get-cards user-store user-id)
+                                      card (first cards)
+                                      card-number (:cardNumber card)
+                                      rewards (p/rewards mimi {})
+                                      _ (println rewards)
+                                      program (first (filter #(= (:program %) "Starbucks Card") (:programs rewards)))]
+                           (util/>200 ctx {:cardId (:cardId card)
+                                           :cardNumber (:cardNumber card)
+                                           :balance (:balance program)
+                                           :balanceDate (.toString (java.time.Instant/now))
+                                           :balanceCurrencyCode "ZAR"}))
+                           )
+             }}}
+   (merge (util/common-resource :me/cards))))
