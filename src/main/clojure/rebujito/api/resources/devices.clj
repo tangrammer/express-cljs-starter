@@ -29,3 +29,14 @@
                           (>202 ctx nil))}}}
 
      (merge (common-resource :devices))))
+
+(defn report [store]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String
+                                    (s/optional-key :select) String
+                                    (s/optional-key :ignore) String}
+                            :body s/Any}
+               :response (fn [ctx]
+                           (>202 ctx nil))}}}
+
+      (merge (common-resource :devices))))
