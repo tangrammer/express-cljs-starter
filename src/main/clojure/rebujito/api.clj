@@ -22,7 +22,22 @@
      [social-profile :as social-profile]
      ]))
 
-(defn api [store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store]
+(def routes [["/content/" [#".+" :path-param] "/index.html"] :handler])
+(bidi.bidi/match-route routes "/content/path%20with%20spaces/index.html")
+
+(re-matches #"(%20)" "123%20123")
+
+(defn api [store mimi
+           token-store
+           user-store
+           authorizer
+           crypto
+           authenticator
+           payment-gateway
+           api-client-store
+           mailer
+           app-config
+           counter-store]
   [""  [["/health"  (-> {:id :jolin
                          :methods
                                  {:get {:consumes [{:media-type #{"application/json"}
@@ -32,7 +47,8 @@
 
         [["/content/sitecore/content/"
             ; FR/3rd Party Mobile Content/iOS-Account/Terms of Use
-            :market "/" [#".+" :whatever] "/" [#"iOS-Account(%2F|\/)Terms(%20)of(%20)Use" :mediamonks-weirdness]] (yada/handler content/terms-json)]
+            :market "/" [#".+" :whatever] "/" [#"iOS-Account(%2F|\/)Terms(%20)of(%20)Use" :mediamonks-weirdness]]
+            (yada/handler content/terms-json)]
 
         ["/account/create" (-> (account/create store mimi user-store crypto)
                                (assoc :id ::account/create
