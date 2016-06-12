@@ -62,25 +62,25 @@
                                (assoc :id ::profile/me-rewards
                                       :oauth {:get scopes/user}))]
                ["/cards"
-                [["" (-> (card/get-cards store)
+                [["" (-> (card/cards user-store mimi)
                          (assoc :id ::card/get-cards))]
                  ["/history"
-                  (-> (card/history store)
+                  (-> (card/history user-store mimi)
                       (assoc :id ::card/history))]
                  ["/register"
-                  (-> (card/register-physical store mimi user-store)
+                  (-> (card/register-physical user-store mimi)
                       (assoc :id ::card/register-physical
                              :oauth {:post scopes/user}))]
 
-                 ["/register-digital" (-> (card/register-digital-card store mimi user-store counter-store)
+                 ["/register-digital" (-> (card/register-digital-card user-store mimi counter-store)
                                           (assoc :id ::card/register-digital-cards
                                                  :oauth {:post scopes/user}))]
 
                  ["/" [
                        [
                         ["" :card-id] [
-                                       ["" (-> (card/unregister store) (assoc :id ::card/unregister))]
-                                       ["/reload" (-> (card/reload user-store store payment-gateway mimi app-config)
+                                       ["" (-> (card/unregister user-store mimi) (assoc :id ::card/unregister))]
+                                       ["/reload" (-> (card/reload user-store mimi payment-gateway app-config)
                                                       (assoc :id ::card/reload
                                                              :oauth {:post scopes/user}))]
                                        ]]]]

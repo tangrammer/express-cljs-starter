@@ -50,17 +50,26 @@
    :balanceDate (.toString (java.time.Instant/now))
    :balanceCurrencyCode "ZA"})
 
-(defn get-cards [store]
+(defn get-cards [user-store user-id]
+  (let [f dummy-card-data]
+    [(f) (f)]))
+
+(defn cards [user-store mimi]
   (->
    {:methods
     {:get {:parameters {:query {:access_token String}}
-           :consumes [{:media-type #{"application/json"}
-                       :charset "UTF-8"}]
            :response (fn [ctx]
-                       (util/>200 ctx []))}}}
+                       (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
+                                        card-data (get-cards nil nil)]
+                             (util/>200 ctx card-data))
+
+                           (d/catch clojure.lang.ExceptionInfo
+                               (fn [exception-info]
+                                 (domain-exception ctx (ex-data  exception-info))))
+                       ))}}}
    (merge (util/common-resource :me/cards))))
 
-(defn unregister [store]
+(defn unregister [user-store mimi]
   (->
    {:methods
     {:delete {:parameters {:path {:card-id String}
@@ -77,7 +86,7 @@
 
    (merge (util/common-resource :me/cards))))
 
-(defn register-physical [store mimi user-store]
+(defn register-physical [user-store mimi]
   (->
    {:methods
     {:post {:parameters {:query {:access_token String}
@@ -98,7 +107,7 @@
 
    (merge (util/common-resource :me/cards))))
 
-(defn register-digital-card [store mimi user-store counter-store]
+(defn register-digital-card [user-store mimi counter-store]
   (->
    {:methods
     {:post {:parameters {:query {:access_token String}}
@@ -124,7 +133,7 @@
                              :returned 0}
                     :historyItems []})
 
-(defn history [store]
+(defn history [user-store mimi]
   (->
    {:methods
     {:get {:parameters {:query {:access_token String
@@ -136,7 +145,7 @@
 
    (merge (util/common-resource :me/cards))))
 
-(defn reload [user-store store payment-gateway mimi app-config]
+(defn reload [user-store mimi payment-gateway app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:card-id String}
