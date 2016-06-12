@@ -21,35 +21,34 @@
      ]))
 
 (defn api [store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store]
-  ["/" [["health"  (-> {:id :jolin
-                        :methods
-                                {:get {:consumes [{:media-type #{"application/json"}
-                                                   :charset "UTF-8"}]
-                                       :response (read-string (slurp (clojure.java.io/resource "VERSION.edn"))) }}}
-                               (merge (util/common-resource :meta))) ]
-        ["account/create" (-> (account/create store mimi user-store crypto)
-                              (assoc :id ::account/create
-                                     :oauth {:post scopes/application}))]
-        ["oauth/token" (->  (oauth/token-resource-owner store token-store user-store authenticator authorizer crypto api-client-store)
-                            (assoc :id ::oauth/token-resource-owner))]
-        ["login/forgot-password" (->  (login/forgot-password mailer authorizer)
+  [""  [["/health"  (-> {:id :jolin
+                         :methods
+                                 {:get {:consumes [{:media-type #{"application/json"}
+                                                    :charset "UTF-8"}]
+                                        :response (read-string (slurp (clojure.java.io/resource "VERSION.edn"))) }}}
+                                (merge (util/common-resource :meta))) ]
+        ["/account/create" (-> (account/create store mimi user-store crypto)
+                               (assoc :id ::account/create
+                                      :oauth {:post scopes/application}))]
+        ["/oauth/token" (->  (oauth/token-resource-owner store token-store user-store authenticator authorizer crypto api-client-store)
+                             (assoc :id ::oauth/token-resource-owner))]
+        ["/login/forgot-password" (-> (login/forgot-password mailer authorizer)
                                       (assoc :id ::login/forgot-password
                                              :oauth {:post scopes/application}))]
-        ["devices/register" (->  (devices/register store)
-                                (assoc :id ::devices/register))]
-        ["me" [
+        ["/devices/register" (-> (devices/register store)
+                                 (assoc :id ::devices/register))]
+        ["/me"[
                ["" (-> (account/me store mimi user-store app-config)
                        (assoc :id ::account/me
                               :oauth {:get scopes/user}))]
                ["/addresses" [
                               ["" (-> (addresses/create user-store)
                                       (assoc :id ::addresses/create
-                                              :oauth {:post scopes/user
-                                                      :get scopes/user}))]
+                                             :oauth {:post scopes/user
+                                                     :get scopes/user}))]
                               [["/" :address-id] (-> (addresses/get-one user-store)
                                                        (assoc :id ::addresses/get
                                                               :oauth {:get scopes/user}))]]]
-                            ;  ]]
                ["/logout/"  (-> (login/logout user-store token-store)
                                 (assoc :id ::login/logout
                                        :oauth {:get scopes/user}))]
@@ -84,12 +83,9 @@
                                        ["/reload" (-> (card/reload user-store store payment-gateway mimi app-config)
                                                       (assoc :id ::card/reload
                                                              :oauth {:post scopes/user}))]
-                                       ]
-                        ]
-                       ]
-                  ]
-                 ]
+                                       ]]]]
                 ]
+               ]
 
                ["/devices/register" (-> (devices/register store )
                                                  (assoc :id ::devices/me/register))]
