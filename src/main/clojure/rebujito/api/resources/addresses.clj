@@ -26,7 +26,7 @@
     (p/update-by-id! user-store user-id {$push {:addresses address}})
     address-id))
 
-(defn create [user-store]
+(defn addresses [user-store]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body (:post schema)}
