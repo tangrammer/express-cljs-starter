@@ -89,9 +89,11 @@
 
                ["/devices" [
                             ["/register" (-> (devices/register store )
-                                             (assoc :id ::devices/me/register))]
+                                             (assoc :id ::devices/me/register
+                                                    :oauth {:post scopes/user}))]
                             ["/reporting/report" (-> (devices/report store)
-                                                     (assoc :id ::devices/me/report))]
+                                                     (assoc :id ::devices/me/report
+                                                            :oauth {:post scopes/user}))]
                ]]
 
                ["/paymentmethods" [["" (-> (payment/methods user-store payment-gateway)
