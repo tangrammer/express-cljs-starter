@@ -22,11 +22,6 @@
      [social-profile :as social-profile]
      ]))
 
-(def routes [["/content/" [#".+" :path-param] "/index.html"] :handler])
-(bidi.bidi/match-route routes "/content/path%20with%20spaces/index.html")
-
-(re-matches #"(%20)" "123%20123")
-
 (defn api [store mimi
            token-store
            user-store
