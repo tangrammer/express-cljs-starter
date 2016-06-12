@@ -33,6 +33,7 @@
            mailer
            app-config
            counter-store]
+           
   [""  [["/health"  (-> {:id :jolin
                          :methods
                                  {:get {:consumes [{:media-type #{"application/json"}
