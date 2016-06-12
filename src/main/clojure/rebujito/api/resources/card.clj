@@ -48,7 +48,7 @@
    :actions ["Reload"]
    :submarketCode "ZA"
    :balanceDate (.toString (java.time.Instant/now))
-   :balanceCurrencyCode "ZA"})
+   :balanceCurrencyCode "ZAR"})
 
 (defn get-cards [user-store user-id]
   (d/let-flow [card-data (:cards (p/find user-store user-id))
