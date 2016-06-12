@@ -63,7 +63,8 @@
                                       :oauth {:get scopes/user}))]
                ["/cards"
                 [["" (-> (card/cards user-store mimi)
-                         (assoc :id ::card/get-cards))]
+                         (assoc :id ::card/get-cards
+                                :oauth {:get scopes/user}))]
                  ["/history"
                   (-> (card/history user-store mimi)
                       (assoc :id ::card/history))]

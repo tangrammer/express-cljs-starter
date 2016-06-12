@@ -41,7 +41,7 @@
   {:cardNumber nil
    :cardId nil
    :balance 0
-   :primary false
+   :primary true
    :cardCurrency "ZAR"
    :nickname "My Card"
    :type "Standard"
@@ -51,8 +51,9 @@
    :balanceCurrencyCode "ZA"})
 
 (defn get-cards [user-store user-id]
-  (let [f dummy-card-data]
-    [(f) (f)]))
+  (d/let-flow [card-data (:cards (p/find user-store user-id))
+               card-data (map #(merge (dummy-card-data) %) card-data)]
+    card-data))
 
 (defn cards [user-store mimi]
   (->
@@ -60,9 +61,8 @@
     {:get {:parameters {:query {:access_token String}}
            :response (fn [ctx]
                        (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
-                                        card-data (get-cards nil nil)]
+                                        card-data (get-cards user-store user-id)]
                              (util/>200 ctx card-data))
-
                            (d/catch clojure.lang.ExceptionInfo
                                (fn [exception-info]
                                  (domain-exception ctx (ex-data  exception-info))))
