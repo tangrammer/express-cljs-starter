@@ -21,7 +21,7 @@
         ]
     (testing ::card/get-cards
       (let [path (get-path ::card/get-cards)]
-        (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *app-access-token*)
+        (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                   {:throw-exceptions false
                                    :body-encoding "UTF-8"
                                    :content-type :json})
