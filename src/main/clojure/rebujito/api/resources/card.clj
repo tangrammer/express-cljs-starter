@@ -197,7 +197,7 @@
                                       _ (println rewards)
                                       program (first (filter #(= (:program %) "Starbucks Card") (:programs rewards)))]
                            (util/>200 ctx {:cardId (:cardId card)
-                                           :cardNumber (:cardNumber card)
+                                           :cardNumber card-number
                                            :balance (:balance program)
                                            :balanceDate (.toString (java.time.Instant/now))
                                            :balanceCurrencyCode "ZAR"}))
