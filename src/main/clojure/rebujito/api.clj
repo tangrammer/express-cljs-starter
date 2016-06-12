@@ -3,10 +3,12 @@
     [com.stuartsierra.component :as component]
     [schema.core :as s]
     [yada.resource :refer (resource)]
+    [yada.yada :as yada]
     [taoensso.timbre :as log]
     [rebujito.scopes :as scopes]
     [rebujito.api
      [util :as util]]
+    [rebujito.api.resources.content :as content]
     [rebujito.api.resources
      [payment :as payment]
      [addresses :as addresses]
@@ -27,6 +29,11 @@
                                                     :charset "UTF-8"}]
                                         :response (read-string (slurp (clojure.java.io/resource "VERSION.edn"))) }}}
                                 (merge (util/common-resource :meta))) ]
+
+        [["/content/sitecore/content/"
+            ; FR/3rd Party Mobile Content/iOS-Account/Terms of Use
+            :market "/" [#".+" :whatever] "/" [#"iOS-Account(%2F|\/)Terms(%20)of(%20)Use" :mediamonks-weirdness]] (yada/handler content/terms-json)]
+
         ["/account/create" (-> (account/create store mimi user-store crypto)
                                (assoc :id ::account/create
                                       :oauth {:post scopes/application}))]

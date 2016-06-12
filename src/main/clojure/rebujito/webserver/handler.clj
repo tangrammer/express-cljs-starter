@@ -3,7 +3,6 @@
             [byte-streams :as bs]
             [rebujito.api.util :as util]
             [rebujito.config :refer [config]]
-            [rebujito.api.resources.content :as content]
             [com.stuartsierra.component :as component]
             [yada.yada :as yada]
             [yada.resource :refer (resource)]))
@@ -22,9 +21,6 @@
                                         :version     "1.0"
                                         :description "SWARM Implementation"}
                              :basePath base-url})]
-
-         [(str base-url "/content/sitecore/content") [[true (yada/handler content/terms-json)]]]
-
          [true
           (resource
            (-> {:methods
