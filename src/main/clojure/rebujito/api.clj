@@ -99,7 +99,7 @@
                  ["/" [
                        [
                         ["" :card-id] [
-                                       ["" (-> (card/unregister user-store mimi) (assoc :id ::card/unregister))]
+                                       ["" (-> (card/card user-store mimi) (assoc :id ::card/card))]
                                        ["/reload" (-> (card/reload user-store mimi payment-gateway app-config)
                                                       (assoc :id ::card/reload
                                                              :oauth {:post scopes/user}))]

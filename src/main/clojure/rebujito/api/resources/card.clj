@@ -38,9 +38,10 @@
   (merge data {:digital true}))
 
 (defn dummy-card-data []
-  {:cardNumber nil
-   :cardId nil
-   :balance 0
+  {
+   ;;:cardNumber nil
+   ;;:cardId nil
+   ;; :balance 0
    :primary true
    :cardCurrency "ZAR"
    :nickname "My Card"
@@ -50,11 +51,22 @@
    :balanceDate (.toString (java.time.Instant/now))
    :balanceCurrencyCode "ZAR"})
 
-(defn get-cards [user-store user-id]
+(def stored-value-program "Starbucks Card")
+
+(defn get-points [mimi card-number]
+  (d/let-flow [rewards (p/rewards mimi card-number)
+               _ (println "........rewards" rewards)
+               program (first (filter #(= (:program %) stored-value-program) (:programs rewards)))
+               _ (println "...........program" program)]
+    (:balance program)))
+
+(defn get-card [user-store user-id mimi]
   (d/let-flow [card-data (:cards (p/find user-store user-id))
-               balances {}
-               card-data (map #(merge (dummy-card-data) %) card-data)]
-    card-data))
+               card-data (first card-data)
+               _ (println ".............." card-data)
+               balance (get-points mimi (:cardNumber card-data))
+               _ (println "..............." balance)]
+    (merge (dummy-card-data) card-data {:balance balance})))
 
 (defn cards [user-store mimi]
   (->
@@ -62,18 +74,24 @@
     {:get {:parameters {:query {:access_token String}}
            :response (fn [ctx]
                        (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
-                                        card-data (get-cards user-store user-id)]
-                             (util/>200 ctx card-data))
+                                        card-data (get-card user-store user-id mimi)]
+                             (util/>200 ctx [card-data]))
                            (d/catch clojure.lang.ExceptionInfo
                                (fn [exception-info]
                                  (domain-exception ctx (ex-data  exception-info))))
                        ))}}}
    (merge (util/common-resource :me/cards))))
 
-(defn unregister [user-store mimi]
+(defn card [user-store mimi]
   (->
    {:methods
-    {:delete {:parameters {:path {:card-id String}
+    {:get {:parameters {:path {:card-id String}
+                        :query {:access_token String}}
+           :response (fn [ctx]
+                       (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
+                                        card-data (get-card user-store user-id mimi)]
+                             (util/>200 ctx card-data))))}
+     :delete {:parameters {:path {:card-id String}
                            :query {:access_token String}}
               :response (fn [ctx]
                           (condp = (get-in ctx [:parameters :query :access_token])
@@ -183,26 +201,16 @@
 
       (merge (util/common-resource :me/cards))))
 
-(def stored-value-program "Starbucks Card")
-
-(defn get-points [mimi card-number]
-  (d/let-flow [rewards (p/rewards mimi {})
-               program (first (filter #(= (:program %) stored-value-program) (:programs rewards)))]
-      (:balance program)))
-
 (defn balance [user-store mimi]
   (-> {:methods
        {:get {:parameters {:query {:access_token String}
                            :path {:card-id String}}
               :response (fn [ctx]
                          (d/let-flow [user-id (:_id (util/authenticated-user ctx))
-                                      cards (get-cards user-store user-id)
-                                      card (first cards)
-                                      card-number (:cardNumber card)
-                                      balance (get-points [mimi card-number])]
+                                      card (get-card user-store user-id mimi)]
                            (util/>200 ctx {:cardId (:cardId card)
-                                           :cardNumber card-number
-                                           :balance balance
+                                           :cardNumber (:cardNumber card) 
+                                           :balance (:balance card)
                                            :balanceDate (.toString (java.time.Instant/now))
                                            :balanceCurrencyCode "ZAR"})))
              }}}

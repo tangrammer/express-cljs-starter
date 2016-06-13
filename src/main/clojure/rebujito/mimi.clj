@@ -138,12 +138,10 @@
                                :body ["An unexpected error occurred debiting the card."]})))
       d*)
     )
-  (rewards [this data]
-    (log/info data)
+  (rewards [this card-number]
+    (log/info "fetching rewards for" card-number)
     (let [d* (d/deferred)
-          ; TODO: use real card-number
-          ; card-number "9623570800099"
-          card-number "9623570900002"
+          ;; card-number "9623570900002"
           ]
       (d/future
       (try
@@ -154,7 +152,7 @@
                                                  :accept :json
                                                  :as :json
                                                  :throw-exceptions true
-                                                 :form-params data})]
+                                                 :form-params {}})]
           (log/info body)
           (d/success! d* body))
         (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
@@ -201,12 +199,12 @@
       d*)
     )
 
-  (rewards [this data]
+  (rewards [this card-number]
     ; TODO: mock the response, don't hit mimi
-    (log/info data)
+    (log/info "fetching rewards for" card-number)
     (let [d* (d/deferred)
           ; card-number "9623570800099"
-          card-number "9623570900002"
+          ; card-number "9623570900002"
           ]
       (d/future
         (try
@@ -217,7 +215,7 @@
                                                    :accept :json
                                                    :as :json
                                                    :throw-exceptions true
-                                                   :form-params data})]
+                                                   :form-params {}})]
             (log/info body)
             (d/success! d* body))
           (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]

@@ -57,9 +57,9 @@
      :cardHolderSinceDate nil
   }))
 
-(defn rewards-response [mimi]
+(defn rewards-response [mimi card-number]
 
-  (d/chain (p/rewards mimi {})
+  (d/chain (p/rewards mimi card-number)
    translate-mimi-rewards
    #(merge
      rebujito.store.mocks/me-rewards
@@ -74,7 +74,9 @@
                                   (s/optional-key :select) String
                                   (s/optional-key :ignore) String}}
              :response (fn [ctx]
-                         (-> (d/let-flow [rewards (rewards-response mimi)]
+                         (-> (d/let-flow [;; TODO
+                                          card-number "9623570900048"
+                                          rewards (rewards-response mimi card-number)]
                                          (>200 ctx rewards))
                              (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]
