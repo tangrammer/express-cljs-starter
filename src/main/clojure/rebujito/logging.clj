@@ -44,6 +44,7 @@ output-fn <opts-map>)`."
 
    ;; Control log filtering by namespaces/patterns. Useful for turning off
    ;; logging in noisy libraries, etc.:
+   :ns-whitelist  []
 
    :ns-blacklist  ["org.apache.*" ] #_["taoensso.*"]
 

@@ -4,14 +4,15 @@
    [com.stuartsierra.component :as component]
    [rebujito.config :refer (config)]
    [rebujito.system :refer (new-production-system)]
-   [taoensso.timbre :as log])
+   [taoensso.timbre :as log]
+   [rebujito.logging :as log-levels])
   (:gen-class))
 
 (def p (promise))
 
 (defn -main []
   ;; We eval so that we don't AOT anything beyond this class
-
+  (log/set-config! log-levels/timbre-info-config)
   (log/info "Env:" (with-out-str
                      (clojure.pprint/pprint
                       (select-keys (config :prod) [:env-type]))))

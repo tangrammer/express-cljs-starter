@@ -13,7 +13,6 @@
    [rebujito.security.jwt :as jwt ]
    [rebujito.config :refer [config]]
    [rebujito.webserver.handler :as wh]
-   [rebujito.logging :as log-levels]
    [rebujito.store :as store]
    [rebujito.mongo :refer (new-user-store new-api-key-store new-counter-store new-token-store)]
    [rebujito.mailer :refer (new-prod-mailer)]
@@ -104,5 +103,3 @@
    (-> (new-system-map (merge (config :prod) opts))
        (system-using (new-dependency-map))))
   ([] (new-production-system {})))
-
-(log/set-config! log-levels/timbre-info-config)

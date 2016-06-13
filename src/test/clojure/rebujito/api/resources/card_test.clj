@@ -50,8 +50,8 @@
                                     :content-type :json})
                        :status)))))
 
-    (testing ::card/unregister
-      (let [api-id ::card/unregister
+    (testing "card/unregister"
+      (let [api-id ::card/card
             path (bidi/path-for r api-id :card-id 123)]
         (is (= 200 (-> @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path 123)
                                      {:throw-exceptions false
