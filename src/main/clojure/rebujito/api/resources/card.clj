@@ -55,13 +55,13 @@
 
 (defn get-points [mimi card-number]
   (d/let-flow [rewards (p/rewards mimi card-number)
-               program (first (filter #(= (:program %) stored-value-program) (:programs rewards)))
+               program (first (filter #(= (:program %) stored-value-program) (:programs rewards)))]
     (:balance program)))
 
 (defn get-card [user-store user-id mimi]
   (d/let-flow [card-data (:cards (p/find user-store user-id))
                card-data (first card-data)
-               balance (get-points mimi (:cardNumber card-data))
+               balance (get-points mimi (:cardNumber card-data))]
     (merge (dummy-card-data) card-data {:balance balance})))
 
 (defn cards [user-store mimi]
@@ -205,7 +205,7 @@
                          (d/let-flow [user-id (:_id (util/authenticated-user ctx))
                                       card (get-card user-store user-id mimi)]
                            (util/>200 ctx {:cardId (:cardId card)
-                                           :cardNumber (:cardNumber card) 
+                                           :cardNumber (:cardNumber card)
                                            :balance (:balance card)
                                            :balanceDate (.toString (java.time.Instant/now))
                                            :balanceCurrencyCode "ZAR"})))
