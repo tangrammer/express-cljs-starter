@@ -3,39 +3,41 @@
   not be included in a production build of the application."
   (:import [java.util Locale])
   (:require
-   [rebujito.base-test :refer (new-account-sb)]
-   [frak :as frak]
-   [manifold.stream :as s]
-   [rebujito.api.resources.account :as ac]
-   [schema-generators.generators :as g]
-   [rebujito.api.sig :as sig]
-   [buddy.core.nonce :as nonce]
-   [rebujito.protocols :as p]
+   [bidi.bidi :as bidi]
    [buddy.core.codecs :refer (bytes->hex)]
-    [clojure.java.browse :refer (browse-url)]
-    [com.stuartsierra.component :refer [system-map system-using using] :as component]
-    [clojure.java.io :as io]
-    [clojure.java.javadoc :refer [javadoc]]
-    [clojure.pprint :refer [pprint pp]]
-    [clojure.reflect :refer [reflect]]
-    [clojure.repl :refer [apropos dir doc find-doc pst source]]
-    [clojure.test :refer [run-tests run-all-tests]]
-    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
-    [rebujito.system.dev-system :refer (new-dev-system)]
-    [manifold.deferred :as d]
-    [plumbing.core :refer (fnk defnk)]
-    [bidi.bidi :as bidi]
-    [schema.core :as schema]
-    [taoensso.timbre :as log :refer (trace debug info warn error)]
-    [rebujito.config :refer [config]]
-    [monger.core :as mg]
-    [monger.collection :as mc]
-    env))
+   [buddy.core.nonce :as nonce]
+   [clojure.java.browse :refer (browse-url)]
+   [clojure.java.io :as io]
+   [clojure.java.javadoc :refer [javadoc]]
+   [clojure.pprint :refer [pprint pp]]
+   [clojure.reflect :refer [reflect]]
+   [clojure.repl :refer [apropos dir doc find-doc pst source]]
+   [clojure.test :refer [run-tests run-all-tests]]
+   [clojure.tools.namespace.repl :refer [refresh refresh-all]]
+   [com.stuartsierra.component :refer [system-map system-using using] :as component]
+   [frak :as frak]
+   [manifold.deferred :as d]
+   [manifold.stream :as s]
+   [monger.collection :as mc]
+   [monger.core :as mg]
+   [plumbing.core :refer (fnk defnk)]
+   [rebujito.api.resources.account :as ac]
+   [rebujito.api.sig :as sig]
+   [rebujito.base-test :refer (new-account-sb)]
+   [rebujito.config :refer [config]]
+   [rebujito.logging :as log-levels]
+   [rebujito.protocols :as p]
+   [rebujito.system.dev-system :refer (new-dev-system)]
+   [schema-generators.generators :as g]
+   [schema.core :as schema]
+   [taoensso.timbre :as log :refer (trace debug info warn error)]
+    env
+    ))
 
 
 ;; reloaded fns
 
-(declare check-mobile-user)
+(declare check-mobile-user  check-monks-api-key)
 
 (defonce
   ^{:docstring "A Var containing an object representing the application under development."}
@@ -82,10 +84,13 @@
 (defn go
   "Initializes and starts the system running."
   []
+  (log/set-config! (assoc log-levels/timbre-info-config
+                          :level :warn))
   (init)
   (dont-send-snagbug)
   (start)
   (check-mobile-user)
+  (check-monks-api-key)
   :ready)
 
 (defn reset
@@ -115,8 +120,9 @@
   (-> (nonce/random-bytes n)
       (bytes->hex)))
 
-(defn insert-new-api-key [who]
-  (p/get-and-insert! (-> system :api-client-store) {"secret" (generate-random 32) "who" who}))
+(defn insert-new-api-key
+  ([who id secret]
+   (p/get-and-insert! (-> system :api-client-store) {:secret secret :who who :_id (rebujito.mongo/to-mongo-object-id id) })))
 
 (defn insert [data]
   (p/insert! (-> system :api-client-store) data))
@@ -134,7 +140,7 @@
   (try
     (let [u (-> (new-account-sb)
                (merge
-                {:emailAddress "stephan+starbucks_fr_02@mediamonks.com" :password "#myPassword01"}))]
+                {:emailAddress "stephan+starbucks_za_01@mediamonks.com" :password "#myPassword01"}))]
      (if-let [res (first (p/find (-> system :user-store) (select-keys u [:emailAddress]) ))]
        (println (str "default mobile user exists in db"  #_res))
        (do (ac/create-account-mongo! u [(str (rand-int 1000000))] (-> system :user-store) (:crypto system))
@@ -144,3 +150,19 @@
                          (.printStackTrace e)
                          (pst e)
                          (check-mobile-user)))))
+
+
+(defn check-monks-api-key []
+  (try
+    (let [u {:who "media-monks"}]
+     (if-let [res (first (p/find (-> system :api-client-store) u))]
+       (println (str "api-key"  #_res))
+       (do
+         (println (str "creating api-key media-monks"))
+         (insert-new-api-key :media-monks "574c95bfe986e3fdfc531a3e" "66ae769048067c5a06029fb5ae66fb439738c76cf3f7a9776659c0142d0e2d0f")
+         )))
+    (catch Exception e (do
+                         (println (type  e) (.getMessage e))
+                         (.printStackTrace e)
+                         (pst e)
+                         (check-monks-api-key)))))

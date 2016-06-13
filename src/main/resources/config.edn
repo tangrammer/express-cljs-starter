@@ -1,8 +1,8 @@
 {
  :app-config {:sub-market #profile {:prod "ZA"
                                     :test "FR"
-                                    :dev "FR"
-                                    :default "FR"}
+                                    :dev "ZA"
+                                    :default "ZA"}
               :currency-code  #profile {:default "ZAR"}
               }
  :cookie-name "rebujito-cookie"
@@ -24,8 +24,8 @@
         :token #or [#env REBUJITO_MIMI_TOKEN #profile {:prod nil
                                                        :default "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwbGF5ZXIiOiJyZWJ1aml0byIsImlhdCI6MTQ2MzY0NDUzN30.BmEuE_A993H2SYe9yEoIv7I81a_ZTsmZ-gAhQWsWBBY"}]}
 
- :api {:key "w8tnxd8h2wns43cfdgmt793j"
-       :secret "KDRSRVqKHp5TkKvJJhN7RYkE"}
+ :api {:key "574c95bfe986e3fdfc531a3e"
+       :secret "66ae769048067c5a06029fb5ae66fb439738c76cf3f7a9776659c0142d0e2d0f"}
 
  :mongo {:host "localhost"
          :port 27017
