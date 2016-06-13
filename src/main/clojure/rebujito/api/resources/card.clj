@@ -55,17 +55,13 @@
 
 (defn get-points [mimi card-number]
   (d/let-flow [rewards (p/rewards mimi card-number)
-               _ (println "........rewards" rewards)
                program (first (filter #(= (:program %) stored-value-program) (:programs rewards)))
-               _ (println "...........program" program)]
     (:balance program)))
 
 (defn get-card [user-store user-id mimi]
   (d/let-flow [card-data (:cards (p/find user-store user-id))
                card-data (first card-data)
-               _ (println ".............." card-data)
                balance (get-points mimi (:cardNumber card-data))
-               _ (println "..............." balance)]
     (merge (dummy-card-data) card-data {:balance balance})))
 
 (defn cards [user-store mimi]
