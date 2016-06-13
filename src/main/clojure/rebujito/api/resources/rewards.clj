@@ -76,6 +76,7 @@
              :response (fn [ctx]
                          (-> (d/let-flow [user-id (:_id (authenticated-user ctx))
                                           card-number (-> (p/find user-store user-id) :cards first :cardNumber)
+                                          card-number "9623570900048"
                                           rewards (rewards-response mimi card-number)]
                                          (>200 ctx rewards))
                              (d/catch clojure.lang.ExceptionInfo
