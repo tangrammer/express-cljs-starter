@@ -1,7 +1,7 @@
 {
  :app-config {:sub-market #profile {:prod "ZA"
                                     :test "FR"
-                                    :dev "ZA"
+                                    :dev "FR"
                                     :default "ZA"}
               :currency-code  #profile {:default "ZAR"}
               }
@@ -26,7 +26,7 @@
 
  :monks {:api {:key "574c95bfe986e3fdfc531a3e"
                :secret "66ae769048067c5a06029fb5ae66fb439738c76cf3f7a9776659c0142d0e2d0f"}
-         :user {:email "stephan+starbucks_za_01@mediamonks.com"
+         :user {:email "stephan+starbucks_fr_02@mediamonks.com"
                 :pw "#myPassword01"}}
 
  :mongo {:host "localhost"
