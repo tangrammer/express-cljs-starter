@@ -169,10 +169,8 @@
                            (->
                             (d/let-flow [profile-data (util/user-profile-data ctx user-store (:sub-market app-config))
                                          auth-user (util/authenticated-user ctx)
-                                         payment-method-data (first (filter #(= (:paymentMethodId %)
-                                                                          (-> ctx :parameters :body :paymentMethodId))
-                                                                            (:paymentMethods (p/find user-store (:_id auth-user) ))))
-                                         _ (log/info ">>>> payment-method-data::::" payment-method-data)
+                                         payment-method-data (p/get-payment-method user-store (:_id auth-user) (-> ctx :parameters :body :paymentMedhodId))
+                                         _ (log/error ">>>> payment-method-data::::" payment-method-data)
 
                                          payment-data (p/execute-payment
                                                        payment-gateway

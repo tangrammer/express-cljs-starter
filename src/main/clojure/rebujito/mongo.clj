@@ -148,6 +148,15 @@
                                                      :body (.getMessage e)
                                                      :message (.getMessage e)
                                                      })))))
+  (get-payment-method [this oid payment-method-id]
+    (let [user-db  (protocols/find this oid)]
+      (if-let [p (first (filter #(= (:paymentMethodId %) payment-method-id) (:paymentMethods user-db)))]
+        p
+        (d/error-deferred (ex-info (str "Store ERROR!")
+                                   {:type :store
+                                    :status 400
+                                    :body (format "payment-method doens't exist: %s " payment-method-id)
+                                    :message (format "payment-method doens't exist: %s " payment-method-id)})))))
 
 
   protocols/MutableStorage

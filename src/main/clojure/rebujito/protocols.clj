@@ -60,7 +60,9 @@
   (update-by-id! [this id data]))
 
 (defprotocol UserStore
-  (add-new-payment-method [this oid p]))
+  (add-new-payment-method [this oid p])
+  (get-payment-method [this oid payment-method-id])
+  )
 (defprotocol ApiClient
   (login [this id pw]))
 
