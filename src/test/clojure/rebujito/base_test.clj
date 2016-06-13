@@ -2,8 +2,10 @@
   (:require
    [byte-streams :as bs]
    [cheshire.core :as json]
+   [clojure.repl :refer (pst)]
    [bidi.bidi :as bidi]
    [rebujito.schemas :refer (MongoUser MimiUser)]
+   [rebujito.protocols :as p]
    [com.stuartsierra.component :as component]
                [rebujito.system.dev-system :as dev]
                [rebujito.api.sig :as api-sig]
@@ -51,7 +53,7 @@
 (s/validate MongoUser (new-account-sb))
 
 (defn api-config []
-  (-> (config :test) :api))
+  (-> (config :test) :monks :api))
 
 (defn new-sig []
   (let [{:keys [key secret]} (api-config)
@@ -155,6 +157,26 @@
        )
      ))
   )
+(defn insert-new-api-key
+  ([system who id secret]
+   (p/get-and-insert! (-> system :api-client-store) {:secret secret :who who :_id (rebujito.mongo/to-mongo-object-id id) })))
+
+(defn check-monks-api-key [system]
+  (try
+    (let [u {:who "media-monks"}
+          api-config (:api (:monks (config :test)))]
+     (if-let [res (first (p/find (-> system :api-client-store) u))]
+       (println (str "api-key"  #_res))
+       (do
+         (println (str "creating api-key media-monks"))
+         (insert-new-api-key system :media-monks (:key api-config) (:secret api-config))
+         )))
+    (catch Exception e (do
+                         (println (type  e) (.getMessage e))
+                         (.printStackTrace e)
+                         (pst e)
+                         (check-monks-api-key system)))))
+
 (defn bind-new-user-and-token [s account-data] (let [account (create-account s account-data)
                                                      port (-> s  :webserver :port)
                                                      path (get-path s ::account/me)]
@@ -165,6 +187,7 @@
                    :birthDay "1"
                    :birthMonth "1")]
      (try
+       (check-monks-api-key s#)
        (binding [*system* s#
                  *user-account-data* u#
                  *app-access-token* (access-token-application s#)

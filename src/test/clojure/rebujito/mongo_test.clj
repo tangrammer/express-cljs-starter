@@ -11,11 +11,8 @@
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
 
 
-
-
-
 (deftest mongo-tests
-  (let [api-config (:api (config :test))]
+  (let [api-config (:api (:monks (config :test)))]
    (testing "ApiClient p/login"
      (->
       (p/login (:api-client-store *system*) "XXXX" (:secret api-config))

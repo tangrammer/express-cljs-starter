@@ -23,7 +23,7 @@
    [plumbing.core :refer (fnk defnk)]
    [rebujito.api.resources.account :as ac]
    [rebujito.api.sig :as sig]
-   [rebujito.base-test :refer (new-account-sb)]
+   [rebujito.base-test :refer (new-account-sb check-monks-api-key)]
    [rebujito.config :refer [config]]
    [rebujito.logging :as log-levels]
    [rebujito.protocols :as p]
@@ -37,7 +37,7 @@
 
 ;; reloaded fns
 
-(declare check-mobile-user  check-monks-api-key)
+(declare check-mobile-user )
 
 (defonce
   ^{:docstring "A Var containing an object representing the application under development."}
@@ -90,7 +90,7 @@
   (dont-send-snagbug)
   (start)
   (check-mobile-user)
-  (check-monks-api-key)
+  (check-monks-api-key system)
   :ready)
 
 (defn reset
@@ -120,9 +120,7 @@
   (-> (nonce/random-bytes n)
       (bytes->hex)))
 
-(defn insert-new-api-key
-  ([who id secret]
-   (p/get-and-insert! (-> system :api-client-store) {:secret secret :who who :_id (rebujito.mongo/to-mongo-object-id id) })))
+
 
 (defn insert [data]
   (p/insert! (-> system :api-client-store) data))
@@ -138,9 +136,10 @@
 
 (defn check-mobile-user []
   (try
-    (let [u (-> (new-account-sb)
+    (let [monks-user (:user (:monks (config :test)))
+          u (-> (new-account-sb)
                (merge
-                {:emailAddress "stephan+starbucks_za_01@mediamonks.com" :password "#myPassword01"}))]
+                {:emailAddress (:email monks-user) :password (:pw monks-user)}))]
      (if-let [res (first (p/find (-> system :user-store) (select-keys u [:emailAddress]) ))]
        (println (str "default mobile user exists in db"  #_res))
        (do (ac/create-account-mongo! u [(str (rand-int 1000000))] (-> system :user-store) (:crypto system))
@@ -150,19 +149,3 @@
                          (.printStackTrace e)
                          (pst e)
                          (check-mobile-user)))))
-
-
-(defn check-monks-api-key []
-  (try
-    (let [u {:who "media-monks"}]
-     (if-let [res (first (p/find (-> system :api-client-store) u))]
-       (println (str "api-key"  #_res))
-       (do
-         (println (str "creating api-key media-monks"))
-         (insert-new-api-key :media-monks "574c95bfe986e3fdfc531a3e" "66ae769048067c5a06029fb5ae66fb439738c76cf3f7a9776659c0142d0e2d0f")
-         )))
-    (catch Exception e (do
-                         (println (type  e) (.getMessage e))
-                         (.printStackTrace e)
-                         (pst e)
-                         (check-monks-api-key)))))
