@@ -52,6 +52,7 @@
 
 (defn get-cards [user-store user-id]
   (d/let-flow [card-data (:cards (p/find user-store user-id))
+               balances {}
                card-data (map #(merge (dummy-card-data) %) card-data)]
     card-data))
 
@@ -184,23 +185,25 @@
 
 (def stored-value-program "Starbucks Card")
 
+(defn get-points [mimi card-number]
+  (d/let-flow [rewards (p/rewards mimi {})
+               program (first (filter #(= (:program %) stored-value-program) (:programs rewards)))]
+      (:balance program)))
+
 (defn balance [user-store mimi]
   (-> {:methods
        {:get {:parameters {:query {:access_token String}
-                          :path {:card-id String}}
+                           :path {:card-id String}}
               :response (fn [ctx]
                          (d/let-flow [user-id (:_id (util/authenticated-user ctx))
                                       cards (get-cards user-store user-id)
                                       card (first cards)
                                       card-number (:cardNumber card)
-                                      rewards (p/rewards mimi {})
-                                      _ (println rewards)
-                                      program (first (filter #(= (:program %) stored-value-program) (:programs rewards)))]
+                                      balance (get-points [mimi card-number])]
                            (util/>200 ctx {:cardId (:cardId card)
                                            :cardNumber card-number
-                                           :balance (:balance program)
+                                           :balance balance
                                            :balanceDate (.toString (java.time.Instant/now))
-                                           :balanceCurrencyCode "ZAR"}))
-                           )
+                                           :balanceCurrencyCode "ZAR"})))
              }}}
    (merge (util/common-resource :me/cards))))
