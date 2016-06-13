@@ -86,7 +86,7 @@
   "Initializes and starts the system running."
   []
   (log/set-config! (assoc log-levels/timbre-info-config
-                          :level :warn))
+                          :level env/log-level))
   (init)
   (dont-send-snagbug)
   (start)
@@ -117,11 +117,12 @@
 (defn set-env! [& env]
   (alter-var-root #'env/env (constantly (set env))))
 
+(defn set-log-level! [level]
+  (alter-var-root #'env/log-level level))
+
 (defn generate-random [n]
   (-> (nonce/random-bytes n)
       (bytes->hex)))
-
-
 
 (defn insert [data]
   (p/insert! (-> system :api-client-store) data))

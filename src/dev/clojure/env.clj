@@ -3,7 +3,7 @@
 (ns ^{:clojure.tools.namespace.repl/load false
       :clojure.tools.namespace.repl/unload false}
   env)
-
+(def log-level :info)
 (def env #{})
 
 (println "Welcome developer!")
