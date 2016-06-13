@@ -74,8 +74,8 @@
                                   (s/optional-key :select) String
                                   (s/optional-key :ignore) String}}
              :response (fn [ctx]
-                         (-> (d/let-flow [;; TODO
-                                          card-number "9623570900048"
+                         (-> (d/let-flow [user-id (:_id (authenticated-user ctx))
+                                          card-number (-> (p/find user-store user-id) :cards first :cardNumber)
                                           rewards (rewards-response mimi card-number)]
                                          (>200 ctx rewards))
                              (d/catch clojure.lang.ExceptionInfo
