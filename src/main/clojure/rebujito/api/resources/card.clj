@@ -38,11 +38,7 @@
   (merge data {:digital true}))
 
 (defn dummy-card-data []
-  {
-   ;;:cardNumber nil
-   ;;:cardId nil
-   ;; :balance 0
-   :primary true
+  {:primary true
    :cardCurrency "ZAR"
    :nickname "My Card"
    :type "Standard"
@@ -62,7 +58,8 @@
   (d/let-flow [card-data (:cards (p/find user-store user-id))
                card-data (first card-data)
                balance (get-points mimi (:cardNumber card-data))]
-    (merge (dummy-card-data) card-data {:balance balance})))
+    (when card-data
+      (merge (dummy-card-data) card-data {:balance balance}))))
 
 (defn cards [user-store mimi]
   (->
@@ -71,11 +68,11 @@
            :response (fn [ctx]
                        (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
                                         card-data (get-card user-store user-id mimi)]
-                             (util/>200 ctx [card-data]))
+                             (util/>200 ctx (if card-data [card-data] [])))
                            (d/catch clojure.lang.ExceptionInfo
                                (fn [exception-info]
-                                 (domain-exception ctx (ex-data  exception-info))))
-                       ))}}}
+                                 (domain-exception ctx (ex-data  exception-info))))))}}}
+
    (merge (util/common-resource :me/cards))))
 
 (defn card [user-store mimi]

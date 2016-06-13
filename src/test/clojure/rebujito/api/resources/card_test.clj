@@ -1,6 +1,7 @@
 (ns rebujito.api.resources.card-test
   (:require
    [bidi.bidi :as bidi]
+   [byte-streams :as bs]
    [rebujito.protocols :as p]
    [schema-generators.generators :as g]
    [rebujito.api-test :refer (print-body)]
@@ -19,13 +20,20 @@
   (let [port (-> *system*  :webserver :port)
         r (-> *system* :docsite-router :routes)
         ]
-    (testing ::card/get-cards
-      (let [path (get-path ::card/get-cards)]
-        (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                  {:throw-exceptions false
-                                   :body-encoding "UTF-8"
-                                   :content-type :json})
-                       :status)))))
+
+    (testing ::card/get-cards2
+      (let [path (get-path ::card/get-cards)
+            {:keys [status body]}
+            (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                        {:throw-exceptions false
+                                         :body-encoding "UTF-8"
+                                         :content-type :json}))
+            _ (is (= status 200))
+            body (-> (bs/to-string body)
+                     (json/parse-string true))]
+
+        (clojure.pprint/pprint body)
+        (is (= [] body))))
 
     (testing ::card/register-physical
       (let [path (get-path ::card/register-physical)]
