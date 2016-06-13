@@ -182,7 +182,7 @@
 
       (merge (util/common-resource :me/cards))))
 
-
+(def stored-value-program "Starbucks Card")
 
 (defn balance [user-store mimi]
   (-> {:methods
@@ -195,7 +195,7 @@
                                       card-number (:cardNumber card)
                                       rewards (p/rewards mimi {})
                                       _ (println rewards)
-                                      program (first (filter #(= (:program %) "Starbucks Card") (:programs rewards)))]
+                                      program (first (filter #(= (:program %) stored-value-program) (:programs rewards)))]
                            (util/>200 ctx {:cardId (:cardId card)
                                            :cardNumber card-number
                                            :balance (:balance program)
