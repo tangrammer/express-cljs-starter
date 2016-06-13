@@ -33,13 +33,13 @@
            mailer
            app-config
            counter-store]
-           
-  [""  [["/health"  (-> {:id :jolin
+
+  [""  [["/health"  (-> {:id :health
                          :methods
                                  {:get {:consumes [{:media-type #{"application/json"}
                                                     :charset "UTF-8"}]
                                         :response (read-string (slurp (clojure.java.io/resource "VERSION.edn"))) }}}
-                                (merge (util/common-resource :meta))) ]
+                        (merge (util/common-resource :meta))) ]
 
         [["/content/sitecore/content/"
             ; FR/3rd Party Mobile Content/iOS-Account/Terms of Use

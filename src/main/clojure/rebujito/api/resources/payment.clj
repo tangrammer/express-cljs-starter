@@ -114,9 +114,14 @@
   (-> {:methods
        {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
               :response (fn [ctx]
-                          (let [payment-methods (:paymentMethods (p/find user-store "xxx"))]
-                            (log/info  "paymentMethods GET" payment-methods)
-                            (util/>200 ctx payment-methods)))}
+                          (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                           payment-methods (:paymentMethods (p/find user-store (:_id auth-user)))]
+                                          (log/info  "paymentMethods GET" payment-methods)
+                                          (util/>200 ctx payment-methods))
+                              (d/catch clojure.lang.ExceptionInfo
+                                  (fn [exception-info]
+                                    (domain-exception ctx (ex-data exception-info))))
+                              ))}
 
         :post {:parameters {:query {:access_token String}
                             :body (-> schema :methods :post)}

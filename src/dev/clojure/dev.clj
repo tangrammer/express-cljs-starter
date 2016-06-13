@@ -19,6 +19,7 @@
    [manifold.deferred :as d]
    [manifold.stream :as s]
    [monger.collection :as mc]
+   [monger.operators :refer [$inc $set $push]]
    [monger.core :as mg]
    [plumbing.core :refer (fnk defnk)]
    [rebujito.api.resources.account :as ac]

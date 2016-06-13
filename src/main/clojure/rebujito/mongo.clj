@@ -129,10 +129,18 @@
     (try
       (let [uuid (str (UUID/randomUUID))
             p (assoc p :paymentMethodId  uuid)]
-        (log/info ">>>>" oid p)
+        (log/debug ">>>>" oid p)
         (s/validate PaymentMethodMongo p)
-        (when (pos? (.getN (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})))
-          {:paymentMethodId uuid}))
+        (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})]
+          (if (pos? (.getN t))
+            {:paymentMethodId uuid}
+            (d/error-deferred (ex-info (str "Store ERROR!")
+                                       {:type :store
+                                        :status 500
+                                        :body "add-new-payment-method transaction fails"
+                                        :message "add-new-payment-method transaction fails"
+                                        }))
+            )))
 
       (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
                                                     {:type :store

@@ -46,8 +46,7 @@
                                                :body (json/generate-string ["paygate/create-card-token" status error body])}))
                         (let [response (xp/xml->doc body)
                               card-token (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
-                          (if (and (not-empty card-token) (first card-token))
-
+                          (if (first card-token)
                             (d/success! d* {:card-token (first card-token)})
                             (d/error! d* (ex-info (str "error!!!" 500)
                                                   {:type :payment-gateway
