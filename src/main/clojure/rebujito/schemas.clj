@@ -6,11 +6,11 @@
 (def PaymentMethodMongo
   {
    :accountNumberLastFour String
-   :billingAddressId String
-   :default String
+   (s/optional-key :billingAddressId) String
+   (s/optional-key :default) String
    :expirationMonth Long
    :expirationYear Long
-   :fullName String
+   (s/optional-key :fullName) String
    (s/optional-key :nickName) s/Any
    :paymentType String
    :paymentMethodId String

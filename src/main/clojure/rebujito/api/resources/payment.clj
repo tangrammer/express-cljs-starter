@@ -11,14 +11,15 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(def schema {:methods {:post {(s/optional-key :billingAddressId) String
+(def schema {:methods {:post {
                               :accountNumber String
-                              (s/optional-key :default) String
-                              (s/optional-key :isDefault) Boolean
-                              (s/optional-key :isTemporary) Boolean
                               :nickname String
                               :paymentType String
                               :cvn String
+                              (s/optional-key :billingAddressId) String
+                              (s/optional-key :default) String
+                              (s/optional-key :isDefault) Boolean
+                              (s/optional-key :isTemporary) Boolean
                               (s/optional-key :fullName) String
                               :expirationMonth Long
                               :expirationYear Long}}
@@ -131,17 +132,19 @@
                                             new-payment-method (p/add-new-payment-method
                                                                 user-store
                                                                 (:_id auth-user)
-                                                                {
-                                                                 :accountNumberLastFour (take-last* (-> request :accountNumber) 4)
-                                                                 :billingAddressId (-> request :billingAddressId)
-                                                                 :default (-> request :default)
-                                                                 :expirationMonth (-> request :expirationMonth)
-                                                                 :expirationYear (-> request :expirationYear)
-                                                                 :fullName (-> request :fullName)
-                                                                 :nickName (-> request :nickName)
-                                                                 :paymentType (-> request :paymentType)
-                                                                 :routingNumber (:card-token card-token)
-                                                                 })]
+                                                                (merge {
+                                                                        :accountNumberLastFour (take-last* (-> request :accountNumber) 4)
+
+                                                                        :expirationMonth (-> request :expirationMonth)
+                                                                        :expirationYear (-> request :expirationYear)
+                                                                        :nickName (-> request :nickName)
+                                                                        :paymentType (-> request :paymentType)
+                                                                        :routingNumber (:card-token card-token)
+                                                                        }
+                                                                       (util/field? request :billingAddressId)
+                                                                       (util/field? request :default)
+                                                                       (util/field? request :fullName)
+                                                                       ))]
                                            (util/>200 ctx {
                                                            :accountNumber nil
                                                            :accountNumberLastFour (take-last* (-> request :accountNumber) 4)

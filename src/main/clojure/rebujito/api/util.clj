@@ -153,3 +153,9 @@
   (let [auth-user (authenticated-user ctx)
         mongo-user (p/find user-store (:_id auth-user))]
     (generate-user-data mongo-user submarket)))
+
+
+(defn field? [m kw]
+  (when  (-> m kw)
+    {kw (-> m kw)})
+  )
