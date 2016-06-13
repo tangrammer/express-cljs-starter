@@ -46,6 +46,8 @@
             :market "/" [#".+" :whatever] "/" [#"iOS-Account(%2F|\/)Terms(%20)of(%20)Use" :mediamonks-weirdness]]
             (yada/handler content/terms-json)]
 
+        [["/settings/" :platform "/" :version "/" :market] (yada/handler content/settings-json)]
+
         ["/account/create" (-> (account/create store mimi user-store crypto)
                                (assoc :id ::account/create
                                       :oauth {:post scopes/application}))]
