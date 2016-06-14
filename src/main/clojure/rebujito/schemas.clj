@@ -17,6 +17,20 @@
    :routingNumber String
    })
 
+
+(def AutoReloadMongo
+  {
+   :autoReloadId String
+   :cardId String
+   :status (s/enum "active" "disabled")
+   :autoReloadType (s/enum "Date" "Amount")
+   :day String
+   :triggerAmount String
+   :amount String
+   :paymentMethodId String
+
+   })
+
 (def PaymentMethodRes
   (-> PaymentMethodMongo
       (assoc :accountNumber nil

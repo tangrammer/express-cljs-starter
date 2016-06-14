@@ -13,14 +13,20 @@
    [yada.resource :refer [resource]]))
 
 (def schema {:register-physical {:post {:cardNumber String}
-                                       :pin String}
+                                 :pin String}
              :reload {:post {:amount Long
                              :paymentMethodId String
                              (s/optional-key :risk) s/Any
                              (s/optional-key :acceptTerms) Boolean
                              (s/optional-key :expirationYear) Long
                              (s/optional-key :expirationMonth) Long
-                             (s/optional-key :sessionId) String}}})
+                             (s/optional-key :sessionId) String}}
+             :autoreload {:post {:status (s/enum "active" "disabled")
+                                 :autoReloadType (s/enum "Date" "Amount")
+                                 :day String
+                                 :triggerAmount String
+                                 :amount String
+                                 :paymentMethodId String}}})
 
 (defn get-next-card-number [counter-store]
   (str (p/increment! counter-store :digital-card-number)))
@@ -186,6 +192,38 @@
                                                                   :cardNumber "7777064158671182" ;; TODO: ASK AHOUT card-number
                                                                   )
                                                            )))
+                            (d/catch clojure.lang.ExceptionInfo
+                                (fn [exception-info]
+                                  (domain-exception ctx (ex-data exception-info))))))}}}
+
+      (merge (util/common-resource :me/cards))))
+
+
+
+(defn autoreload [user-store mimi payment-gateway app-config]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :path {:card-id String}
+                            :body (-> schema :autoreload :post)}
+               :response (fn [ctx]
+                           (->
+                            (d/let-flow [auth-user (util/authenticated-user ctx)
+                                         payment-method-data (p/get-payment-method user-store (:_id auth-user) (-> ctx :parameters :body :paymentMedhodId))
+                                         _ (log/error ">>>> payment-method-data::::" payment-method-data)
+
+                                         auto-reload-data (p/add-auto-reload user-store (:_id auth-user) (assoc (-> ctx :parameters :body) :cardId (-> ctx :parameters :path :card-id)))]
+                                        (util/>200 ctx {
+                                                        :amount (-> ctx :parameters :body :amount)
+                                                        :autoReloadId (:autoReloadId auto-reload-data)
+                                                        :autoReloadType (-> ctx :parameters :body :autoReloadType)
+                                                        :cardId (-> ctx :parameters :path :card-id)
+                                                        :day (-> ctx :parameters :body :day)
+                                                        :disableUntilDate nil
+                                                        :paymentMethodId (-> ctx :parameters :body :paymentMedhodId)
+                                                        :status (-> ctx :parameters :body :status)
+                                                        :stoppedDate nil
+                                                        :triggerAmount (-> ctx :parameters :body :triggerAmount)
+                                                        }))
                             (d/catch clojure.lang.ExceptionInfo
                                 (fn [exception-info]
                                   (domain-exception ctx (ex-data exception-info))))))}}}

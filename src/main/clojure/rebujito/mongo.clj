@@ -10,7 +10,7 @@
    [monger.json :as mj]
    [monger.result :refer [acknowledged?]]
    [rebujito.protocols :as protocols]
-   [rebujito.schemas :refer (PaymentMethodMongo)]
+   [rebujito.schemas :refer (PaymentMethodMongo AutoReloadMongo)]
    [rebujito.mongo.schemas :refer (query-by-example-coercer)]
    [taoensso.timbre :as log])
   (:import [org.bson.types ObjectId]
@@ -157,6 +157,29 @@
                                     :status 400
                                     :body (format "payment-method doens't exist: %s " payment-method-id)
                                     :message (format "payment-method doens't exist: %s " payment-method-id)})))))
+  (add-auto-reload [this oid data]
+    (try
+      (let [uuid (str (UUID/randomUUID))
+            data (assoc data :autoReloadId  uuid)]
+        (log/debug ">>>>" oid data)
+        (s/validate AutoReloadMongo data)
+        (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$set {:autoReload data}})]
+          (if (pos? (.getN t))
+            {:autoReloadId uuid}
+            (d/error-deferred (ex-info (str "Store ERROR!")
+                                       {:type :store
+                                        :status 500
+                                        :body "add-auto-reload transaction fails"
+                                        :message "add-auto-reload transaction fails"
+                                        }))
+            )))
+
+      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
+                                                    {:type :store
+                                                     :status 500
+                                                     :body (.getMessage e)
+                                                     :message (.getMessage e)
+                                                     })))))
 
 
   protocols/MutableStorage

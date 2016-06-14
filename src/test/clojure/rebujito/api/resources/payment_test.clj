@@ -4,6 +4,7 @@
    [byte-streams :as bs]
    [bidi.bidi :as bidi]
    [rebujito.config :refer (config)]
+   [rebujito.protocols :as p]
    [schema-generators.generators :as g]
    [cheshire.core :as json]
    [manifold.deferred :as d]
@@ -84,8 +85,36 @@
                                            :sessionId ""
                                            })
                                    :content-type :json})
+;                      (print-body)
+                      :status))))
+
+
+     (let [api-id ::card/autoreload
+            r (-> *system* :docsite-router :routes)
+            path (bidi/path-for r api-id :card-id 123)]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+        (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :body (json/generate-string
+                                          {
+                                           :amount "15.00",
+                                           :autoReloadType "Amount",
+                                           :day "",
+                                           :paymentMethodId @payment-method-id
+                                           :status "active",
+                                           :triggerAmount "10.00",
+                                           }
+)
+                                   :content-type :json})
                       (print-body)
-                      :status)))))
+                      :status)))
+        (let [ar (:autoReload (p/find (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*) )))]
+;          (println ">>>>>>>>autoReload" ar)
+          (is ar))
+        )
+
+      )
     )
 
 

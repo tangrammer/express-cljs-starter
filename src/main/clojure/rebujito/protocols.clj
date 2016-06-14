@@ -62,6 +62,7 @@
 (defprotocol UserStore
   (add-new-payment-method [this oid p])
   (get-payment-method [this oid payment-method-id])
+  (add-auto-reload [this oid data])
   )
 (defprotocol ApiClient
   (login [this id pw]))
