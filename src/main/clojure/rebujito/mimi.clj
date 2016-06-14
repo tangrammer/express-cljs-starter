@@ -62,9 +62,17 @@
   protocols/Mimi
   (create-account [this data]
     (log/info "create-account-mimi: " (format "%s/account" base-url) data)
-    (s/validate MimiUser data)
+
 ;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
+          (try
+      (s/validate CreateAccountSchema data)
+      (catch Exception e       (d/error! d* (ex-info (str "error!!!" (.getMessage e))
+                                                     {:type :mimi
+                                                      :status 500
+                                                      :body (.getMessage e)}))
+           )
+      )
       (d/future
         (try
           (let [{:keys [status body]} (http-c/post (format "%s/account" base-url)

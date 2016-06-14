@@ -44,6 +44,7 @@
    :city "Sevilla",
    :firstName (format  "Juan-%s" (generate-random 6))
    :birthDay "13",
+   :market "ZA"
    :birthMonth "06",
    :lastName (format  "Ruz-%s" (generate-random 6))
    :receiveStarbucksEmailCommunications true,

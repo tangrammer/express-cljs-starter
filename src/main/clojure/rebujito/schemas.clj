@@ -43,6 +43,7 @@
     :birthDay (s/conditional number? Integer :else String)
     :birthMonth (s/conditional number? Integer :else String)
     :city String
+    :market String
     :country String
     :countrySubdivision String
     :password String

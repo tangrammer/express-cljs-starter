@@ -59,9 +59,16 @@
         mongo-id (p/generate-id user-store mimi-id)
         mongo-account-data (-> data-account
                                (assoc :_id mongo-id)
-                               (assoc :password (p/sign crypto (:password data-account)) ))]
-    (s/validate MongoUser mongo-account-data)
-    (p/get-and-insert! user-store mongo-account-data)))
+                               (assoc :password (p/sign crypto (:password data-account)))
+                               (dissoc :createDigitalCard))]
+    (try
+      (s/validate MongoUser mongo-account-data)
+      (p/get-and-insert! user-store mongo-account-data)
+      (catch Exception e (d/error-deferred (ex-info (str "error!!!" (.getMessage e))
+                                                     {:type :schema
+                                                      :status 400
+                                                      :body (.getMessage e)}))
+       ))))
 
 (defn check-account-mongo [data-account user-store]
   (log/info "check-account-mongo" data-account)
@@ -91,6 +98,7 @@
                                            (util/>201 ctx (dissoc  mongo-account :password)))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
+                                     (log/error (.getMessage exception-info))
                                      (domain-exception ctx (ex-data exception-info))))))}}}
       (merge (util/common-resource :account))))
 
