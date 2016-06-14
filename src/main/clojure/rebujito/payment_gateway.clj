@@ -28,7 +28,11 @@
   ;;                     (throw (ex-info "500" "Paygate Not Available"))
   ;;                     ))))
   (create-card-token [this data]
-    (let [d* (d/deferred)]
+    (let [data (update data :expirationMonth #(format "%02d" %))
+          _     (s/validate {:cardNumber String
+                 :expirationYear Long
+                 :expirationMonth String} data)
+          d* (d/deferred)]
       (log/info "PayGate Create Card Token Request" data)
       (http-k/post (-> this :url)
                     {:body (velocity/render "paygate/create-card-token.vm"
