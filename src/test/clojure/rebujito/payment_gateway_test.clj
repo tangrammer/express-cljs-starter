@@ -31,7 +31,7 @@
     (is (.contains body "PingResponse"))
     (is (not (.contains body "SOAP-ENV:Fault|payhost:error")))))
 
-(deftest paygateVaultTest
+(deftest paygateVaultTest ;; create card token
   (testing "create-token-card"
     (is (let [r (:card-token @(p/create-card-token (:payment-gateway *system*) {:cardNumber "4000000000000002"
                                                                                :expirationYear 2018
@@ -43,33 +43,33 @@
                                                                                :expirationYear 2018
                                                                                 :expirationMonth 6}))]
           (println "card-token: " r)
-          r))
+          r))))
 
+(deftest paygatePaymentTest ;; execute payment
 
+  (testing "execute-payment"
+    (let [token (atom "")]
+     (is (let [r (:card-token @(p/create-card-token (:payment-gateway *system*) {:cardNumber "4000000000000002"
+                                                                                 :expirationYear 2018
+                                                                                 :expirationMonth 6}))]
+           (println "card-token: " r)
+           (reset! token r)
+           r))
 
-
-
-    )
-)
-
-(deftest paygatePaymentTest
-  (let [{:keys [status body]}
-        (-> @(http-k/post "https://secure.paygate.co.za/payhost/process.trans"
-                          {:body (velocity/render "paygate/payment-with-token.vm"
-                                                  :paygateId (get-in (config :test) [:payment-gateway :paygate :paygateId])
-                                                  :paygatePassword (get-in (config :test) [:payment-gateway :paygate :paygatePassword])
-                                                  :firstName "Stefan"
+     (is (let [r  @(p/execute-payment (:payment-gateway *system*)
+                                                 {:firstName "Stefan"
                                                   :lastName "Tester"
                                                   :emailAddress "stefan.tester@example.com"
-                                                  :addresslines ["1 Main Street" "Building"]
-                                                  :cardToken "7a17ba06-deab-4e53-b7d9-ca4cfc3d94ec"
+                                        ;                                                    :addresslines ["1 Main Street" "Building"]
+                                                  :routingNumber @token
                                                   :cvn "123"
                                                   :transactionId "12345"
-                                                  :currency "ZAR"
+                                        ;                                                     :currency "ZAR"
                                                   :amount 100
-                                                  )}))
-        ]
-    (is (= 200 status))
-    (clojure.pprint/pprint body)
-    (is (.contains body "CardPaymentResponse"))
-    (is (not (.contains body "SOAP-ENV:Fault|payhost:error")))))
+                                                  })]
+           (println "execute-payment: " r)
+           r)))
+
+    )
+
+)
