@@ -159,3 +159,23 @@
   (when  (-> m kw)
     {kw (-> m kw)})
   )
+
+
+(defn read-string* [s]
+  (if (= "" s)
+    0
+    (read-string s)))
+
+(defn validate*
+  ([t v [status message description]]
+   (validate* t v [status message description] (constantly true)))
+  ([t v [status message description] v-fn]
+   (try
+     (s/validate t v)
+     (when-not (v-fn v)
+       (throw (ex-info message {:type :schema
+                                :status status
+                                :body description})))
+     (catch Exception e (throw (ex-info message {:type :schema
+                                                 :status status
+                                                 :body description}))))))

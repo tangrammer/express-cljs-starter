@@ -109,9 +109,33 @@
                                    :content-type :json})
                       (print-body)
                       :status)))
+
+
+
         (let [ar (:autoReload (p/find (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*) )))]
-;          (println ">>>>>>>>autoReload" ar)
+          (println ">>>>>>>>autoReload" ar)
           (is ar))
+
+        ;; validation amount with autoReloadType="Amount"
+        (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                           {:throw-exceptions false
+                                            :body-encoding "UTF-8"
+                                            :body (json/generate-string
+                                                   {
+                                                    :amount "",
+                                                    :autoReloadType "Amount",
+                                                    :day "",
+                                                    :paymentMethodId @payment-method-id
+                                                    :status "active",
+                                                    :triggerAmount "10.00",
+                                                    }
+                                                   )
+                                            :content-type :json})]
+          (is (= 400 status))
+          (is (= (-> (bs/to-string body)
+                     (json/parse-string true)) ["Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-100"])))
+
+
         )
 
       )
