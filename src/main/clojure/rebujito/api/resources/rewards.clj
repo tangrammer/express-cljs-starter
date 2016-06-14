@@ -6,6 +6,7 @@
    [rebujito.api.util :refer :all]
    [rebujito.api.resources :refer (domain-exception)]
    [cheshire.core :as json]
+   [rebujito.store.mocks :as m]
    [manifold.deferred :as d]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
@@ -62,7 +63,7 @@
   (d/chain (p/rewards mimi card-number)
    translate-mimi-rewards
    #(merge
-     rebujito.store.mocks/me-rewards
+     m/me-rewards
      {:rewardsProgram rewards-program}
      {:coupons []
       :myTiers []}
