@@ -61,7 +61,8 @@
         mongo-account-data (-> data-account
                                (assoc :_id mongo-id)
                                (assoc :password (p/sign crypto (:password data-account)))
-                               (dissoc :createDigitalCard))]
+                               (dissoc :createDigitalCard)
+                               (dissoc :risk))]
     (try
       (s/validate MongoUser mongo-account-data)
       (p/get-and-insert! user-store mongo-account-data)
@@ -93,7 +94,6 @@
                                                           (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
                                                           (fn [b]
                                                             (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))))
-
                                             mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
 
                                            (util/>201 ctx (dissoc  mongo-account :password)))
