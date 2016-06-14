@@ -43,7 +43,19 @@
                                                                                :expirationYear 2018
                                                                                 :expirationMonth 6}))]
           (println "card-token: " r)
-          r))))
+          r))
+
+
+    (let [r (-> (p/create-card-token (:payment-gateway *system*) {:cardNumber "2222222222222222"
+                                                                  :expirationYear 2018
+                                                                  :expirationMonth 6})
+                (d/catch clojure.lang.ExceptionInfo
+                    (fn [exception-info]
+                      (:status (ex-data exception-info))
+                     ))
+                )]
+      (is (= 400 @r))
+      r)))
 
 (deftest paygatePaymentTest ;; execute payment
 
@@ -69,6 +81,8 @@
                                                   })]
            (println "execute-payment: " r)
            r)))
+
+
 
     )
 

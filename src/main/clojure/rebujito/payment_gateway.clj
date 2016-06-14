@@ -30,8 +30,10 @@
   (create-card-token [this data]
     (let [data (update data :expirationMonth #(format "%02d" %))
           _     (s/validate {:cardNumber String
-                 :expirationYear Long
-                 :expirationMonth String} data)
+                             :expirationYear Long
+                             :expirationMonth String
+                             (s/optional-key :cvn) String
+                             } data)
           d* (d/deferred)]
       (log/info "PayGate Create Card Token Request" data)
       (http-k/post (-> this :url)
@@ -52,9 +54,9 @@
                               card-token (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
                           (if (first card-token)
                             (d/success! d* {:card-token (first card-token)})
-                            (d/error! d* (ex-info (str "error!!!" 500)
+                            (d/error! d* (ex-info (str "error!!!" 400)
                                                   {:type :payment-gateway
-                                                   :status 500
+                                                   :status 400
                                                    :body (json/generate-string ["paygate/create-card-token NULL card-token" status error body])})))))))
       d*))
   (delete-card-token [this data]
@@ -83,7 +85,7 @@
       d*))
   (execute-payment [this data]
 
-    (s/validate {:firstName String
+    (s/validate {(s/optional-key :firstName) String
                  :lastName String
                  :emailAddress String
                  :routingNumber String

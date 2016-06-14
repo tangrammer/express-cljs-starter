@@ -37,14 +37,13 @@
 
 
 
-
+       (println path )
        (let [{:keys [status body]}
              (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                              {:throw-exceptions false
                               :body-encoding "UTF-8"
                               :body (json/generate-string
                                      {
-                                      :expirationYear 2018
                                       :billingAddressId "string"
                                       :accountNumber "4000000000000002"
                                       :default "false"
@@ -53,19 +52,20 @@
                                       :cvn "12345"
                                       :fullName "string"
                                       :expirationMonth 11
+                                      :expirationYear 2018
                                       }
                                      )
                               :content-type :json}))
-             _          (is (= status 200))
              body (-> (bs/to-string body)
                       (json/parse-string true))
+             _          (is (= status 200))
+
              ]
 
 
          (clojure.pprint/pprint body)
          (is  (:paymentMethodId body))
          (reset! payment-method-id (:paymentMethodId body))
-;         (clojure.pprint/pprint (p/find (-> *system* :user-store) (:_id (p/read-token (:authenticator *system*) *user-access-token*))))
          ))
 
       ;; ::card/reload
