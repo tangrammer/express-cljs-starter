@@ -1,15 +1,31 @@
 (ns rebujito.mongo-test
   (:require
+   [schema-generators.generators :as g]
    [rebujito.config :refer (config)]
+   [rebujito.schemas :as rs]
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
-   [rebujito.base-test :refer (system-fixture *system*)]
+   [rebujito.base-test :refer (system-fixture *system* *user-access-token*)]
    [clojure.test :refer :all]
    [rebujito.mongo :refer (generate-account-id id>mimi-id)]))
 
 
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
 
+
+(deftest user-store
+  (testing :add-auto-reload
+    (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
+      (is (nil? (:autoReload (p/find (:user-store *system*) user-id))))
+      (is (p/add-auto-reload (:user-store *system*) user-id (g/generate rs/AutoReloadMongo)))
+      (is (:autoReload (p/find (:user-store *system*) user-id)))))
+
+  (testing :add-payment-method
+    (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
+      (is (nil? (:paymentMethods (p/find (:user-store *system*) user-id))))
+      (is (p/add-new-payment-method (:user-store *system*) user-id (g/generate rs/PaymentMethodMongo)))
+      (is (:paymentMethods (p/find (:user-store *system*) user-id)))))
+  )
 
 (deftest mongo-tests
   (let [api-config (:api (:monks (config :test)))]
