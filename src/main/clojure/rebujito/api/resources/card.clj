@@ -4,6 +4,7 @@
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.protocols :as p]
+   [rebujito.schemas :refer (AutoReloadMongo)]
    [rebujito.api.util :as util]
    [rebujito.mongo :refer [id>mimi-id]]
    [rebujito.store.mocks :as mocks]
@@ -12,7 +13,9 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(def schema {:register-physical {:post {:cardNumber String}
+(def schema {:register-physical {:post {:cardNumber String
+                                        :pin String
+                                        :risk s/Any}
                                  :pin String}
              :reload {:post {:amount Long
                              :paymentMethodId String
@@ -23,9 +26,9 @@
                              (s/optional-key :sessionId) String}}
              :autoreload {:post {:status (s/enum "active" "disabled")
                                  :autoReloadType (s/enum "Date" "Amount")
-                                 :day String
-                                 :triggerAmount String
-                                 :amount String
+                                 :day s/Num
+                                 :triggerAmount s/Num
+                                 :amount s/Num
                                  :paymentMethodId String}}})
 
 
@@ -164,42 +167,45 @@
 
    (merge (util/common-resource :me/cards))))
 
+;; TODO: needs to manage all the 400 posibiliites https://admin.swarmloyalty.co.za/sbdocs/docs/starbucks_api/card_management/reload_card.html
 (defn reload [user-store mimi payment-gateway app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:card-id String}
                             :body (-> schema :reload :post)}
                :response (fn [ctx]
-                           (->
-                            (d/let-flow [profile-data (util/user-profile-data ctx user-store (:sub-market app-config))
-                                         user-id (:_id (util/authenticated-user ctx))
-                                         card-id (-> ctx :parameters :path :card-id)
-                                         card-data (:cards (p/find user-store user-id))
-                                         card-data (first (filter #(= (:cardId %) card-id) card-data))
-                                         card-number (:cardNumber card-data)
-                                         payment-method-data (p/get-payment-method user-store user-id (-> ctx :parameters :body :paymentMethodId))
-                                         amount (-> ctx :parameters :body :amount)
-                                         _ (log/error ">>>> payment-method-data::::" payment-method-data)
+                           (let [card-id (-> ctx :parameters :path :card-id)
+                                 amount (-> ctx :parameters :body :amount)]
+                             (->
+                              (d/let-flow [profile-data (util/user-profile-data ctx user-store (:sub-market app-config))
+                                           user-id (:_id (util/authenticated-user ctx))
+                                           card-data (:cards (p/find user-store user-id))
+                                           card-data-bis (first (filter #(= (:cardId %) card-id) card-data))
+                                           _ (log/error ">>>> card-data::::" card-data card-data-bis)
+                                           card-number (:cardNumber card-data-bis)
+                                           payment-method-data (p/get-payment-method user-store user-id (-> ctx :parameters :body :paymentMethodId))
 
-                                         payment-data (p/execute-payment
-                                                       payment-gateway
-                                                       (merge (select-keys profile-data [:emailAddress :lastName :firstName])
-                                                              {:amount amount
-                                                               :currency (:currency-code app-config)
-                                                               :cvn "123"
-                                                               :routingNumber (-> payment-method-data :routingNumber)
-                                                               :transactionId "12345"}))
-                                         _ (log/info ">>>> payment-data::::" payment-data)
-                                         mimi-card-data (p/load-card mimi card-number amount)
-                                         _ (log/info "mimi response" mimi-card-data)]
-                              (util/>200 ctx {:balance (:balance mimi-card-data)
-                                              :balanceDate (.toString (java.time.Instant/now))
-                                              :cardId card-id
-                                              :balanceCurrencyCode "ZA"
-                                              :cardNumber card-number}))
-                            (d/catch clojure.lang.ExceptionInfo
-                                (fn [exception-info]
-                                  (domain-exception ctx (ex-data exception-info))))))}}}
+                                           _ (log/error ">>>> payment-method-data::::" payment-method-data)
+
+                                           payment-data (p/execute-payment
+                                                         payment-gateway
+                                                         (merge (select-keys profile-data [:emailAddress :lastName :firstName])
+                                                                {:amount amount
+                                                                 :currency (:currency-code app-config)
+                                                                 :cvn "123"
+                                                                 :routingNumber (-> payment-method-data :routingNumber)
+                                                                 :transactionId "12345"}))
+                                           _ (log/info ">>>> payment-data::::" payment-data)
+                                           mimi-card-data (p/load-card mimi card-number amount)
+                                           _ (log/info "mimi response" mimi-card-data)]
+                                          (util/>200 ctx {:balance (:balance mimi-card-data)
+                                                          :balanceDate (.toString (java.time.Instant/now))
+                                                          :cardId card-id
+                                                          :balanceCurrencyCode "ZA"
+                                                          :cardNumber card-number}))
+                              (d/catch clojure.lang.ExceptionInfo
+                                  (fn [exception-info]
+                                    (domain-exception ctx (ex-data exception-info)))))))}}}
 
       (merge (util/common-resource :me/cards))))
 
@@ -210,15 +216,22 @@
                             :body s/Any}
                :response (fn [ctx]
                            (try
+
                              (util/validate* (-> schema :autoreload :post :paymentMethodId)  (-> ctx :parameters :body :paymentMethodId) [400 "Please supply a payment method id." "Missing payment method identifier attribute is required"])
-                             (util/validate* (-> schema :autoreload :post :autoReloadType)  (-> ctx :parameters :body :autoReloadType) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required. Type must be set to either “date” or “amount”."])
-                             (util/validate* (-> schema :autoreload :post :day)  (-> ctx :parameters :body :day) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required. Type must be set to either “date” or “amount”."](fn [v] (if (= "Date" (-> ctx :parameters :body :autoReloadType))
-                                                                                                                                                                                                                                                                           (let [v1 (util/read-string* (-> ctx :parameters :body :day))]
-                                                                                                                                                                                                                                                                             (and (> v1 0) (< v1 32)))
-                                                                                                                                                                                                                                                                           true)))
+
+                             (util/validate* (-> schema :autoreload :post :autoReloadType)  (-> ctx :parameters :body :autoReloadType) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])
+
+
+                             (util/validate* (-> schema :autoreload :post :day)  (-> ctx :parameters :body :day) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."](fn [v]
+                                                                                                                                                                                                                                                                               (if (= "Date" (-> ctx :parameters :body :autoReloadType))
+                                                                                                                                                                                                                                                                                   (let [v1  (-> ctx :parameters :body :day)]
+                                                                                                                                                                                                                                                                                     (and (> v1 0) (< v1 32)))
+                                                                                                                                                                                                                                                                                   true)))
+
                              (util/validate* (-> schema :autoreload :post :amount)  (-> ctx :parameters :body :amount) [400 "Please supply a trigger amount." "For auto reload of type “Amount”, a valid trigger amount attribute is required."])
+
                              (util/validate* (-> schema :autoreload :post :amount)  (-> ctx :parameters :body :amount) [400 "Please supply an auto reload amount." "Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-100"] (fn [v] (if (= "Amount" (-> ctx :parameters :body :autoReloadType))
-                                                                                                                                                                                                                                                                                 (let [v1 (util/read-string* (-> ctx :parameters :body :amount))]
+                                                                                                                                                                                                                                                                                 (let [v1  (-> ctx :parameters :body :amount)]
                                                                                                                                                                                                                                                                                    (and (> v1 9) (< v1 101)))
                                                                                                                                                                                                                                                                                  true)))
 
@@ -226,11 +239,10 @@
                              ;;       400	121034	Card resource not found to fulfill action.
                              (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                               payment-method-data (p/get-payment-method user-store (:_id auth-user) (-> ctx :parameters :body :paymentMethodId))
-                                              _ (log/error ">>>> payment-method-data::::" payment-method-data)
 
                                               auto-reload-data (p/add-auto-reload user-store (:_id auth-user)
                                                                                   payment-method-data
-                                                                                  (-> (-> ctx :parameters :body)
+                                                                                  (-> (select-keys (-> ctx :parameters :body) (keys AutoReloadMongo))
                                                                                       (assoc  :cardId (-> ctx :parameters :path :card-id))))]
 
                                              (util/>200 ctx {
@@ -248,14 +260,12 @@
                                  (d/catch clojure.lang.ExceptionInfo
                                      (fn [exception-info]
                                        (domain-exception ctx (ex-data exception-info)))))
-                             (catch clojure.lang.ExceptionInfo   e (do
-                                                                     (log/error "cagon to" (.getMessage e))
-                                                                     (domain-exception ctx (ex-data e)))))
+                             (catch clojure.lang.ExceptionInfo e (domain-exception ctx (ex-data e))))
 )}}}
 
       (merge (util/common-resource :me/cards))))
 
-
+;; TODO: needs testing in mobile app
 (defn autoreload-disable [user-store mimi payment-gateway app-config]
   (-> {:methods
        {:put {:parameters {:query {:access_token String}
@@ -271,7 +281,7 @@
 
       (merge (util/common-resource :me/cards))))
 
-(defn balance [user-store mimi]
+(defn balance [user-store mimi app-config]
   (-> {:methods
        {:get {:parameters {:query {:access_token String}
                            :path {:card-id String}}
@@ -282,6 +292,6 @@
                                            :cardNumber (:cardNumber card)
                                            :balance (:balance card)
                                            :balanceDate (.toString (java.time.Instant/now))
-                                           :balanceCurrencyCode "ZAR"})))
+                                           :balanceCurrencyCode (:currency-code app-config)})))
              }}}
    (merge (util/common-resource :me/cards))))

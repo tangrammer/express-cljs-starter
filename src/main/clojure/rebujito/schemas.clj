@@ -1,6 +1,6 @@
 (ns rebujito.schemas
   (:require [schema.core :as s]))
-;;              :_id
+;;:_id
 
 
 (def PaymentMethodMongo
@@ -22,14 +22,13 @@
   {
    :autoReloadId String
    :cardId String
-   :status (s/enum "active" "disabled")
+   :status (s/enum "active" "disabled" "enabled")
    :autoReloadType (s/enum "Date" "Amount")
-   :day String
-   :triggerAmount String
-   :amount String
+   :day s/Num
+   :triggerAmount s/Num
+   :amount s/Num
    :paymentMethodId String
    :active Boolean
-
    })
 
 (def PaymentMethodRes

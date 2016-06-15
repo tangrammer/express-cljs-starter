@@ -84,6 +84,28 @@
                       (print-body)
                       :status)))))
 
+    (testing ::card/balance
+      (let [api-id ::card/balance
+            path (bidi/path-for r api-id :card-id 123)]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+        (is (= 200(-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :content-type :json})
+                      (print-body)
+                      :status)))))
+
+    (testing ::card/balance-realtime
+      (let [api-id ::card/balance-realtime
+            path (bidi/path-for r api-id :card-id 123)]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+        (is (= 200(-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :content-type :json})
+                      (print-body)
+                      :status)))))
+
     )
 
 )

@@ -137,7 +137,7 @@
 
   (load-card [this card-number amount]
     (let [d* (d/deferred)]
-      (log/info "loading" card-number "with" amount)
+      (log/info "loading" card-number "with" amount (format "%s/account/%s/SGC001" base-url card-number))
       (d/future
         (try
           (let [{:keys [status body]}
@@ -149,7 +149,7 @@
                   :accept :json
                   :as :json}
                 )]
-            (log/info status body)
+            (log/info "load-card-mimi response " status body)
             (d/success! d* {:balance (:balance body)}))
 
           (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
@@ -159,14 +159,12 @@
                                                                        :status (:status ex)
                                                                        :body (:body ex)}))))
 
-          (catch Exception e (let [ex (ex-data e)]
-                               (d/error! d* (ex-info (str "error!!!" 500)
-                                                     {:type :mimi
-                                                      :status 500
-                                                      :body (.getMessage e)}))))
-          ))
-      d*)
-    )
+          (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
+                                                   {:type :mimi
+                                                    :status 500
+                                                    :body (.getMessage e)})))))
+      d*))
+
   (rewards [this card-number]
     (log/info "fetching rewards for" card-number)
     (let [d* (d/deferred)

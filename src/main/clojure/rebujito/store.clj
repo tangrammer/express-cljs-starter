@@ -43,7 +43,7 @@
                                :status 500
                                :body ["post-payment-method Error "]})))
       d*))
-  (get-payment-method [this]
+  #_(get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
   (post-token-resource-owner [this]
     (assoc mocks/post-token-resource-owner :target-environment :prod))
@@ -96,7 +96,7 @@
                                :status 500
                                :body ["post-payment-method Error "]})))
       d*))
-  (get-payment-method [this]
+  #_(get-payment-method [this]
     (mapv #(assoc % :target-environment :dev) mocks/get-payment-method))
   (post-token-resource-owner [this]
     (assoc mocks/post-token-resource-owner  :target-environment :dev))
