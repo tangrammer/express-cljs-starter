@@ -125,7 +125,7 @@
           card-type (-> req .-params .-cardType)
           amount (-> req .-body .-amount)]
 
-      (let [p1 (.issuePoints micros (clj->js {:account card-number :code card-type :amount amount}))
+      (let [p1 (.issuePoints starbucks-micros (clj->js {:account card-number :code card-type :amount amount}))
             p2 (.then p1 #(get-balances card-number))]
 
         (log/info "issuing" amount "points to" card-number ":" card-type)
