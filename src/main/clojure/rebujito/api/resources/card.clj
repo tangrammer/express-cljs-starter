@@ -35,12 +35,6 @@
 (defn get-next-card-number [counter-store]
   (str (p/increment! counter-store :digital-card-number)))
 
-(defn insert-card! [user-store user-id card]
-  (let [card-id (str (java.util.UUID/randomUUID))
-        card (assoc card :cardId card-id)]
-    (p/update-by-id! user-store user-id {$push {:cards card}})
-    card-id))
-
 (defn new-physical-card [data]
   (merge data {:digital false}))
 
@@ -120,7 +114,7 @@
                                          mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                   :customerId (id>mimi-id user-id)})
                                          card (new-physical-card {:cardNumber card-number})
-                                         card-id (insert-card! user-store user-id card)]
+                                         card-id (p/insert-card! user-store user-id card)]
                               (util/>200 ctx (merge mocks/card (dummy-card-data) (assoc card :cardId card-id))))
 
                             (d/catch clojure.lang.ExceptionInfo
@@ -140,7 +134,7 @@
                                          mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                   :customerId  (id>mimi-id user-id)})
                                          card (new-digital-card {:cardNumber card-number})
-                                         card-id (insert-card! user-store user-id card)]
+                                         card-id (p/insert-card! user-store user-id card)]
                               (util/>200 ctx (merge mocks/card (dummy-card-data) (assoc card :cardId card-id))))
 
                             (d/catch clojure.lang.ExceptionInfo
