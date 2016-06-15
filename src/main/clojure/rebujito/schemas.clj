@@ -28,6 +28,7 @@
    :triggerAmount String
    :amount String
    :paymentMethodId String
+   :active Boolean
 
    })
 

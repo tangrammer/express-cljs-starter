@@ -17,14 +17,28 @@
   (testing :add-auto-reload
     (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
       (is (nil? (:autoReload (p/find (:user-store *system*) user-id))))
-      (is (p/add-auto-reload (:user-store *system*) user-id (g/generate rs/AutoReloadMongo)))
-      (is (:autoReload (p/find (:user-store *system*) user-id)))))
+      (is (p/add-auto-reload (:user-store *system*) user-id {} (g/generate rs/AutoReloadMongo)))
+      (is (:autoReload (p/find (:user-store *system*) user-id)))
+      (is (:active (:autoReload (p/find (:user-store *system*) user-id))))))
 
   (testing :add-payment-method
     (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
       (is (nil? (:paymentMethods (p/find (:user-store *system*) user-id))))
       (is (p/add-new-payment-method (:user-store *system*) user-id (g/generate rs/PaymentMethodMongo)))
-      (is (:paymentMethods (p/find (:user-store *system*) user-id)))))
+      (is (:paymentMethods (p/find (:user-store *system*) user-id)))
+      (is (p/add-new-payment-method (:user-store *system*) user-id (g/generate rs/PaymentMethodMongo)))
+      (is (:paymentMethods (p/find (:user-store *system*) user-id)))
+      ))
+
+  (testing :disable-auto-reload
+    (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
+      (is (:autoReload (p/find (:user-store *system*) user-id)))
+      (is (p/disable-auto-reload (:user-store *system*) user-id))
+      (is (false? (:active (:autoReload (p/find (:user-store *system*) user-id)))))))
+
+
+
+
   )
 
 (deftest mongo-tests

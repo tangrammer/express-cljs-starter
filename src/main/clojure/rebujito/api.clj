@@ -108,6 +108,11 @@
                                        ["/autoreload" (-> (card/autoreload user-store mimi payment-gateway app-config)
                                                           (assoc :id ::card/autoreload
                                                                  :oauth {:post scopes/user}))]
+                                       ["/autoreload/disable" (-> (card/autoreload-disable user-store mimi payment-gateway app-config)
+                                                                  (assoc :id ::card/autoreload-disable
+                                                                         :oauth {:put scopes/user}))]
+
+
                                        ["/balance" (-> (card/balance user-store mimi)
                                                        (assoc :id ::card/balance
                                                               :oauth {:get scopes/user}))]

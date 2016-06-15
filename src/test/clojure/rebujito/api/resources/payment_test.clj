@@ -113,8 +113,9 @@
 
 
         (let [ar (:autoReload (p/find (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*) )))]
-          (println ">>>>>>>>autoReload" ar)
-          (is ar))
+          (is ar)
+          (is (:active ar))
+          )
 
         ;; validation amount with autoReloadType="Amount"
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -133,10 +134,25 @@
                                             :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-100"])))
+                     (json/parse-string true)) ["Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-100"]))))
+
+     (let [api-id ::card/autoreload-disable
+            r (-> *system* :docsite-router :routes)
+            path (bidi/path-for r api-id :card-id 123)]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+        (is (= 200(-> @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :content-type :json})
+                      (print-body)
+                      :status)))
 
 
-        )
+
+        (let [ar (:autoReload (p/find (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*) )))]
+          (is (false? (:active ar)))))
+
+
 
       )
     )

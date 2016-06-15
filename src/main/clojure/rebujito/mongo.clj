@@ -157,13 +157,15 @@
                                     :status 400
                                     :body (format "payment-method doens't exist: %s " payment-method-id)
                                     :message (format "payment-method doens't exist: %s " payment-method-id)})))))
-  (add-auto-reload [this oid data]
+  (add-auto-reload [this oid payment-data data]
     (try
       (let [uuid (str (UUID/randomUUID))
-            data (assoc data :autoReloadId  uuid)]
+            data (assoc data :autoReloadId  uuid
+                        :active true)]
         (log/debug ">>>>" oid data)
         (s/validate AutoReloadMongo data)
-        (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$set {:autoReload data}})]
+        (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                           {$set {:autoReload  data}})]
           (if (pos? (.getN t))
             {:autoReloadId uuid}
             (d/error-deferred (ex-info (str "Store ERROR!")
@@ -171,6 +173,32 @@
                                         :status 500
                                         :body "add-auto-reload transaction fails"
                                         :message "add-auto-reload transaction fails"
+                                        }))
+            )))
+
+      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
+                                                    {:type :store
+                                                     :status 500
+                                                     :body (.getMessage e)
+                                                     :message (.getMessage e)
+                                                     })))))
+
+  (disable-auto-reload [this oid ]
+    (try
+      (do
+        (log/debug ">>>>" oid)
+        (let [u (protocols/find this oid)
+              t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                           {$set {:autoReload (->
+                                               (:autoReload u)
+                                               (assoc :active false))}})]
+          (if (pos? (.getN t))
+            true
+            (d/error-deferred (ex-info (str "Store ERROR!")
+                                       {:type :store
+                                        :status 500
+                                        :body "disable-auto-reload transaction fails"
+                                        :message "disable-auto-reload transaction fails"
                                         }))
             )))
 

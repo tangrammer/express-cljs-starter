@@ -225,10 +225,9 @@
                                               _ (log/error ">>>> payment-method-data::::" payment-method-data)
 
                                               auto-reload-data (p/add-auto-reload user-store (:_id auth-user)
-
+                                                                                  payment-method-data
                                                                                   (-> (-> ctx :parameters :body)
-                                                                                      (assoc  :cardId (-> ctx :parameters :path :card-id))
-                                                                                      (dissoc :other)))]
+                                                                                      (assoc  :cardId (-> ctx :parameters :path :card-id))))]
 
                                              (util/>200 ctx {
                                                              :amount (-> ctx :parameters :body :amount)
@@ -249,6 +248,22 @@
                                                                      (log/error "cagon to" (.getMessage e))
                                                                      (domain-exception ctx (ex-data e)))))
 )}}}
+
+      (merge (util/common-resource :me/cards))))
+
+
+(defn autoreload-disable [user-store mimi payment-gateway app-config]
+  (-> {:methods
+       {:put {:parameters {:query {:access_token String}
+                            :path {:card-id String}}
+               :response (fn [ctx]
+                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                            disable-reload-data (p/disable-auto-reload user-store (:_id auth-user))]
+
+                                           (util/>200 ctx [disable-reload-data]))
+                               (d/catch clojure.lang.ExceptionInfo
+                                   (fn [exception-info]
+                                     (domain-exception ctx (ex-data exception-info))))))}}}
 
       (merge (util/common-resource :me/cards))))
 
