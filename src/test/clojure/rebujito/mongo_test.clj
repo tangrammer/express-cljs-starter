@@ -18,6 +18,8 @@
     (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
       (is (nil? (:autoReload (p/find (:user-store *system*) user-id))))
       (is (p/add-auto-reload (:user-store *system*) user-id {} (g/generate rs/AutoReloadMongo)))
+      (println (p/add-auto-reload (:user-store *system*) user-id {} (g/generate rs/AutoReloadMongo)))
+      (clojure.pprint/pprint (p/find (:user-store *system*) user-id))
       (is (:autoReload (p/find (:user-store *system*) user-id)))
       (is (:active (:autoReload (p/find (:user-store *system*) user-id))))))
 

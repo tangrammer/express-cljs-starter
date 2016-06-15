@@ -98,12 +98,12 @@
                                    :body-encoding "UTF-8"
                                    :body (json/generate-string
                                           {
-                                           :amount "15.00",
+                                           :amount 15.00,
                                            :autoReloadType "Amount",
-                                           :day "",
+                                           :day 0,
                                            :paymentMethodId @payment-method-id
                                            :status "active",
-                                           :triggerAmount "10.00",
+                                           :triggerAmount 10.00,
                                            }
 )
                                    :content-type :json})
@@ -123,12 +123,12 @@
                                             :body-encoding "UTF-8"
                                             :body (json/generate-string
                                                    {
-                                                    :amount "",
+                                                    :amount 0,
                                                     :autoReloadType "Amount",
-                                                    :day "",
+                                                    :day 0,
                                                     :paymentMethodId @payment-method-id
                                                     :status "active",
-                                                    :triggerAmount "10.00",
+                                                    :triggerAmount 10.00,
                                                     }
                                                    )
                                             :content-type :json})]
