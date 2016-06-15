@@ -9,7 +9,7 @@
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
-   [rebujito.api-test :refer (print-body)]
+   [rebujito.api-test :refer (print-body create-digital-card)]
    [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
@@ -26,55 +26,56 @@
 (deftest payment-resource
   (testing ::payment/methods
     (let [port (-> *system*  :webserver :port)
-          payment-method-id (atom "")]
+          payment-method-id (atom "")
+          card-id (create-digital-card)]
       (let [path (get-path ::payment/methods)]
-       ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-       (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                 {:throw-exceptions false
-                                  :body-encoding "UTF-8"
-                                  :content-type :json})
-                      (print-body)
-                      :status)))
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path card-id))
+        (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :content-type :json})
+                       (print-body)
+                       :status)))
 
 
 
-       (println path )
-       (let [{:keys [status body]}
-             (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                             {:throw-exceptions false
-                              :body-encoding "UTF-8"
-                              :body (json/generate-string
-                                     {
-                                      :billingAddressId "string"
-                                      :accountNumber "4000000000000002"
-                                      :default "false"
-                                      :nickname "string"
-                                      :paymentType "visa"
-                                      :cvn "12345"
-                                      :fullName "string"
-                                      :expirationMonth 11
-                                      :expirationYear 2018
-                                      }
-                                     )
-                              :content-type :json}))
-             body (-> (bs/to-string body)
-                      (json/parse-string true))
-             _          (is (= status 200))
+        (println path )
+        (let [{:keys [status body]}
+              (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                              {:throw-exceptions false
+                               :body-encoding "UTF-8"
+                               :body (json/generate-string
+                                      {
+                                       :billingAddressId "string"
+                                       :accountNumber "4000000000000002"
+                                       :default "false"
+                                       :nickname "string"
+                                       :paymentType "visa"
+                                       :cvn "12345"
+                                       :fullName "string"
+                                       :expirationMonth 11
+                                       :expirationYear 2018
+                                       }
+                                      )
+                               :content-type :json}))
+              body (-> (bs/to-string body)
+                       (json/parse-string true))
+              _          (is (= status 200))
 
-             ]
+              ]
 
 
-         (clojure.pprint/pprint body)
-         (is  (:paymentMethodId body))
-         (reset! payment-method-id (:paymentMethodId body))
-         ))
+          (clojure.pprint/pprint body)
+          (is  (:paymentMethodId body))
+          (reset! payment-method-id (:paymentMethodId body))
+          ))
 
       ;; ::card/reload
 
       (let [api-id ::card/reload
             r (-> *system* :docsite-router :routes)
-            path (bidi/path-for r api-id :card-id 123)]
-        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+            path (bidi/path-for r api-id :card-id card-id)]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path card-id))
         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                   {:throw-exceptions false
                                    :body-encoding "UTF-8"
@@ -85,14 +86,14 @@
                                            :sessionId ""
                                            })
                                    :content-type :json})
-;                      (print-body)
+                                        ;                      (print-body)
                       :status))))
 
 
-     (let [api-id ::card/autoreload
+      (let [api-id ::card/autoreload
             r (-> *system* :docsite-router :routes)
-            path (bidi/path-for r api-id :card-id 123)]
-        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+            path (bidi/path-for r api-id :card-id card-id)]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path card-id))
         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                   {:throw-exceptions false
                                    :body-encoding "UTF-8"
@@ -105,52 +106,54 @@
                                            :status "active",
                                            :triggerAmount 10.00,
                                            }
-)
+                                          )
                                    :content-type :json})
                       (print-body)
                       :status)))
 
 
 
-        (let [ar (:autoReload (p/find (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*) )))]
+        (let [ar (-> (p/find (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*) ))
+                     :cards first :autoReloadProfile
+                     )]
           (is ar)
           (is (:active ar))
           )
 
         ;; validation amount with autoReloadType="Amount"
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                           {:throw-exceptions false
-                                            :body-encoding "UTF-8"
-                                            :body (json/generate-string
-                                                   {
-                                                    :amount 0,
-                                                    :autoReloadType "Amount",
-                                                    :day 0,
-                                                    :paymentMethodId @payment-method-id
-                                                    :status "active",
-                                                    :triggerAmount 10.00,
-                                                    }
-                                                   )
-                                            :content-type :json})]
+                                                {:throw-exceptions false
+                                                 :body-encoding "UTF-8"
+                                                 :body (json/generate-string
+                                                        {
+                                                         :amount 0,
+                                                         :autoReloadType "Amount",
+                                                         :day 0,
+                                                         :paymentMethodId @payment-method-id
+                                                         :status "active",
+                                                         :triggerAmount 10.00,
+                                                         }
+                                                        )
+                                                 :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
                      (json/parse-string true)) ["Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-100"])))
 
         ;; validation amount with autoReloadType="Date"
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                           {:throw-exceptions false
-                                            :body-encoding "UTF-8"
-                                            :body (json/generate-string
-                                                   {
-                                                    :amount 0,
-                                                    :autoReloadType "Date",
-                                                    :day 0,
-                                                    :paymentMethodId @payment-method-id
-                                                    :status "active",
-                                                    :triggerAmount 0
-                                                    }
-                                                   )
-                                            :content-type :json})]
+                                                {:throw-exceptions false
+                                                 :body-encoding "UTF-8"
+                                                 :body (json/generate-string
+                                                        {
+                                                         :amount 0,
+                                                         :autoReloadType "Date",
+                                                         :day 0,
+                                                         :paymentMethodId @payment-method-id
+                                                         :status "active",
+                                                         :triggerAmount 0
+                                                         }
+                                                        )
+                                                 :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
                      (json/parse-string true)) ["Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])))
@@ -158,76 +161,78 @@
 
         ;; validation payment-method
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                           {:throw-exceptions false
-                                            :body-encoding "UTF-8"
-                                            :body (json/generate-string
-                                                   {
-                                                    :amount 0,
-                                                    :autoReloadType "Amount",
-                                                    :day 0,
-;                                                    :paymentMethodId @payment-method-id
-                                                    :status "active",
-                                                    :triggerAmount 10.00,
-                                                    }
-                                                   )
-                                            :content-type :json})]
+                                                {:throw-exceptions false
+                                                 :body-encoding "UTF-8"
+                                                 :body (json/generate-string
+                                                        {
+                                                         :amount 0,
+                                                         :autoReloadType "Amount",
+                                                         :day 0,
+                                        ;                                                    :paymentMethodId @payment-method-id
+                                                         :status "active",
+                                                         :triggerAmount 10.00,
+                                                         }
+                                                        )
+                                                 :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
                      (json/parse-string true)) ["Missing payment method identifier attribute is required"])))
 
         ;; validation reload-type
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                           {:throw-exceptions false
-                                            :body-encoding "UTF-8"
-                                            :body (json/generate-string
-                                                   {
-                                                    :amount 0,
-                                 ;                   :autoReloadType "Amount",
-                                                    :day 0,
-                                                    :paymentMethodId @payment-method-id
-                                                    :status "active",
-                                                    :triggerAmount 10.00,
-                                                    }
-                                                   )
-                                            :content-type :json})]
+                                                {:throw-exceptions false
+                                                 :body-encoding "UTF-8"
+                                                 :body (json/generate-string
+                                                        {
+                                                         :amount 0,
+                                        ;                   :autoReloadType "Amount",
+                                                         :day 0,
+                                                         :paymentMethodId @payment-method-id
+                                                         :status "active",
+                                                         :triggerAmount 10.00,
+                                                         }
+                                                        )
+                                                 :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
                      (json/parse-string true)) ["Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])))
         ;; validation proper reload-type
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                           {:throw-exceptions false
-                                            :body-encoding "UTF-8"
-                                            :body (json/generate-string
-                                                   {
-                                                    :amount 0,
-                                                    :autoReloadType "xxx",
-                                                    :day 0,
-                                                    :paymentMethodId @payment-method-id
-                                                    :status "active",
-                                                    :triggerAmount 10.00,
-                                                    }
-                                                   )
-                                            :content-type :json})]
+                                                {:throw-exceptions false
+                                                 :body-encoding "UTF-8"
+                                                 :body (json/generate-string
+                                                        {
+                                                         :amount 0,
+                                                         :autoReloadType "xxx",
+                                                         :day 0,
+                                                         :paymentMethodId @payment-method-id
+                                                         :status "active",
+                                                         :triggerAmount 10.00,
+                                                         }
+                                                        )
+                                                 :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
                      (json/parse-string true)) ["Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])))
 
         )
 
-     (let [api-id ::card/autoreload-disable
+      (let [api-id ::card/autoreload-disable
             r (-> *system* :docsite-router :routes)
-            path (bidi/path-for r api-id :card-id 123)]
-        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+            path (bidi/path-for r api-id :card-id card-id)]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path card-id))
         (is (= 200(-> @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                  {:throw-exceptions false
-                                   :body-encoding "UTF-8"
-                                   :content-type :json})
+                                 {:throw-exceptions false
+                                  :body-encoding "UTF-8"
+                                  :content-type :json})
                       (print-body)
                       :status)))
 
 
 
-        (let [ar (:autoReload (p/find (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*) )))]
+        (let [ar (-> (p/find (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*) ))
+                     :cards first :autoReloadProfile
+                     )]
           (is (false? (:active ar)))))
 
 

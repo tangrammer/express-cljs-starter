@@ -47,6 +47,10 @@
   (log/info ">>>>> ****"(-> c :body bs/to-string))
   c)
 
+
+(defn parse-body [c]
+  (-> c :body bs/to-string (json/parse-string true)))
+
 (defn oauth-login-data []
   (let [{:keys [key secret]} (api-config)]
    {:grant_type "password",
@@ -167,6 +171,16 @@
 
      )))
 
+(defn create-digital-card []
+  (let [port (-> *system*  :webserver :port)
+        path (get-path ::card/register-digital-cards)
+        res @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                        {:throw-exceptions false
+                         :body-encoding "UTF-8"
+                         :content-type :json})]
+    ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+    (is (= 200 (-> res :status)))
+    (:cardId (parse-body res))))
 
 (comment (http-c/post "https://api.swarmloyalty.co.za/mimi/starbucks/account"
               {:throw-exceptions false

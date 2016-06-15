@@ -29,6 +29,9 @@
    :amount s/Num
    :paymentMethodId String
    :active Boolean
+;  :disableUntilDate Date value that indicates when the status of the AutoReload profile will be set to active.
+; :stoppedDate Date value that indicates when the status of the AutoReload profile was set to disabled.
+
    })
 
 (def PaymentMethodRes

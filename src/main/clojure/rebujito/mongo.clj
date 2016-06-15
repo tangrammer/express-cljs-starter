@@ -162,11 +162,18 @@
       (let [uuid (str (UUID/randomUUID))
             data (assoc data
                         :autoReloadId  uuid
-                        :active true)]
+                        :active true)
+            user (protocols/find this oid)
+            cards (:cards user)
+            others (filter #(not= (:cardId %) (:cardId data)) cards)
+            card  (-> (first (filter #(= (:cardId %) (:cardId data)) cards))
+                      (assoc :autoReloadProfile data))
+            new-cards (conj others card)
+            ]
         (log/debug   ">>>>" oid data)
         (s/validate AutoReloadMongo data)
         (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
-                           {$set {:autoReload  data}})]
+                           {$set {:cards  new-cards}})]
           (if (pos? (.getN t))
             {:autoReloadId uuid}
             (d/error-deferred (ex-info (str "Store ERROR!")
@@ -184,15 +191,19 @@
                                                      :message (.getMessage e)
                                                      })))))
 
-  (disable-auto-reload [this oid ]
+  (disable-auto-reload [this oid card-id]
     (try
       (do
         (log/debug ">>>>" oid)
-        (let [u (protocols/find this oid)
+        (let [user (protocols/find this oid)
+              cards (:cards user)
+              others (filter #(not= (:cardId %) card-id) cards)
+              card  (-> (first (filter #(= (:cardId %) card-id) cards))
+                        (assoc-in [:autoReloadProfile :active] false))
+              new-cards (conj others card)
+
               t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
-                           {$set {:autoReload (->
-                                               (:autoReload u)
-                                               (assoc :active false))}})]
+                           {$set {:cards  new-cards}})]
           (if (pos? (.getN t))
             true
             (d/error-deferred (ex-info (str "Store ERROR!")
@@ -209,11 +220,11 @@
                                                      :body (.getMessage e)
                                                      :message (.getMessage e)
                                                      })))))
-(insert-card! [this user-id card]
-  (let [card-id (str (java.util.UUID/randomUUID))
-        card (assoc card :cardId card-id)]
-    (protocols/update-by-id! this user-id {$push {:cards card}})
-    card-id))
+  (insert-card! [this user-id card]
+    (let [card-id (str (java.util.UUID/randomUUID))
+          card (assoc card :cardId card-id)]
+      (protocols/update-by-id! this user-id {$push {:cards card}})
+      card-id))
 
   protocols/MutableStorage
   (generate-id [this data]

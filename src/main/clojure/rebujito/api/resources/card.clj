@@ -266,7 +266,7 @@
                             :path {:card-id String}}
                :response (fn [ctx]
                            (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                            disable-reload-data (p/disable-auto-reload user-store (:_id auth-user))]
+                                            disable-reload-data (p/disable-auto-reload user-store (:_id auth-user) (-> ctx :parameters :path :card-id) )]
 
                                            (util/>200 ctx [disable-reload-data]))
                                (d/catch clojure.lang.ExceptionInfo
