@@ -280,7 +280,7 @@
 
       (merge (util/common-resource :me/cards))))
 
-(defn balance [user-store mimi]
+(defn balance [user-store mimi app-config]
   (-> {:methods
        {:get {:parameters {:query {:access_token String}
                            :path {:card-id String}}
@@ -291,6 +291,6 @@
                                            :cardNumber (:cardNumber card)
                                            :balance (:balance card)
                                            :balanceDate (.toString (java.time.Instant/now))
-                                           :balanceCurrencyCode "ZAR"})))
+                                           :balanceCurrencyCode (:currency-code app-config)})))
              }}}
    (merge (util/common-resource :me/cards))))
