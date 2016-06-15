@@ -135,15 +135,36 @@
           ))
       d*))
 
-  (load-card [this card-id amount]
+  (load-card [this card-number amount]
     (let [d* (d/deferred)]
-      (if-let [mimi-card-data (assoc mocks/mimi-card :target-environment :prod) #_(p/load-card mimi {:cardId (-> card-data :cardNumber)
-                                      :amount (-> payment-data :amount)})]
-        (d/success! d* mimi-card-data)
-        (d/error! d* (ex-info (str "API MIMI ERROR")
-                              {:type :mimi
-                               :status 500
-                               :body ["An unexpected error occurred debiting the card."]})))
+      (log/info "loading" card-number "with" amount)
+      (d/future
+        (try
+          (let [{:keys [status body]}
+                (http-c/post (format "%s/account/%s/SGC001" base-url card-number)
+                 {:insecure? true
+                  :headers {"Authorization" (format "Bearer %s" token)}
+                  :form-params {:amount amount}
+                  :content-type :json
+                  :accept :json
+                  :as :json}
+                )]
+            (log/info status body)
+            (d/success! d* {:balance (:balance body)}))
+
+          (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
+                                                (log/error (.getMessage e))
+                                                (d/error! d* (ex-info (str "error!!!" (:status ex))
+                                                                      {:type :mimi
+                                                                       :status (:status ex)
+                                                                       :body (:body ex)}))))
+
+          (catch Exception e (let [ex (ex-data e)]
+                               (d/error! d* (ex-info (str "error!!!" 500)
+                                                     {:type :mimi
+                                                      :status 500
+                                                      :body (.getMessage e)}))))
+          ))
       d*)
     )
   (rewards [this card-number]
@@ -195,7 +216,7 @@
         (d/success! d* (-> [:success]
                            (conj :prod-mimi))))
       d*))
-  (load-card [this card-id amount]
+  (load-card [this card-number amount]
     (let [d* (d/deferred)]
       (if-let [mimi-card-data (assoc mocks/mimi-card :target-environment :dev) #_(p/load-card mimi {:cardId (-> card-data :cardNumber)
                                       :amount (-> payment-data :amount)})]
