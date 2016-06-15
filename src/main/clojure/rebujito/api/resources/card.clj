@@ -13,7 +13,9 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(def schema {:register-physical {:post {:cardNumber String}
+(def schema {:register-physical {:post {:cardNumber String
+                                        :pin String
+                                        :risk s/Any}
                                  :pin String}
              :reload {:post {:amount Long
                              :paymentMethodId String
