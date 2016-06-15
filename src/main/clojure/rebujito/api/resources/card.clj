@@ -167,6 +167,7 @@
 
    (merge (util/common-resource :me/cards))))
 
+;; TODO: needs to manage all the 400 posibiliites https://admin.swarmloyalty.co.za/sbdocs/docs/starbucks_api/card_management/reload_card.html
 (defn reload [user-store mimi payment-gateway app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
@@ -264,7 +265,7 @@
 
       (merge (util/common-resource :me/cards))))
 
-
+;; TODO: needs testing in mobile app
 (defn autoreload-disable [user-store mimi payment-gateway app-config]
   (-> {:methods
        {:put {:parameters {:query {:access_token String}
