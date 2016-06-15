@@ -7,7 +7,6 @@
   (get-deferred-payment-method-detail [this data])
   (put-payment-method-detail [this data])
   (post-payment-method [this data])
-  (get-payment-method [this])
   (post-token-resource-owner [this])
   (post-refresh-token [this]))
 

@@ -163,7 +163,7 @@
             data (assoc data
                         :autoReloadId  uuid
                         :active true)]
-        (log/debug  ">>>>" oid data)
+        (log/debug   ">>>>" oid data)
         (s/validate AutoReloadMongo data)
         (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
                            {$set {:autoReload  data}})]

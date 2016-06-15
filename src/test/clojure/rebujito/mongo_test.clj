@@ -13,12 +13,15 @@
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
 
 
+
+
 (deftest user-store
   (testing :add-auto-reload
     (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
       (is (nil? (:autoReload (p/find (:user-store *system*) user-id))))
       (is (p/add-auto-reload (:user-store *system*) user-id {} (g/generate rs/AutoReloadMongo)))
-      (println (p/add-auto-reload (:user-store *system*) user-id {} (g/generate rs/AutoReloadMongo)))
+  ;    (println (p/add-auto-reload (:user-store *system*) user-id {} (g/generate rs/AutoReloadMongo)))
+  ;    (println user-id)
       (clojure.pprint/pprint (p/find (:user-store *system*) user-id))
       (is (:autoReload (p/find (:user-store *system*) user-id)))
       (is (:active (:autoReload (p/find (:user-store *system*) user-id))))))
@@ -26,7 +29,9 @@
   (testing :add-payment-method
     (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
       (is (nil? (:paymentMethods (p/find (:user-store *system*) user-id))))
+
       (is (p/add-new-payment-method (:user-store *system*) user-id (g/generate rs/PaymentMethodMongo)))
+
       (is (:paymentMethods (p/find (:user-store *system*) user-id)))
       (is (p/add-new-payment-method (:user-store *system*) user-id (g/generate rs/PaymentMethodMongo)))
       (is (:paymentMethods (p/find (:user-store *system*) user-id)))

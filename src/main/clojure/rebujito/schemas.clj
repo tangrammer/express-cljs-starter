@@ -29,7 +29,6 @@
    :amount s/Num
    :paymentMethodId String
    :active Boolean
-   s/Keyword s/Any ;; TODO: keep until we figure out the fields that we need in mongo
    })
 
 (def PaymentMethodRes

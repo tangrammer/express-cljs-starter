@@ -4,6 +4,7 @@
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.protocols :as p]
+   [rebujito.schemas :refer (AutoReloadMongo)]
    [rebujito.api.util :as util]
    [rebujito.mongo :refer [id>mimi-id]]
    [rebujito.store.mocks :as mocks]
@@ -213,10 +214,10 @@
 
                              (util/validate* (-> schema :autoreload :post :paymentMethodId)  (-> ctx :parameters :body :paymentMethodId) [400 "Please supply a payment method id." "Missing payment method identifier attribute is required"])
 
-                             (util/validate* (-> schema :autoreload :post :autoReloadType)  (-> ctx :parameters :body :autoReloadType) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required. Type must be set to either “date” or “amount”."])
+                             (util/validate* (-> schema :autoreload :post :autoReloadType)  (-> ctx :parameters :body :autoReloadType) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])
 
 
-                             (util/validate* (-> schema :autoreload :post :day)  (-> ctx :parameters :body :day) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required******. Type must be set to either “date” or “amount”."](fn [v]
+                             (util/validate* (-> schema :autoreload :post :day)  (-> ctx :parameters :body :day) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."](fn [v]
                                                                                                                                                                                                                                                                                (if (= "Date" (-> ctx :parameters :body :autoReloadType))
                                                                                                                                                                                                                                                                                    (let [v1  (-> ctx :parameters :body :day)]
                                                                                                                                                                                                                                                                                      (and (> v1 0) (< v1 32)))
@@ -236,7 +237,7 @@
 
                                               auto-reload-data (p/add-auto-reload user-store (:_id auth-user)
                                                                                   payment-method-data
-                                                                                  (-> (-> ctx :parameters :body)
+                                                                                  (-> (select-keys (-> ctx :parameters :body) (keys AutoReloadMongo))
                                                                                       (assoc  :cardId (-> ctx :parameters :path :card-id))))]
 
                                              (util/>200 ctx {
