@@ -250,8 +250,7 @@
                                  (d/catch clojure.lang.ExceptionInfo
                                      (fn [exception-info]
                                        (domain-exception ctx (ex-data exception-info)))))
-                             (catch clojure.lang.ExceptionInfo e (domain-exception ctx (ex-data e))))
-)}}}
+                             (catch clojure.lang.ExceptionInfo e (domain-exception ctx (ex-data e)))))}}}
 
       (merge (util/common-resource :me/cards))))
 
@@ -264,7 +263,7 @@
                            (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                             disable-reload-data (p/disable-auto-reload user-store (:_id auth-user) (-> ctx :parameters :path :card-id) )]
 
-                                           (util/>200 ctx [disable-reload-data]))
+                                           (util/>200 ctx nil))
                                (d/catch clojure.lang.ExceptionInfo
                                    (fn [exception-info]
                                      (domain-exception ctx (ex-data exception-info))))))}}}
