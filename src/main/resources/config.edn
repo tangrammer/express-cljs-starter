@@ -26,7 +26,7 @@
          :user {:email "stephan+starbucks_za_01@mediamonks.com"
                 :pw "#myPassword01"}}
 
- :mongo {:host "localhost"
+ :mongo {:host #or [#env REBUJITO_MONGO_HOST "localhost"]
          :port 27017
          :database #profile {:default "rebujito"
                              :test "rebujito-test"}}
