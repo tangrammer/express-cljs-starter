@@ -79,7 +79,7 @@
   []
   (stop-system!))
 
-(defn dont-send-snagbug []
+(defn dont-send-bugsnag []
   (alter-var-root (var rebujito.api.util/send-bugsnag) (fn [d] false)))
 
 (defn go
@@ -88,7 +88,7 @@
   (log/set-config! (assoc log-levels/timbre-info-config
                           :level env/log-level))
   (init)
-  (dont-send-snagbug)
+  (dont-send-bugsnag)
   (start)
   (check-mobile-user)
   (check-monks-api-key system)
