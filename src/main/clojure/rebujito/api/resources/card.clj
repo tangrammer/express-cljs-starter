@@ -218,9 +218,9 @@
 
                              (util/validate* (-> schema :autoreload :post :amount)  (-> ctx :parameters :body :amount) [400 "Please supply a trigger amount." "For auto reload of type “Amount”, a valid trigger amount attribute is required."])
 
-                             (util/validate* (-> schema :autoreload :post :amount)  (-> ctx :parameters :body :amount) [400 "Please supply an auto reload amount." "Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-100"] (fn [v] (if (= "Amount" (-> ctx :parameters :body :autoReloadType))
+                             (util/validate* (-> schema :autoreload :post :amount)  (-> ctx :parameters :body :amount) [400 "Please supply an auto reload amount." "Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1000"] (fn [v] (if (= "Amount" (-> ctx :parameters :body :autoReloadType))
                                                                                                                                                                                                                                                                                  (let [v1  (-> ctx :parameters :body :amount)]
-                                                                                                                                                                                                                                                                                   (and (> v1 9) (< v1 101)))
+                                                                                                                                                                                                                                                                                   (and (> v1 9) (< v1 1001)))
                                                                                                                                                                                                                                                                                  true)))
 
                              ;; TODO: 400	121033	Invalid operation for card market.
