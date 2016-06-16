@@ -139,4 +139,5 @@
 
       (.catch p2
         (fn [err]
+          (log/error "issuing points" err)
           (.json (.status res 500) #js {:error (.toString err)}))))))
