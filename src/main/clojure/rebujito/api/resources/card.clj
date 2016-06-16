@@ -227,23 +227,24 @@
                              ;;       400	121034	Card resource not found to fulfill action.
                              (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                               payment-method-data (p/get-payment-method user-store (:_id auth-user) (-> ctx :parameters :body :paymentMethodId))
-
+                                              body (-> ctx :parameters :body)
+                                              body (if (= (-> body :status ) "enabled") (assoc body :status "active") body)
                                               auto-reload-data (p/add-auto-reload user-store (:_id auth-user)
                                                                                   payment-method-data
-                                                                                  (-> (select-keys (-> ctx :parameters :body) (keys AutoReloadMongo))
+                                                                                  (-> (select-keys body (keys AutoReloadMongo))
                                                                                       (assoc  :cardId (-> ctx :parameters :path :card-id))))]
 
                                              (util/>200 ctx {
-                                                             :amount (-> ctx :parameters :body :amount)
+                                                             :amount (-> body :amount)
                                                              :autoReloadId (:autoReloadId auto-reload-data)
-                                                             :autoReloadType (-> ctx :parameters :body :autoReloadType)
+                                                             :autoReloadType (-> body :autoReloadType)
                                                              :cardId (-> ctx :parameters :path :card-id)
-                                                             :day (-> ctx :parameters :body :day)
+                                                             :day (-> body :day)
                                                              :disableUntilDate nil
-                                                             :paymentMethodId (-> ctx :parameters :body :paymentMethodId)
-                                                             :status (-> ctx :parameters :body :status)
+                                                             :paymentMethodId (-> body :paymentMethodId)
+                                                             :status (-> body :status)
                                                              :stoppedDate nil
-                                                             :triggerAmount (-> ctx :parameters :body :triggerAmount)
+                                                             :triggerAmount (-> body :triggerAmount)
                                                              }))
                                  (d/catch clojure.lang.ExceptionInfo
                                      (fn [exception-info]
