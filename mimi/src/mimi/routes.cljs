@@ -141,3 +141,18 @@
         (fn [err]
           (log/error "issuing points" err)
           (.json (.status res 500) #js {:error (.toString err)}))))))
+
+(.get app "/mimi/starbucks/account/:cardNumber/transactions"
+  (fn
+    [req res]
+    "get transactional history"
+    (let [card-number (-> req .-params .-cardNumber)
+          p0 (.transactions micros card-number)]
+      (.then p0
+        (fn [result]
+          (.json res #js {:transactions result})))
+
+      (.catch p0
+        (fn [err]
+          (log/error "getting transactions" err)
+          (.json (.status res 500) #js {:error (.toString err)}))))))
