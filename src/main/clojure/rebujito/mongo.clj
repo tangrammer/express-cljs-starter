@@ -199,7 +199,8 @@
               cards (:cards user)
               others (filter #(not= (:cardId %) card-id) cards)
               card  (-> (first (filter #(= (:cardId %) card-id) cards))
-                        (assoc-in [:autoReloadProfile :active] false))
+                        (assoc-in [:autoReloadProfile :active] false)
+                        (assoc-in [:autoReloadProfile :status] "disabled"))
               new-cards (conj others card)
 
               t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
