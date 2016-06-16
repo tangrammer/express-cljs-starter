@@ -137,7 +137,7 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-100"])))
+                     (json/parse-string true)) ["Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1000"])))
 
         ;; validation amount with autoReloadType="Date"
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
