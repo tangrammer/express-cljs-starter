@@ -15,11 +15,12 @@
 
 (def schema {:register-physical {:post {:cardNumber String
                                         :pin String
-                                        :risk s/Any}
+;                                        :risk s/Any
+                                        }
                                  :pin String}
              :reload {:post {:amount Long
                              :paymentMethodId String
-                             (s/optional-key :risk) s/Any
+;                             (s/optional-key :risk) s/Any
                              (s/optional-key :acceptTerms) Boolean
                              (s/optional-key :expirationYear) Long
                              (s/optional-key :expirationMonth) Long

@@ -6,6 +6,7 @@
     [yada.yada :as yada]
     [taoensso.timbre :as log]
     [rebujito.scopes :as scopes]
+    [plumbing.core :refer (?>)]
     [rebujito.api
      [util :as util]]
     [rebujito.api.resources.content :as content]
@@ -148,15 +149,21 @@
    #(if (:swagger/tags %)
       (do  (log/debug ">> extending resource" (:swagger/tags %))
            (resource (let [data %
-                           data (if (:oauth data)
-                                  (-> data
-                                      (merge (util/access-control* authenticator authorizer (:oauth data)))
-                                      (dissoc :oauth))
-                                  data)
-                           data (if (:consumes data)
-                                  data
-                                  (assoc data :consumes   [{:media-type #{"application/json"}
-                                                            :charset "UTF-8"}]))]
+                           data (-> data
+                                    (?> (:oauth data)
+                                        (->
+                                         (merge (util/access-control* authenticator authorizer (:oauth data)))
+                                         (dissoc :oauth)))
+                                    (?> (nil? (:consumes data))
+                                        (assoc  :consumes [{:media-type #{"application/json"} :charset "UTF-8"}]))
+                                    (?> (-> data :methods :post :parameters :body)
+                                        (update-in [:methods :post :parameters :body] merge util/optional-risk))
+                                    (?> (-> data :methods :put :parameters :body)
+                                        (update-in [:methods :put :parameters :body] merge util/optional-risk))
+                                    (?> (-> data :methods :delete :parameters :body)
+                                        (update-in [:methods :delete :parameters :body] merge util/optional-risk))
+
+                                    )]
                        data)))
       %) d))
 
