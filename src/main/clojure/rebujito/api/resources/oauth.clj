@@ -18,7 +18,7 @@
                                                         :refresh_token String
                                                         :client_id String
                                                         :client_secret String
-                                                        (s/optional-key :risk) s/Any
+
                                                         (s/optional-key :scope) String
                                                         (s/optional-key :timestamp) String}
                                                        "token-refresh-token")
@@ -27,14 +27,14 @@
                                                         :client_secret String
                                                         :username String
                                                         :password String
-                                                        (s/optional-key :risk) s/Any
+
                                                         (s/optional-key :scope) String
                                                         (s/optional-key :timestamp) String}
                                                        "token-resource-owner")
              :token-client-credentials (s/schema-with-name {:grant_type String
                                                             :client_id String
                                                             :client_secret String
-                                                            (s/optional-key :risk) s/Any
+
                                                             (s/optional-key :scope) String
                                                             (s/optional-key :timestamp) String}
                                                            "token-client-credentials")})
@@ -119,11 +119,11 @@
                                     (s/optional-key :platform) String}
                             :body (s/conditional
                                    #(check-value % :grant_type "client_credentials")
-                                   (-> schema :token-client-credentials)
+                                   (assoc (-> schema :token-client-credentials) s/Keyword s/Any)
                                    #(check-value % :grant_type "password")
-                                   (-> schema :token-resource-owner)
+                                   (assoc (-> schema :token-resource-owner) s/Keyword s/Any)
                                    #(check-value % :grant_type "refresh_token")
-                                   (-> schema :token-refresh-token))}
+                                   (assoc (-> schema :token-refresh-token) s/Keyword s/Any))}
 
                :consumes [{:media-type #{"application/x-www-form-urlencoded"}
                            :charset "UTF-8"}]

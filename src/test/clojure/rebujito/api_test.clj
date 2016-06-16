@@ -182,6 +182,36 @@
     (is (= 200 (-> res :status)))
     (:cardId (parse-body res))))
 
+
+(deftest testing-nested-params
+  (testing "risk[a][b] nested params ..."
+    (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+          sig (new-sig)
+          access_token (atom "")]
+
+      (let [api-id ::oauth/token-resource-owner
+            path (bidi/path-for r api-id)]
+
+        (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                {:throw-exceptions false
+                                 :form-params
+                                 (json/parse-string "{\"grant_type\":\"password\",\"client_id\":\"574c95bfe986e3fdfc531a3e\",\"client_secret\":\"66ae769048067c5a06029fb5ae66fb439738c76cf3f7a9776659c0142d0e2d0f\",\"username\":\"stephan+starbucks_za_01@mediamonks.com\",\"password\":\"#myPassword01\", \"risk[reputation][IPAddress]\":\"true\", \"risk[reputation][deviceFingerprint]\":\"true\", \"risk[platform]\":\"true\"}" true)
+                                 :body-encoding "UTF-8"
+                                 :content-type :x-www-form-urlencoded})
+                  body (-> r :body bs/to-string (json/parse-string true))
+                  ;;                  _ (println body)
+
+                  ]
+              (reset! access_token (:access_token body))
+              ;;            (println "\n >>>> password access_token "@access_token "\n")
+              r)
+            :status)
+
+        )
+      @access_token))
+  )
+
 (comment (http-c/post "https://api.swarmloyalty.co.za/mimi/starbucks/account"
               {:throw-exceptions false
                :insecure? true

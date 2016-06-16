@@ -48,7 +48,7 @@
     (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
       (is (nil? (:paymentMethods (p/find (:user-store *system*) user-id))))
 
-      (is (p/add-new-payment-method (:user-store *system*) user-id (g/generate rs/PaymentMethodMongo)))
+      (is (p/add-new-payment-method (:user-store *system*) user-id {:expirationYear 25, :paymentMethodId "X", :default "0o*%Y", :paymentType "", :accountNumberLastFour "'7BG\\T0a}M", :nickName [], :routingNumber "M\\T>vm)=8", :expirationMonth -351}))
 
       (is (:paymentMethods (p/find (:user-store *system*) user-id)))
       (is (p/add-new-payment-method (:user-store *system*) user-id (g/generate rs/PaymentMethodMongo)))
