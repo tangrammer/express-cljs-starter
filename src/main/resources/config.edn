@@ -17,8 +17,7 @@
  :auth {:secret-key #or [#env REBUJITO_AUTH_SECRET_KEY #profile {:prod nil
                                                                  :default "fake-key"}]}
 
- :mimi {:base-url "http://localhost:3030/mimi/starbucks"
- ; :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
+ :mimi {:base-url "https://api.swarmloyalty.co.za/mimi/starbucks"
         :token #or [#env REBUJITO_MIMI_TOKEN #profile {:prod nil
                                                        :default "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwbGF5ZXIiOiJyZWJ1aml0byIsImlhdCI6MTQ2MzY0NDUzN30.BmEuE_A993H2SYe9yEoIv7I81a_ZTsmZ-gAhQWsWBBY"}]}
 

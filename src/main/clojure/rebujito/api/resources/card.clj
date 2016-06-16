@@ -46,7 +46,7 @@
    :cardCurrency "ZAR"
    :nickname "My Card"
    :type "Standard"
-   :actions ["Reload" "AutoReload"]
+   :actions ["Reload"]
    :submarketCode "ZA"
    :balanceDate (.toString (java.time.Instant/now))
    :balanceCurrencyCode "ZAR"})

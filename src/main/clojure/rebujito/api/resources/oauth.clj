@@ -18,7 +18,7 @@
                                                         :refresh_token String
                                                         :client_id String
                                                         :client_secret String
-                                                        ; (s/optional-key :risk) s/Any
+                                                        (s/optional-key :risk) s/Any
                                                         (s/optional-key :scope) String
                                                         (s/optional-key :timestamp) String}
                                                        "token-refresh-token")
@@ -27,14 +27,14 @@
                                                         :client_secret String
                                                         :username String
                                                         :password String
-                                                        ; (s/optional-key :risk) s/Any
+                                                        (s/optional-key :risk) s/Any
                                                         (s/optional-key :scope) String
                                                         (s/optional-key :timestamp) String}
                                                        "token-resource-owner")
              :token-client-credentials (s/schema-with-name {:grant_type String
                                                             :client_id String
                                                             :client_secret String
-                                                            ; (s/optional-key :risk) s/Any
+                                                            (s/optional-key :risk) s/Any
                                                             (s/optional-key :scope) String
                                                             (s/optional-key :timestamp) String}
                                                            "token-client-credentials")})
