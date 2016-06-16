@@ -91,8 +91,9 @@
                                            :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
                                                                :grant_type "client_credentials"
                                                                :client_id (:key (api-config))
-                                                               :client_secret (:secret (api-config)))
-                                                               :risk {}
+                                                               :client_secret (:secret (api-config))
+                                                               :risk {})
+
                                            :body-encoding "UTF-8"
                                            :content-type :application/x-www-form-urlencoded})
                             body (-> r :body bs/to-string (json/parse-string true))
