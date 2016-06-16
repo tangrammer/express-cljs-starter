@@ -123,21 +123,20 @@
     "issue points into a card number and type"
     (let [card-number (-> req .-params .-cardNumber)
           card-type (-> req .-params .-cardType)
-          amount (-> req .-body .-amount)]
+          amount (-> req .-body .-amount)
+          p1 (.issuePoints starbucks-micros (clj->js {:account card-number :code card-type :amount amount}))
+          p2 (.then p1 #(get-balances card-number))]
 
-      (let [p1 (.issuePoints starbucks-micros (clj->js {:account card-number :code card-type :amount amount}))
-            p2 (.then p1 #(get-balances card-number))]
+      (log/info "issuing" amount "points to" card-number ":" card-type)
 
-        (log/info "issuing" amount "points to" card-number ":" card-type)
+      (.then p2
+        (fn [result]
+          (let [result (js->clj result :keywordize-keys true)
+                programs (:programs result)
+                program (first (filter #(= (:code %) card-type) programs))]
+            (log/debug "response" #js {:balance (:balance program)})
+            (.json res #js {:balance (:balance program)}))))
 
-        (.then p2
-          (fn [result]
-            (let [result (js->clj result :keywordize-keys true)
-                  programs (:programs result)
-                  program (first (filter #(= (:code %) card-type) programs))]
-              (log/debug "response" #js {:balance (:balance program)})
-              (.json res #js {:balance (:balance program)}))))
-
-        (.catch p2
-          (fn [err]
-            (.json (.status res 500) #js {:error (.toString err)})))))))
+      (.catch p2
+        (fn [err]
+          (.json (.status res 500) #js {:error (.toString err)}))))))
