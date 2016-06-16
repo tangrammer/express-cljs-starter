@@ -72,9 +72,9 @@
 (defn me-rewards [store mimi user-store]
  (-> {:methods
       {:get {:parameters {:query {:access_token String
+                                  (s/optional-key :locale) String
                                   (s/optional-key :select) String
-                                  (s/optional-key :ignore) String}
-                          :body s/Any}
+                                  (s/optional-key :ignore) String}}
              :response (fn [ctx]
                          (-> (d/let-flow [user-id (:_id (authenticated-user ctx))
                                           card-number (-> (p/find user-store user-id) :cards first :cardNumber)
