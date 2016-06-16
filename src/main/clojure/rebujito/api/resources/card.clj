@@ -249,8 +249,7 @@
                                  (d/catch clojure.lang.ExceptionInfo
                                      (fn [exception-info]
                                        (domain-exception ctx (ex-data exception-info)))))
-                             (catch clojure.lang.ExceptionInfo e (domain-exception ctx (ex-data e))))
-)}}}
+                             (catch clojure.lang.ExceptionInfo e (domain-exception ctx (ex-data e)))))}}}
 
       (merge (util/common-resource :me/cards))))
 
