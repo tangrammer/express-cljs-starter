@@ -50,7 +50,7 @@
      :pointsNeededForNextLevel (-> rewards-response :tier :pointsUntilNextTier)
      :nextLevel (if (= tier-name "Green") "Gold" nil)
      :pointsNeededForNextFreeReward (points-needed-for-next-reward points-balance)
-     :reevaluationDate (t/one-year-from tier-date)
+     :reevaluationDate (str (t/one-year-from tier-date) "T23:59:59.999Z")
      :pointsNeededForReevaluation (points-needed-for-reevaluation points-balance)
      :pointsEarnedTowardNextFreeReward (points-earned-toward-next-free-reward points-balance)
 
