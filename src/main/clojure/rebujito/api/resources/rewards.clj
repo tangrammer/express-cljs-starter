@@ -42,8 +42,8 @@
 
 (defn translate-mimi-rewards [rewards-response]
   (let [tier-name (-> rewards-response :tier :name)
-        tier-date (-> rewards-response :tier :date)
-        points-balance (-> rewards-response :tier :balance)]
+        tier-date (-> rewards-response :tier :date (or t/today))
+        points-balance (-> rewards-response :tier :balance (or 0))]
     {:currentLevel tier-name
      :dateRetrieved (.toString (java.time.Instant/now))
      :pointsTotal points-balance
@@ -77,8 +77,8 @@
                                   (s/optional-key :ignore) String}}
              :response (fn [ctx]
                          (-> (d/let-flow [user-id (:_id (authenticated-user ctx))
-                                          card-number (-> (p/find user-store user-id) :cards first :cardNumber)
-                                          card-number "9623570900048"
+                                          user-data (p/find user-store user-id)
+                                          card-number (-> user-data :cards first :cardNumber)
                                           rewards (rewards-response mimi card-number)]
                                          (>200 ctx rewards))
                              (d/catch clojure.lang.ExceptionInfo

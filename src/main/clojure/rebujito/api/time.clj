@@ -33,3 +33,6 @@
    (t/plus
      (f/parse iso-date-format date)
      (t/years 1))))
+
+(defn today []
+  (f/unparse iso-date-format (t/now)))
