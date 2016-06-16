@@ -54,6 +54,8 @@
    :region String
    })
 
+(def STORED_VALUE_PROGRAM "Starbucks Card")
+
 (defrecord ProdMimi [base-url token]
   component/Lifecycle
   (start [this]
@@ -187,10 +189,17 @@
                                                                     {:type :mimi
                                                                       :status (:status ex)
                                                                       :body (:body ex)}))))
-        (catch Exception e (d/error! d* e))
+          (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
+                                                   {:type :mimi
+                                                    :status 500
+                                                    :body (.getMessage e)})))
         ))
       d*))
- )
+
+  (get-points [this card-number]
+    (d/let-flow [rewards (protocols/rewards this card-number)
+                 program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
+                (:balance program))))
 
 (defrecord MockMimi [base-url token]
   component/Lifecycle
@@ -250,9 +259,16 @@
                                                                       {:type :mimi
                                                                         :status (:status ex)
                                                                         :body (:body ex)}))))
-          (catch Exception e (d/error! d* e))
+          (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
+                                                   {:type :mimi
+                                                    :status 500
+                                                    :body (.getMessage e)})))
           ))
       d*))
+  (get-points [this card-number]
+    (d/let-flow [rewards (protocols/rewards this card-number)
+                 program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
+                (:balance program)))
   )
 
 (defn new-prod-mimi [mimi-config]

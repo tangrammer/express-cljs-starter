@@ -21,6 +21,7 @@
   (register-physical-card [this data])
   (load-card [this card-number amount])
   (rewards [this data])
+  (get-points [this card-number])
   )
 
 (defprotocol Encrypter
