@@ -92,6 +92,7 @@
                                                                :grant_type "client_credentials"
                                                                :client_id (:key (api-config))
                                                                :client_secret (:secret (api-config)))
+                                                               :risk {}
                                            :body-encoding "UTF-8"
                                            :content-type :application/x-www-form-urlencoded})
                             body (-> r :body bs/to-string (json/parse-string true))
@@ -124,6 +125,7 @@
                                        :client_secret (:secret (api-config))
                                        :username username
                                        :password password
+                                       :risk {}
                                        )
                                 :body-encoding "UTF-8"
                                 :content-type :x-www-form-urlencoded})

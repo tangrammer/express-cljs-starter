@@ -76,6 +76,7 @@
                                             :client_secret (:secret (api-config))
                                             :username (:emailAddress account-data)
                                             :password (:password account-data)
+                                            :risk {}
                                             )
                                      :body-encoding "UTF-8"
                                      :content-type :x-www-form-urlencoded})
@@ -98,7 +99,8 @@
                                              :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
                                                                  :grant_type "client_credentials"
                                                                  :client_id (:key (api-config))
-                                                                 :client_secret (:secret (api-config)))
+                                                                 :client_secret (:secret (api-config))
+                                                                 :risk {})
                                              :body-encoding "UTF-8"
                                              :content-type :application/x-www-form-urlencoded})
                               body (-> r :body bs/to-string (json/parse-string true))
@@ -115,7 +117,8 @@
                                              :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
                                                                  :grant_type "client_credentials"
                                                                  :client_id "xxx"
-                                                                 :client_secret "xxx")
+                                                                 :client_secret "xxx"
+                                                                 :risk {})
                                              :body-encoding "UTF-8"
                                              :content-type :application/x-www-form-urlencoded})
                               body (-> r :body bs/to-string (json/parse-string true))]
@@ -129,7 +132,8 @@
                                              :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
                                                                  :grant_type "client_credentials"
                                                                  :client_id (:key (api-config))
-                                                                 :client_secret "xxx")
+                                                                 :client_secret "xxx"
+                                                                 :risk {})
                                              :body-encoding "UTF-8"
                                              :content-type :application/x-www-form-urlencoded})
                               body (-> r :body bs/to-string (json/parse-string true))]
@@ -147,6 +151,7 @@
                                                     :client_id (:key (api-config))
                                                     :client_secret (:secret (api-config))
                                                     :refresh_token @refresh_token
+                                                    :risk {}
                                                     )
                                              :body-encoding "UTF-8"
                                              :content-type :application/x-www-form-urlencoded})
@@ -184,6 +189,7 @@
                                                     :client_id (:key (api-config))
                                                     :client_secret (:secret (api-config))
                                                     :refresh_token @refresh_token
+                                                    :risk {}
                                                     )
                                              :body-encoding "UTF-8"
                                              :content-type :application/x-www-form-urlencoded})
