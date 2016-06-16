@@ -258,7 +258,7 @@
 (defn autoreload-disable [user-store mimi payment-gateway app-config]
   (-> {:methods
        {:put {:parameters {:query {:access_token String}
-                            :path {:card-id String}}
+                           :path {:card-id String}}
                :response (fn [ctx]
                            (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                             disable-reload-data (p/disable-auto-reload user-store (:_id auth-user) (-> ctx :parameters :path :card-id) )]
