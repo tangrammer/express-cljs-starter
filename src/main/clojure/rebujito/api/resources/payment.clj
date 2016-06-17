@@ -111,18 +111,26 @@
 
 
 
+(defn adapt-mongo-to-spec [payment-method]
+  (-> payment-method
+      (assoc :accountNumber (:routingNumber payment-method)
+             :nickname (:nickName payment-method)
+             :type (:paymentType payment-method))
+      (dissoc :paymentType :nickName :routingNumber)))
+
 (defn methods [user-store payment-gateway]
   (-> {:methods
        {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                           payment-methods (:paymentMethods (p/find user-store (:_id auth-user)))]
+                                           payment-methods (->> (or (:paymentMethods (p/find user-store (:_id auth-user)))
+                                                                   [])
+                                                                (map adapt-mongo-to-spec))]
                                           (log/info  "paymentMethods GET" payment-methods)
                                           (util/>200 ctx payment-methods))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
-                                    (domain-exception ctx (ex-data exception-info))))
-                              ))}
+                                    (domain-exception ctx (ex-data exception-info))))))}
 
         :post {:parameters {:query {:access_token String}
                             :body (-> schema :methods :post)}
