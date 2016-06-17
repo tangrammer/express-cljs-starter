@@ -125,6 +125,36 @@
   (stop [this] this)
 
   protocols/UserStore
+  (update-payment-method [this oid payment-method]
+
+    (try
+      (do
+        (log/debug ">>>>" oid)
+        (let [user (protocols/find this oid)
+              p (:paymentMethods user)
+              p-others (filter #(not= (:paymentMethodId %) (:paymentMethodId payment-method)) p)
+
+              new-p (conj p-others payment-method)
+
+              t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                           {$set {:paymentMethods  new-p}})]
+          (if (pos? (.getN t))
+            payment-method
+            (d/error-deferred (ex-info (str "Store ERROR!")
+                                       {:type :store
+                                        :status 500
+                                        :body "update-payment-method transaction fails"
+                                        :message "update-payment-method transaction fails"
+                                        }))
+            )))
+
+      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
+                                                    {:type :store
+                                                     :status 500
+                                                     :body (.getMessage e)
+                                                     :message (.getMessage e)
+                                                     }))))
+    )
   (remove-payment-method [this oid payment-method]
     (try
       (log/debug ">>>>" oid payment-method)

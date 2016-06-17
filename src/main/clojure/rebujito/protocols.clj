@@ -4,7 +4,7 @@
 (defprotocol Store
   (get-cards [this])
   (get-profile [this])
-  (put-payment-method-detail [this data])
+
   (post-payment-method [this data])
   (post-token-resource-owner [this])
   (post-refresh-token [this]))
@@ -62,6 +62,7 @@
   (add-new-payment-method [this oid p])
   (get-payment-method [this oid payment-method-id])
   (remove-payment-method [this oid payment-method])
+  (update-payment-method [this oid payment-method])
   (get-payment-methods [this oid])
   (add-auto-reload [this oid payment-data data])
   (disable-auto-reload [this oid card-id])

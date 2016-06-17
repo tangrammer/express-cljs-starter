@@ -26,6 +26,8 @@
                               :expirationYear Long}}
              :method-detail {:put {:expirationYear Long
                                    :billingAddressId String
+                                   (s/optional-key :paymentMethodId) String
+                                   (s/optional-key :accountNumberLastFour) String
                                    :accountNumber String
                                    :default Boolean
                                    :nickname String
@@ -84,25 +86,24 @@
                        (let [request (get-in ctx [:parameters :body])]
                          (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                           payment-method (p/get-payment-method user-store (:_id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
-                                          card-token-res @(p/create-card-token payment-gateway
-                                                                               {:cardNumber (-> request :accountNumber)
-                                                                                :expirationMonth (-> request :expirationMonth)
-                                                                                :expirationYear (-> request :expirationYear)
-                                                                                :cvn (-> request :cvn)})
-                                          card-token (:card-token card-token-res)
-                                          updated-payment-method (p/put-payment-method-detail store
+                                          card-token-res (p/create-card-token payment-gateway
+                                                                                           {:cardNumber (-> request :accountNumber)
+                                                                                            :expirationMonth (-> request :expirationMonth)
+                                                                                            :expirationYear (-> request :expirationYear)
+                                                                                            :cvn (-> request :cvn)})
+                                          updated-payment-method (p/update-payment-method user-store (:_id auth-user)
                                                                                               {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])
-                                                                                               :nickName (-> ctx :nickName)
-                                                                                               :paymentType (-> ctx :paymentType)
-                                                                                               :fullName (-> ctx :fullName)
-                                                                                               :default (-> ctx :default)
+                                                                                               :nickName (-> request :nickName)
+                                                                                               :paymentType (-> request :paymentType)
+                                                                                               :fullName (-> request :fullName)
+                                                                                               :default (-> request :default)
                                                                                                :accountNumber "****************"
                                                                                                :accountNumberLastFour "****"
-                                                                                               :cvn (-> ctx :cvn)
-                                                                                               :expirationMonth (-> ctx :expirationMonth)
-                                                                                               :expirationYear (-> ctx :expirationYear)
-                                                                                               :billingAddressId (-> ctx :billingAddressId)
-                                                                                               :routingNumber card-token
+                                                                                               :cvn (-> request :cvn)
+                                                                                               :expirationMonth (-> request :expirationMonth)
+                                                                                               :expirationYear (-> request :expirationYear)
+                                                                                               :billingAddressId (-> request :billingAddressId)
+                                                                                               :routingNumber (:card-token card-token-res)
                                                                                                })
                                           res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})]
                                          (util/>200 ctx {
