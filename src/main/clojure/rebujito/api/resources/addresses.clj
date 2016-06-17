@@ -1,5 +1,6 @@
 (ns rebujito.api.resources.addresses
   (:require
+   [taoensso.timbre :as log]
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
    [rebujito.api.util :as util]
@@ -30,6 +31,7 @@
                            (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                             address (-> ctx :body)
                                             address-id (p/insert-address user-store (:_id auth-user) address)]
+                                           (log/info ">====>>>"(str "/me/addresses/" address-id))
                                 (-> ctx :response (assoc :status 201)
                                     ; TODO use ::resource/addresses to generate :location
                                     (assoc-in [:headers :location] (str "/me/addresses/" address-id))))
