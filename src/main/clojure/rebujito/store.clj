@@ -49,15 +49,7 @@
     (assoc mocks/post-token-resource-owner :target-environment :prod))
   (post-refresh-token [this]
     (assoc mocks/post-refresh-token :target-environment :prod))
-  (get-profile [this]
-    (let [d* (d/deferred)]
-      (if-let [profile-data (assoc mocks/me-profile :target-environment :prod)]
-        (d/success! d* profile-data)
-        (d/error! d* (ex-info (str "STORE ERROR!")
-                              {:type :store
-                               :status 404
-                               :body  ["Profile Not Found"]})))
-      d*)))
+  )
 
 (defrecord MockStore []
   component/Lifecycle
@@ -102,15 +94,7 @@
     (assoc mocks/post-token-resource-owner  :target-environment :dev))
   (post-refresh-token [this]
     (assoc mocks/post-refresh-token :target-environment :dev))
-  (get-profile [this]
-    (let [d* (d/deferred)]
-      (if-let [profile-data (assoc mocks/me-profile :target-environment :dev)]
-        (d/success! d* profile-data)
-        (d/error! d* (ex-info (str "STORE ERROR!")
-                              {:type :store
-                               :status 404
-                               :body  ["Profile Not Found"]})))
-      d*)))
+  )
 
 (defn new-prod-store []
   (map->ProdStore {}))
