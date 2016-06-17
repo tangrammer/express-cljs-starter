@@ -42,7 +42,7 @@
 
 (defn translate-mimi-rewards [rewards-response]
   (let [tier-name (-> rewards-response :tier :name)
-        tier-date (-> rewards-response :tier :date (or t/today))
+        tier-date (-> rewards-response :tier :date (or (t/today)))
         points-balance (-> rewards-response :tier :balance (or 0))]
     {:currentLevel tier-name
      :dateRetrieved (.toString (java.time.Instant/now))
