@@ -64,10 +64,15 @@
      :delete {:parameters {:query {:access_token String}
                            :path {:payment-method-id String}}
               :response (fn [ctx]
+                          ;; TODO Review this logic
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                            payment-method (p/get-payment-method user-store (:_id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
-                                           res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})]
-                                       (util/>200 ctx ["OK" "Success"]))
+                                           res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})
+                                           res-mongo (when res-delete
+                                                       (p/remove-payment-method user-store (:_id auth-user) payment-method))]
+
+
+                                       (util/>200 ctx ["OK" "Success" res-mongo]))
                               (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]
                                    (domain-exception ctx (ex-data exception-info))))))}

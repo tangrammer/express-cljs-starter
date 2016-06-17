@@ -41,7 +41,7 @@
         (is (= [] body)))
 
       (let [path (get-path ::payment/methods)
-            {:keys [status body]}
+            {:keys [status body] :as all}
             (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                             {:throw-exceptions false
                              :body-encoding "UTF-8"
@@ -59,10 +59,11 @@
                                      }
                                     )
                              :content-type :json}))
+                    _ (is (= status 200))
             body (-> (bs/to-string body)
                      (json/parse-string true))]
 
-        (is (= status 200))
+
         (is  (:paymentMethodId body))
         (reset! payment-method-id (:paymentMethodId body))
         )
@@ -118,9 +119,65 @@
                         :isTemporary Boolean
                         :bankName (s/maybe String)}
                        body)
-          (catch Exception e (is (nil? e)))
+          (catch Exception e (is (nil? e)))))
+
+      ;; delete
+      (let [path (get-path ::payment/methods)
+            {:keys [status body]}
+            (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                            {:throw-exceptions false
+                             :body-encoding "UTF-8"
+                             :body (json/generate-string
+                                    {
+                                     :billingAddressId "string"
+                                     :accountNumber "4000000000000003"
+                                     :default "false"
+                                     :nickname "string"
+                                     :paymentType "visa"
+                                     :cvn "12345"
+                                     :fullName "string"
+                                     :expirationMonth 11
+                                     :expirationYear 2018
+                                     }
+                                    )
+                             :content-type :json}))
+            body (-> (bs/to-string body)
+                     (json/parse-string true))]
+
+        (is (= status 200))
+        (is  (:paymentMethodId body))
+
+        (let [path (bidi/path-for (-> *system* :docsite-router :routes) ::payment/method-detail :payment-method-id (:paymentMethodId body))
+              http-response @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path  *user-access-token*)
+                                          {:throw-exceptions false
+                                           :body-encoding "UTF-8"
+                                           :content-type :json})
+              body (parse-body http-response)
+              ]
+
+          (is (= 200 (-> http-response :status)))
+          (is (= ["OK" "Success" true] body))
+
           )
-)
+
+        (let [path (bidi/path-for (-> *system* :docsite-router :routes) ::payment/method-detail :payment-method-id (:paymentMethodId body))
+              http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path  *user-access-token*)
+                                          {:throw-exceptions false
+                                           :body-encoding "UTF-8"
+                                           :content-type :json})
+              body (parse-body http-response)
+              ]
+
+          (is (= 400 (-> http-response :status)))
+
+
+          )
+
+
+
+        )
+
+
 
       ;;TODO: we have a difference between mongo schema and specification schema
       ;; https://admin.swarmloyalty.co.za/sbdocs/docs/starbucks_api/my_starbucks_profile/get_payment_methods.html

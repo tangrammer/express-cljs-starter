@@ -5,7 +5,7 @@
    [com.stuartsierra.component  :as component]
    [monger.collection :as mc]
    [monger.conversion :refer [from-db-object]]
-   [monger.operators :refer [$inc $set $push]]
+   [monger.operators :refer [$inc $set $push $pull]]
    [monger.core :as mg]
    [monger.json :as mj]
    [monger.result :refer [acknowledged?]]
@@ -125,6 +125,28 @@
   (stop [this] this)
 
   protocols/UserStore
+  (remove-payment-method [this oid payment-method]
+    (try
+      (log/debug ">>>>" oid payment-method)
+
+      (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$pull {:paymentMethods payment-method}})]
+        (if (pos? (.getN t))
+          true
+          (d/error-deferred (ex-info (str "Store ERROR!")
+                                     {:type :store
+                                      :status 500
+                                      :body "remove-new-payment-method transaction fails"
+                                      :message "remove-new-payment-method transaction fails"
+                                      }))
+          ))
+
+      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
+                                                    {:type :store
+                                                     :status 500
+                                                     :body (.getMessage e)
+                                                     :message (.getMessage e)
+                                                     }))))
+    )
   (add-new-payment-method [this oid p]
     (try
       (let [uuid (str (UUID/randomUUID))
