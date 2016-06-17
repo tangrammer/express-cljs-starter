@@ -147,7 +147,7 @@
     [req res]
     "get transactional history"
     (let [card-number (-> req .-params .-cardNumber)
-          p0 (.transactions micros card-number)]
+          p0 (.transactions micros #js {:account card-number})]
       (.then p0
         (fn [result]
           (.json res #js {:transactions result})))
