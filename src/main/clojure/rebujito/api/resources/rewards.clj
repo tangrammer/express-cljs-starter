@@ -41,13 +41,13 @@
     0))
 
 (defn translate-mimi-rewards [rewards-response]
-  (let [tier-name (-> rewards-response :tier :name)
+  (let [tier-name (-> rewards-response :tier :name (or "Green"))
         tier-date (-> rewards-response :tier :date (or (t/today)))
         points-balance (-> rewards-response :tier :balance (or 0))]
     {:currentLevel tier-name
      :dateRetrieved (.toString (java.time.Instant/now))
      :pointsTotal points-balance
-     :pointsNeededForNextLevel (-> rewards-response :tier :pointsUntilNextTier)
+     :pointsNeededForNextLevel (-> rewards-response :tier :pointsUntilNextTier (or 300))
      :nextLevel (if (= tier-name "Green") "Gold" nil)
      :pointsNeededForNextFreeReward (points-needed-for-next-reward points-balance)
      :reevaluationDate (str (t/one-year-from tier-date) "T23:59:59.999Z")
