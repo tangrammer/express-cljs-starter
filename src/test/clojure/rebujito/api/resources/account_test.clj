@@ -1,5 +1,6 @@
 (ns rebujito.api.resources.account-test
   (:require
+   [byte-streams :as bs]
    [rebujito.protocols :as p]
    [rebujito.api-test :refer (print-body)]
    [rebujito.api.resources.account :as account]
@@ -50,3 +51,71 @@
 
 
     ))
+
+
+
+(deftest test-market-parameter-preference
+  (testing ::account/create-market-parameter-preference
+    (let [port (-> *system* :webserver :port)
+          query-market "ZA"
+          body-market "FR"]
+
+
+      (let [account-data (assoc (new-account-sb) :market body-market)
+
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s" port (get-path ::account/create) *app-access-token* query-market)
+                                      {:throw-exceptions false
+                                       :body (json/generate-string account-data)
+                                       :body-encoding "UTF-8"
+                                       :content-type :json})
+            body (->  http-response :body bs/to-string (json/parse-string true))
+            ]
+
+
+        (is (= 201  (->  http-response :status)))
+        (is (= body-market  (:market body)))
+        (is (= body-market (:market (p/find (-> *system*  :user-store) (:_id body)))))
+        )
+
+
+      (let [account-data (dissoc (new-account-sb))
+
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s" port (get-path ::account/create) *app-access-token* query-market)
+                                      {:throw-exceptions false
+                                       :body (json/generate-string account-data)
+                                       :body-encoding "UTF-8"
+                                       :content-type :json})
+            body (->  http-response :body bs/to-string (json/parse-string true))
+            ]
+
+        (is (= 201  (->  http-response :status)))
+        (is (= query-market  (:market body)))
+        (is (= query-market (:market (p/find (-> *system*  :user-store) (:_id body)))))
+        )
+
+
+
+
+
+
+      (comment   (is (= 201  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path *app-access-token* 1234)
+                                             {:throw-exceptions false
+                                              :body (json/generate-string account-data)
+                                              :body-encoding "UTF-8"
+                                              :content-type :json})
+                                 ;;                         print-body
+                                 :status)))
+                 (pprint (first (seq (p/find (-> *system*  :user-store)))))
+                 (is (= (count (seq (p/find (-> *system*  :user-store)))) (inc (count users))))
+                 ;; same account throws error
+                 (is (= 400  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path *app-access-token* 1234)
+                                             {:throw-exceptions false
+                                              :body (json/generate-string account-data)
+                                              :body-encoding "UTF-8"
+                                              :content-type :json})
+                                 ;;                         print-body
+                                 :status)))
+                 (is (= (count (seq (p/find (-> *system*  :user-store)))) (inc (count users)))))
+      ))
+
+)

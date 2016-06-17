@@ -82,7 +82,6 @@
     false))
 
 (defn create [store mimi user-store crypto]
-
   (-> {:methods
        {:post {:parameters {:query {:access_token String
                                     :market String
@@ -90,17 +89,21 @@
                                     (s/optional-key :platform) String}
                             :body (:post schema)}
                :response (fn [ctx]
-                           (-> (d/let-flow [mimi-account (d/chain
-                                                          (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
-                                                          (fn [b]
-                                                            (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))))
-                                            mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
+                           (let [ctx (update-in ctx [:parameters :body :market] (fn [current-market]
+                                                                                  (if current-market
+                                                                                    current-market
+                                                                                    (-> ctx :parameters :query :market))))]
+                            (-> (d/let-flow [mimi-account (d/chain
+                                                           (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
+                                                           (fn [b]
+                                                             (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))))
+                                             mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
 
-                                           (util/>201 ctx (dissoc  mongo-account :password)))
-                               (d/catch clojure.lang.ExceptionInfo
-                                   (fn [exception-info]
-                                     (log/error (.getMessage exception-info))
-                                     (domain-exception ctx (ex-data exception-info))))))}}}
+                                            (util/>201 ctx (dissoc  mongo-account :password)))
+                                (d/catch clojure.lang.ExceptionInfo
+                                    (fn [exception-info]
+                                      (log/error (.getMessage exception-info))
+                                      (domain-exception ctx (ex-data exception-info)))))))}}}
       (merge (util/common-resource :account))))
 
 (defn me [store mimi user-store app-config]
