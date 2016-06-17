@@ -125,6 +125,13 @@
   (stop [this] this)
 
   protocols/UserStore
+  (get-addresses [this oid]
+    (or (:addresses (protocols/find this oid)) []))
+  (insert-address [this oid address]
+    (let [address-id (str (java.util.UUID/randomUUID))
+          address (assoc address :addressId address-id)]
+      (protocols/update-by-id! this oid {$push {:addresses address}})
+      address-id))
   (update-payment-method [this oid payment-method]
 
     (try

@@ -66,7 +66,10 @@
   (get-payment-methods [this oid])
   (add-auto-reload [this oid payment-data data])
   (disable-auto-reload [this oid card-id])
-  (insert-card! [this oid card]))
+  (insert-card! [this oid card])
+  (insert-address [this oid address])
+  (get-addresses [this oid])
+  )
 
 (defprotocol ApiClient
   (login [this id pw]))

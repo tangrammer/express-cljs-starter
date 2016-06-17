@@ -20,11 +20,7 @@
                     :phoneNumber String
                     :country String}})
 
-(defn insert-address [user-store user-id address]
-  (let [address-id (str (java.util.UUID/randomUUID))
-        address (assoc address :addressId address-id)]
-    (p/update-by-id! user-store user-id {$push {:addresses address}})
-    address-id))
+
 
 (defn addresses [user-store]
   (-> {:methods
@@ -33,7 +29,7 @@
                :response (fn [ctx]
                            (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                             address (-> ctx :body)
-                                            address-id (insert-address user-store (:_id auth-user) address)]
+                                            address-id (p/insert-address user-store (:_id auth-user) address)]
                                 (-> ctx :response (assoc :status 201)
                                     ; TODO use ::resource/addresses to generate :location
                                     (assoc-in [:headers :location] (str "/me/addresses/" address-id))))
@@ -44,7 +40,7 @@
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                            user-id (:_id auth-user)
-                                           addresses (:addresses (p/find user-store user-id))]
+                                           addresses (p/get-addresses user-store user-id)]
                                (util/>200 ctx addresses))))}}}
       (merge (util/common-resource :addresses))))
 
@@ -57,9 +53,29 @@
                                            address-id (-> ctx :parameters :path :address-id)
                                            user-id (:_id auth-user)
                                            addresses (:addresses (p/find user-store user-id))]
-                                (util/>200 ctx (some #(and (= address-id (:addressId %)) %) addresses)))
+                                          (util/>200 ctx (some #(and (= address-id (:addressId %)) %) addresses)))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
-                                    (domain-exception ctx (ex-data exception-info))))))}}}
+                                    (domain-exception ctx (ex-data exception-info))))))}
+
+        :delete {:parameters {:query {:access_token String}
+                              :path {:address-id String}}
+                 :response (fn [ctx]
+                             ;; TODO: complete possible outputs
+                             ;;      400	111028	Cannot delete registration address.
+                             ;;      400	111037	Address is in use.
+                             #_(-> (d/let-flow [auth-user (util/authenticated-user ctx)
+
+                                              res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})
+                                              res-mongo (when res-delete
+                                                          (p/remove-payment-method user-store (:_id auth-user) payment-method))]
+
+
+                                             (util/>200 ctx ["OK" "Success" res-mongo]))
+                                 (d/catch clojure.lang.ExceptionInfo
+                                     (fn [exception-info]
+                                       (domain-exception ctx (ex-data exception-info))))))}
+
+        }}
 
      (merge (util/common-resource :addresses))))

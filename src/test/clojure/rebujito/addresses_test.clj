@@ -31,7 +31,7 @@
     (testing "insert-address"
       (let [user (create-fake-user user-store)
             user-id (str (:_id user))
-            address-id (addresses/insert-address user-store user-id payload)
+            address-id (p/insert-address user-store user-id payload)
             user (first (p/find user-store user))
             addresses (:addresses user)
             address (first addresses)]
