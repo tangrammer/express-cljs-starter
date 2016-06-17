@@ -1,5 +1,6 @@
 (ns rebujito.api.resources.payment-test
   (:require
+   [schema.core :as s]
    [schema-generators.generators :as g]
    [byte-streams :as bs]
    [bidi.bidi :as bidi]
@@ -9,7 +10,7 @@
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
-   [rebujito.api-test :refer (print-body create-digital-card)]
+   [rebujito.api-test :refer (print-body create-digital-card parse-body)]
    [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
@@ -28,47 +29,78 @@
     (let [port (-> *system*  :webserver :port)
           payment-method-id (atom "")
           card-id (create-digital-card)]
-      (let [path (get-path ::payment/methods)]
-        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path card-id))
-        (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                  {:throw-exceptions false
-                                   :body-encoding "UTF-8"
-                                   :content-type :json})
-                       (print-body)
-                       :status)))
+
+      (let [path (get-path ::payment/methods)
+            http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :content-type :json})
+            body (parse-body http-response)
+            ]
+        (is (= 200 (-> http-response :status)))
+        (is (= [] body)))
+
+      (let [path (get-path ::payment/methods)
+            {:keys [status body]}
+            (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                            {:throw-exceptions false
+                             :body-encoding "UTF-8"
+                             :body (json/generate-string
+                                    {
+                                     :billingAddressId "string"
+                                     :accountNumber "4000000000000002"
+                                     :default "false"
+                                     :nickname "string"
+                                     :paymentType "visa"
+                                     :cvn "12345"
+                                     :fullName "string"
+                                     :expirationMonth 11
+                                     :expirationYear 2018
+                                     }
+                                    )
+                             :content-type :json}))
+            body (-> (bs/to-string body)
+                     (json/parse-string true))
+            _          (is (= status 200))
+
+            ]
 
 
-
-        (println path )
-        (let [{:keys [status body]}
-              (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                              {:throw-exceptions false
-                               :body-encoding "UTF-8"
-                               :body (json/generate-string
-                                      {
-                                       :billingAddressId "string"
-                                       :accountNumber "4000000000000002"
-                                       :default "false"
-                                       :nickname "string"
-                                       :paymentType "visa"
-                                       :cvn "12345"
-                                       :fullName "string"
-                                       :expirationMonth 11
-                                       :expirationYear 2018
-                                       }
-                                      )
-                               :content-type :json}))
-              body (-> (bs/to-string body)
-                       (json/parse-string true))
-              _          (is (= status 200))
-
-              ]
+        (clojure.pprint/pprint body)
+        (is  (:paymentMethodId body))
+        (reset! payment-method-id (:paymentMethodId body))
+        )
 
 
-          (clojure.pprint/pprint body)
-          (is  (:paymentMethodId body))
-          (reset! payment-method-id (:paymentMethodId body))
-          ))
+      (let [path (get-path ::payment/methods)
+            http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :content-type :json})
+            body (parse-body http-response)
+            ]
+        (is (= 200 (-> http-response :status)))
+        (try (s/validate {:expirationYear Long
+                         :billingAddressId String
+                         :default String
+                         :paymentMethodId String
+                         :type String
+                         :accountNumberLastFour String
+                         :nickname s/Any
+                         :fullName String
+                         :accountNumber String
+                         :expirationMonth Long}
+                         (payment/adapt-mongo-to-spec (first (:paymentMethods (p/find (:user-store *system*) (:_id (p/read-token  (-> *system* :authenticator) *user-access-token*)))))))
+
+             (catch Exception e (is (nil? e)))))
+
+      ;;TODO: we have a difference between mongo schema and specification schema
+      ;; https://admin.swarmloyalty.co.za/sbdocs/docs/starbucks_api/my_starbucks_profile/get_payment_methods.html
+      (let [mi-res (set '(:expirationYear :billingAddressId :default :paymentMethodId :paymentType :accountNumberLastFour :nickName :fullName :routingNumber :expirationMonth))
+            expected-res (set '(:expirationYear :billingAddressId :accountNumber :default :paymentMethodId :nickname :type :accountNumberLastFour :fullName :expirationMonth))
+            ]
+        [(clojure.set/difference mi-res expected-res) (clojure.set/difference  expected-res mi-res)])
+           [#{:paymentType :nickName :routingNumber} #{:accountNumber :nickname :type}]
 
       ;; ::card/reload
 

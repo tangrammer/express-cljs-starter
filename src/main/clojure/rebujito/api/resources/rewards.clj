@@ -80,7 +80,7 @@
                                           user-data (p/find user-store user-id)
                                           card-number (-> user-data :cards first :cardNumber)
                                           rewards (rewards-response mimi card-number)]
-                                         (>200 ctx rewards))
+                                         (>200 ctx rewards #_rebujito.store.mocks/me-rewards))
                              (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]
                                    (domain-exception ctx (ex-data exception-info))))))}}}
