@@ -80,7 +80,7 @@
                ["/login/validate-password" (-> (login/validate-password user-store crypto authenticator)
                                                (assoc :id ::login/validate-password
                                                       :oauth {:post scopes/user}))]
-               ["/profile"  (-> (profile/me store mimi user-store app-config)
+               ["/profile"  (-> (profile/profile store mimi user-store app-config)
                                 (assoc :id ::profile/me
                                        :oauth {:get scopes/user}))]
                ["/rewards" (-> (rewards/me-rewards store mimi user-store)
