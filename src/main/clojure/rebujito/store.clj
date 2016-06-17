@@ -32,7 +32,7 @@
                              :status 404
                              :body ["Payment Method Not Found"]})))
     d*))
-  (put-payment-method-detail [this data]
+  #_(put-payment-method-detail [this data]
     (assoc mocks/put-payment-method-detail :target-environment :prod))
   (post-payment-method [this data]
     (let [d* (d/deferred)]
@@ -85,7 +85,7 @@
                              :status 404
                              :body ["Payment Method Not Found"]})))
     d*))
-  (put-payment-method-detail [this data]
+  #_(put-payment-method-detail [this data]
     (assoc mocks/put-payment-method-detail :target-environment :dev))
   (post-payment-method [this data]
     (let [d* (d/deferred)]
