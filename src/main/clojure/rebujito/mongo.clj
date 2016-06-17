@@ -125,58 +125,32 @@
   (stop [this] this)
 
   protocols/UserStore
-  (get-address [this oid address-id]
-    (let [user-db  (protocols/find this oid)]
-      (if-let [p (first (filter #(= (:addressId %) address-id) (:addresses user-db)))]
-        p
-        (d/error-deferred (ex-info (str "Store ERROR!")
-                                   {:type :store
-                                    :status 400
-                                    :body (format "address doens't exist: %s " address-id)
-                                    :message (format "address doens't exist: %s " address-id)})))))
-  (update-address [this oid address]
+  (add-auto-reload [this oid payment-data data]
     (try
-      (log/debug ">>>>" oid)
-      (let [user (protocols/find this oid)
-            p (:addresses user)
-            p-others (filter #(not= (:addressId %) (:addressId address)) p)
-
-            new-p (conj p-others address)
-
-            t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
-                         {$set {:addresses  new-p}})]
-        (if (pos? (.getN t))
-          address
-          (d/error-deferred (ex-info (str "Store ERROR!")
-                                     {:type :store
-                                      :status 500
-                                      :body "update-address transaction fails"
-                                      :message "update-address transaction fails"
-                                      }))
-          ))
-
-      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
-                                                    {:type :store
-                                                     :status 500
-                                                     :body (.getMessage e)
-                                                     :message (.getMessage e)
-                                                     }))))
-    )
-
-  (remove-address [this oid address]
-    (try
-      (log/debug ">>>>" oid address)
-
-      (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$pull {:addresses address}})]
-        (if (pos? (.getN t))
-          true
-          (d/error-deferred (ex-info (str "Store ERROR!")
-                                     {:type :store
-                                      :status 500
-                                      :body "remove-address transaction fails"
-                                      :message "remove-address transaction fails"
-                                      }))
-          ))
+      (let [uuid (str (UUID/randomUUID))
+            data (assoc data
+                        :autoReloadId  uuid
+                        :active true)
+            user (protocols/find this oid)
+            cards (:cards user)
+            others (filter #(not= (:cardId %) (:cardId data)) cards)
+            card  (-> (first (filter #(= (:cardId %) (:cardId data)) cards))
+                      (assoc :autoReloadProfile data))
+            new-cards (conj others card)
+            ]
+        (log/debug   ">>>>" oid data)
+        (s/validate AutoReloadMongo data)
+        (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                           {$set {:cards  new-cards}})]
+          (if (pos? (.getN t))
+            {:autoReloadId uuid}
+            (d/error-deferred (ex-info (str "Store ERROR!")
+                                       {:type :store
+                                        :status 500
+                                        :body "add-auto-reload transaction fails"
+                                        :message "add-auto-reload transaction fails"
+                                        }))
+            )))
 
       (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
                                                     {:type :store
@@ -184,13 +158,43 @@
                                                      :body (.getMessage e)
                                                      :message (.getMessage e)
                                                      })))))
-  (get-addresses [this oid]
-    (or (:addresses (protocols/find this oid)) []))
-  (insert-address [this oid address]
-    (let [address-id (str (java.util.UUID/randomUUID))
-          address (assoc address :addressId address-id)]
-      (protocols/update-by-id! this oid {$push {:addresses address}})
-      address-id))
+  (disable-auto-reload [this oid card-id]
+    (try
+      (do
+        (log/debug ">>>>" oid)
+        (let [user (protocols/find this oid)
+              cards (:cards user)
+              others (filter #(not= (:cardId %) card-id) cards)
+              card  (-> (first (filter #(= (:cardId %) card-id) cards))
+                        (assoc-in [:autoReloadProfile :active] false)
+                        (assoc-in [:autoReloadProfile :status] "disabled"))
+              new-cards (conj others card)
+
+              t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                           {$set {:cards  new-cards}})]
+          (if (pos? (.getN t))
+            true
+            (d/error-deferred (ex-info (str "Store ERROR!")
+                                       {:type :store
+                                        :status 500
+                                        :body "disable-auto-reload transaction fails"
+                                        :message "disable-auto-reload transaction fails"
+                                        }))
+            )))
+
+      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
+                                                    {:type :store
+                                                     :status 500
+                                                     :body (.getMessage e)
+                                                     :message (.getMessage e)
+                                                     })))))
+  (insert-card! [this user-id card]
+    (let [card-id (str (java.util.UUID/randomUUID))
+          card (assoc card :cardId card-id)]
+      (protocols/update-by-id! this user-id {$push {:cards card}})
+      card-id))
+
+  protocols/UserPaymentMethodStore
   (update-payment-method [this oid payment-method]
 
     (try
@@ -275,38 +279,62 @@
                                     :status 400
                                     :body (format "payment-method doens't exist: %s " payment-method-id)
                                     :message (format "payment-method doens't exist: %s " payment-method-id)})))))
-
   (get-payment-methods [this oid]
     (let [user-db  (protocols/find this oid)]
       (or  (:paymentMethods user-db) [])))
 
-
-  (add-auto-reload [this oid payment-data data]
+  protocols/UserAddressStore
+  (get-address [this oid address-id]
+    (let [user-db  (protocols/find this oid)]
+      (if-let [p (first (filter #(= (:addressId %) address-id) (:addresses user-db)))]
+        p
+        (d/error-deferred (ex-info (str "Store ERROR!")
+                                   {:type :store
+                                    :status 400
+                                    :body (format "address doens't exist: %s " address-id)
+                                    :message (format "address doens't exist: %s " address-id)})))))
+  (update-address [this oid address]
     (try
-      (let [uuid (str (UUID/randomUUID))
-            data (assoc data
-                        :autoReloadId  uuid
-                        :active true)
-            user (protocols/find this oid)
-            cards (:cards user)
-            others (filter #(not= (:cardId %) (:cardId data)) cards)
-            card  (-> (first (filter #(= (:cardId %) (:cardId data)) cards))
-                      (assoc :autoReloadProfile data))
-            new-cards (conj others card)
-            ]
-        (log/debug   ">>>>" oid data)
-        (s/validate AutoReloadMongo data)
-        (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
-                           {$set {:cards  new-cards}})]
-          (if (pos? (.getN t))
-            {:autoReloadId uuid}
-            (d/error-deferred (ex-info (str "Store ERROR!")
-                                       {:type :store
-                                        :status 500
-                                        :body "add-auto-reload transaction fails"
-                                        :message "add-auto-reload transaction fails"
-                                        }))
-            )))
+      (log/debug ">>>>" oid)
+      (let [user (protocols/find this oid)
+            p (:addresses user)
+            p-others (filter #(not= (:addressId %) (:addressId address)) p)
+
+            new-p (conj p-others address)
+
+            t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                         {$set {:addresses  new-p}})]
+        (if (pos? (.getN t))
+          address
+          (d/error-deferred (ex-info (str "Store ERROR!")
+                                     {:type :store
+                                      :status 500
+                                      :body "update-address transaction fails"
+                                      :message "update-address transaction fails"
+                                      }))
+          ))
+
+      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
+                                                    {:type :store
+                                                     :status 500
+                                                     :body (.getMessage e)
+                                                     :message (.getMessage e)
+                                                     }))))
+    )
+  (remove-address [this oid address]
+    (try
+      (log/debug ">>>>" oid address)
+
+      (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$pull {:addresses address}})]
+        (if (pos? (.getN t))
+          true
+          (d/error-deferred (ex-info (str "Store ERROR!")
+                                     {:type :store
+                                      :status 500
+                                      :body "remove-address transaction fails"
+                                      :message "remove-address transaction fails"
+                                      }))
+          ))
 
       (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
                                                     {:type :store
@@ -314,42 +342,14 @@
                                                      :body (.getMessage e)
                                                      :message (.getMessage e)
                                                      })))))
+  (get-addresses [this oid]
+    (or (:addresses (protocols/find this oid)) []))
+  (insert-address [this oid address]
+    (let [address-id (str (java.util.UUID/randomUUID))
+          address (assoc address :addressId address-id)]
+      (protocols/update-by-id! this oid {$push {:addresses address}})
+      address-id))
 
-  (disable-auto-reload [this oid card-id]
-    (try
-      (do
-        (log/debug ">>>>" oid)
-        (let [user (protocols/find this oid)
-              cards (:cards user)
-              others (filter #(not= (:cardId %) card-id) cards)
-              card  (-> (first (filter #(= (:cardId %) card-id) cards))
-                        (assoc-in [:autoReloadProfile :active] false)
-                        (assoc-in [:autoReloadProfile :status] "disabled"))
-              new-cards (conj others card)
-
-              t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
-                           {$set {:cards  new-cards}})]
-          (if (pos? (.getN t))
-            true
-            (d/error-deferred (ex-info (str "Store ERROR!")
-                                       {:type :store
-                                        :status 500
-                                        :body "disable-auto-reload transaction fails"
-                                        :message "disable-auto-reload transaction fails"
-                                        }))
-            )))
-
-      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
-                                                    {:type :store
-                                                     :status 500
-                                                     :body (.getMessage e)
-                                                     :message (.getMessage e)
-                                                     })))))
-  (insert-card! [this user-id card]
-    (let [card-id (str (java.util.UUID/randomUUID))
-          card (assoc card :cardId card-id)]
-      (protocols/update-by-id! this user-id {$push {:cards card}})
-      card-id))
 
   protocols/MutableStorage
   (generate-id [this data]

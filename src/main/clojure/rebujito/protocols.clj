@@ -58,20 +58,27 @@
   (update-by-id! [this id data]))
 
 (defprotocol UserStore
+  (add-auto-reload [this oid payment-data data])
+  (disable-auto-reload [this oid card-id])
+  (insert-card! [this oid card])
+  )
+
+(defprotocol UserPaymentMethodStore
   (add-new-payment-method [this oid p])
   (get-payment-method [this oid payment-method-id])
   (remove-payment-method [this oid payment-method])
   (update-payment-method [this oid payment-method])
-  (get-payment-methods [this oid])
-  (add-auto-reload [this oid payment-data data])
-  (disable-auto-reload [this oid card-id])
-  (insert-card! [this oid card])
+  (get-payment-methods [this oid]))
+
+(defprotocol UserAddressStore
   (insert-address [this oid address])
   (get-addresses [this oid])
   (get-address [this oid address-id])
   (remove-address [this oid address])
-  (update-address [this oid address])
-  )
+  (update-address [this oid address]))
+
+
+
 
 (defprotocol ApiClient
   (login [this id pw]))
