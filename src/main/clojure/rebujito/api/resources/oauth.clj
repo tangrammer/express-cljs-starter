@@ -83,7 +83,7 @@
                                                      :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
                                  first
                                  (dissoc :password))]
-                (>201 ctx (p/grant authorizer user #{scopes/application scopes/user}))
+                (>201 ctx (p/grant authorizer (select-keys user [:_id :firstName :lastName :emailAddress]) #{scopes/application scopes/user}))
                 (>404 ctx [:user-not-found (get-in ctx [:parameters :body :username])]))))
 
 (defmethod get-token :refresh_token ; docs -> http://bit.ly/1sLcWfw
@@ -104,9 +104,9 @@
                mongo-token (first  (p/find token-store {:refresh-token refresh-token}))]
 ;;    (log/info "*refresh_token>>>" mongo-token)
     (if (:valid mongo-token)
-      (let [user-data (-> (p/find user-store (:user-id mongo-token))
-                          (dissoc :password))]
-        (>201 ctx (p/grant authorizer user-data #{scopes/application scopes/user})))
+      (let [user (-> (p/find user-store (:user-id mongo-token))
+                     (dissoc :password))]
+        (>201 ctx (p/grant authorizer (select-keys user [:_id :firstName :lastName :emailAddress]) #{scopes/application scopes/user})))
       (>403 ctx ["refresh-token not valid!"]))))
 
 (defn check-value [map key value]
