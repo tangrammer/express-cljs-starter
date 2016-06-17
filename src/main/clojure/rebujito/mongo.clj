@@ -157,6 +157,12 @@
                                     :status 400
                                     :body (format "payment-method doens't exist: %s " payment-method-id)
                                     :message (format "payment-method doens't exist: %s " payment-method-id)})))))
+
+  (get-payment-methods [this oid]
+    (let [user-db  (protocols/find this oid)]
+      (or  (:paymentMethods user-db) [])))
+
+
   (add-auto-reload [this oid payment-data data]
     (try
       (let [uuid (str (UUID/randomUUID))

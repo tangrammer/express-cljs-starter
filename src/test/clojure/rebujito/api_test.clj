@@ -79,12 +79,6 @@
      (testing ::payment/method-detail
        (let [api-id ::payment/method-detail
              path (bidi/path-for r api-id :payment-method-id 12345)]
-         ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                   {:throw-exceptions false
-                                    :body-encoding "UTF-8"
-                                    :content-type :json})
-                        :status)))
 
          ;; can't test until we stop stubbing, needs real token ID
          #_(is (= 200 (-> @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path 123)

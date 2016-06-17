@@ -34,14 +34,29 @@
                                    :fullName String
                                    :expirationMonth Long}}})
 
-(defn method-detail [store payment-gateway]
+
+(defn detail-adapt-mongo-to-spec [payment-method]
+  (-> payment-method
+      (assoc :accountNumber (:routingNumber payment-method)
+             :nickname (:nickName payment-method)
+             :bankName nil
+             :isTemporary true
+             :default true
+             :cvn nil
+             :routingNumber nil
+
+             )
+      (dissoc :nickName)))
+
+(defn method-detail [user-store store payment-gateway]
   (->
    {:methods
     {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}
                         :path {:payment-method-id String}}
            :response (fn [ctx]
-                       (-> (d/let-flow [payment-method (p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})]
-                                       (util/>200 ctx payment-method))
+                       (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                        payment-method (p/get-payment-method user-store (:_id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))]
+                                       (util/>200 ctx (detail-adapt-mongo-to-spec payment-method)))
                            (d/catch clojure.lang.ExceptionInfo
                                (fn [exception-info]
                                  (domain-exception ctx (ex-data exception-info))))))}
@@ -49,8 +64,9 @@
      :delete {:parameters {:query {:access_token String}
                            :path {:payment-method-id String}}
               :response (fn [ctx]
-                          (-> (d/let-flow [payment-method (p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})
-                                        res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})]
+                          (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                           payment-method (p/get-payment-method user-store (:_id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
+                                           res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})]
                                        (util/>200 ctx ["OK" "Success"]))
                               (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]
@@ -61,7 +77,8 @@
                         :body (-> schema :method-detail :put)}
            :response (fn [ctx]
                        (let [request (get-in ctx [:parameters :body])]
-                         (-> (d/let-flow [payment-method (p/get-deferred-payment-method-detail store {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])})
+                         (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                          payment-method (p/get-payment-method user-store (:_id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
                                           card-token-res @(p/create-card-token payment-gateway
                                                                                {:cardNumber (-> request :accountNumber)
                                                                                 :expirationMonth (-> request :expirationMonth)
@@ -113,18 +130,16 @@
 
 (defn adapt-mongo-to-spec [payment-method]
   (-> payment-method
-      (assoc :accountNumber (:routingNumber payment-method)
-             :nickname (:nickName payment-method)
+      (assoc :nickname (:nickName payment-method)
              :type (:paymentType payment-method))
-      (dissoc :paymentType :nickName :routingNumber)))
+      (dissoc :paymentType :nickName )))
 
 (defn methods [user-store payment-gateway]
   (-> {:methods
        {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                           payment-methods (->> (or (:paymentMethods (p/find user-store (:_id auth-user)))
-                                                                   [])
+                                           payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
                                                                 (map adapt-mongo-to-spec))]
                                           (log/info  "paymentMethods GET" payment-methods)
                                           (util/>200 ctx payment-methods))

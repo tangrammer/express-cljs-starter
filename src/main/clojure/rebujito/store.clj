@@ -23,7 +23,7 @@
                                :status 404
                                :body ["Card Not Found"]})))
       d*))
-  (get-deferred-payment-method-detail [this data]
+  #_(get-deferred-payment-method-detail [this data]
     (let [d* (d/deferred)]
     (if-let [payment-method-data (assoc mocks/get-payment-method-detail :target-environment :prod)]
       (d/success! d* payment-method-data)
@@ -76,7 +76,7 @@
                                :status 404
                                :body ["Card Not Found"]})))
       d*))
-  (get-deferred-payment-method-detail [this data]
+  #_(get-deferred-payment-method-detail [this data]
     (let [d* (d/deferred)]
     (if-let [payment-method-data (assoc mocks/get-payment-method-detail :target-environment :dev)]
       (d/success! d* payment-method-data)
