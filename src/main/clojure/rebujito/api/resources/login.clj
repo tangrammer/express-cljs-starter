@@ -16,7 +16,8 @@
 
 (defn forgot-password [mailer authorizer ]
   (-> {:methods
-       {:post {:parameters {:query {:access_token String}
+       {:post {:parameters {:query {:access_token String
+                                    (s/optional-key :locale) String}
                             :body (-> schema :forgot-password :post)}
                :response (fn [ctx]
                            (let [token (get-in ctx [:parameters :query :access_token])]
@@ -32,7 +33,8 @@
 
 (defn validate-password [user-store crypto authenticator ]
   (-> {:methods
-       {:post {:parameters {:query {:access_token String}
+       {:post {:parameters {:query {:access_token String
+                                    (s/optional-key :locale) String}
                             :body (-> schema :validate-password :post)}
                :response (fn [ctx]
                            (let [user (p/read-token authenticator (get-in ctx [:parameters :query :access_token]))
@@ -46,7 +48,8 @@
 
 (defn logout [user-store token-store]
  (-> {:methods
-      {:get {:parameters {:query {:access_token String}}
+      {:get {:parameters {:query {:access_token String
+                                  (s/optional-key :locale) String}}
              :response (fn [ctx]
 
                          (p/update! token-store {:user-id (:_id (util/authenticated-user ctx))} {:valid false})
