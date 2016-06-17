@@ -21,7 +21,7 @@
                               (s/optional-key :isDefault) Boolean
                               (s/optional-key :isTemporary) Boolean
                               (s/optional-key :fullName) String
-                              (s/optional-key :risk) s/Any
+;                              (s/optional-key :risk) s/Any
                               :expirationMonth Long
                               :expirationYear Long}}
              :method-detail {:put {:expirationYear Long

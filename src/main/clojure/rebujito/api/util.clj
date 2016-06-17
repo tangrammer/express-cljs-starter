@@ -179,3 +179,7 @@
      (catch Exception e (throw (ex-info message {:type :schema
                                                  :status status
                                                  :body description}))))))
+
+(def optional-risk {(s/optional-key :risk) {(s/optional-key :platform) String
+                                            (s/optional-key :reputation) {(s/optional-key :IPAddress) String
+                                                                          (s/optional-key :deviceFingerprint ) String}}})
