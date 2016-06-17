@@ -11,15 +11,31 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(def schema {:post {:addressLine1 String
-                    :city String
-                    :firstName String
-                    :type String
+(def schema {:post {
+                    :addressLine1 String
                     :addressLine2 String
+                    :city String
+                    :country String
+                    :firstName String
                     :lastName String
-                    :postalCode String
                     :phoneNumber String
-                    :country String}})
+                    :postalCode String
+                    :type String
+                    }
+             :put {
+                   :addressLine1 String
+                   :addressLine2 String
+                   :city String
+                   :country String
+                   :countrySubdivision String
+                   :firstName String
+                   :lastName String
+                   :name String
+                   :phoneNumber String
+                   :postalCode String
+                   :type String
+                   }
+             })
 
 
 
@@ -77,7 +93,22 @@
                                  (d/catch clojure.lang.ExceptionInfo
                                      (fn [exception-info]
                                        (domain-exception ctx (ex-data exception-info))))))}
+        :put {:parameters {:query {:access_token String}
+                        :path {:address-id String}
+                        :body (-> schema  :put)}
+           :response (fn [ctx]
+                       (let [request (get-in ctx [:parameters :body])]
+                         (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                          address-id (get-in ctx [:parameters :path :address-id])
+                                          address (p/get-address user-store (:_id auth-user)  address-id)
 
+                                          updated-address (assoc (p/update-address user-store (:_id auth-user) address)
+                                                                 :addressId address-id)
+]
+                                         (util/>200 ctx [200 "OK" (some? updated-address)]))
+                             (d/catch clojure.lang.ExceptionInfo
+                                 (fn [exception-info]
+                                   (domain-exception ctx (ex-data exception-info)))))))}
         }}
 
      (merge (util/common-resource :addresses))))

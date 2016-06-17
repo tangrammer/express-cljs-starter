@@ -70,6 +70,7 @@
   (get-addresses [this oid])
   (get-address [this oid address-id])
   (remove-address [this oid address])
+  (update-address [this oid address])
   )
 
 (defprotocol ApiClient

@@ -70,7 +70,8 @@
                                                      :get scopes/user}))]
                               [["/" :address-id] (-> (addresses/get-one user-store)
                                                        (assoc :id ::addresses/get
-                                                              :oauth {:delete scopes/user
+                                                              :oauth {:put scopes/user
+                                                                      :delete scopes/user
                                                                       :get scopes/user}))]]]
                ["/logout"  (-> (login/logout user-store token-store)
                                (assoc :id ::login/logout

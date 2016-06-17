@@ -134,6 +134,35 @@
                                     :status 400
                                     :body (format "address doens't exist: %s " address-id)
                                     :message (format "address doens't exist: %s " address-id)})))))
+  (update-address [this oid address]
+    (try
+      (log/debug ">>>>" oid)
+      (let [user (protocols/find this oid)
+            p (:addresses user)
+            p-others (filter #(not= (:addressId %) (:addressId address)) p)
+
+            new-p (conj p-others address)
+
+            t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                         {$set {:addresses  new-p}})]
+        (if (pos? (.getN t))
+          address
+          (d/error-deferred (ex-info (str "Store ERROR!")
+                                     {:type :store
+                                      :status 500
+                                      :body "update-address transaction fails"
+                                      :message "update-address transaction fails"
+                                      }))
+          ))
+
+      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
+                                                    {:type :store
+                                                     :status 500
+                                                     :body (.getMessage e)
+                                                     :message (.getMessage e)
+                                                     }))))
+    )
+
   (remove-address [this oid address]
     (try
       (log/debug ">>>>" oid address)

@@ -1084,3 +1084,18 @@
    ]
 }" true
 ))
+
+
+(def address-put-payload{
+  :addressLine1 "1236"
+  :addressLine2 ""
+  :city "Seattle"
+  :country "US"
+  :countrySubdivision "Wa"
+  :firstName "George"
+  :lastName "Gd"
+  :name ""
+  :phoneNumber "123-456-7810"
+  :postalCode "98122"
+  :type "Billing"
+  })
