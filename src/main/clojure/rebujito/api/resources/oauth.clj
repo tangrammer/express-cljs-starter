@@ -117,15 +117,13 @@
   (-> {:methods
        {:post {:parameters {:query {:sig String
                                     (s/optional-key :platform) String}
-                            :body  (s/conditional
-                                         #(check-value % :grant_type "client_credentials")
-                                         (-> schema :token-client-credentials)
-                                         #(check-value % :grant_type "password")
-                                         (-> schema :token-resource-owner)
-                                         #(check-value % :grant_type "refresh_token")
-                                         (-> schema :token-refresh-token))
-                                        ;s/Keyword s/Any
-}
+                            :body (s/conditional
+                                   #(check-value % :grant_type "client_credentials")
+                                   (assoc (-> schema :token-client-credentials) s/Keyword s/Any)
+                                   #(check-value % :grant_type "password")
+                                   (assoc (-> schema :token-resource-owner) s/Keyword s/Any)
+                                   #(check-value % :grant_type "refresh_token")
+                                   (assoc (-> schema :token-refresh-token) s/Keyword s/Any))}
 
                :consumes [{:media-type #{"application/x-www-form-urlencoded"}
                            :charset "UTF-8"}]

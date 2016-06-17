@@ -4,7 +4,6 @@
    [byte-streams :as bs]
    [rebujito.protocols :as p]
    [schema-generators.generators :as g]
-   [rebujito.api.util :as util]
    [rebujito.api-test :refer (print-body)]
    [rebujito.api.resources.account :as account]
    [rebujito.api.resources.card :as card]
@@ -43,8 +42,7 @@
                                    {:throw-exceptions false
                                     :body-encoding "UTF-8"
                                     :body (json/generate-string
-                                           (assoc (merge (g/generate (-> card/schema :register-physical :post))
-                                                         (g/generate util/optional-risk))
+                                           (assoc (g/generate (-> card/schema :register-physical :post))
                                                   :cardNumber (str (+ (rand-int 1000) (read-string (format "96235709%05d" 0)))))
                                            )
                                     :content-type :json})

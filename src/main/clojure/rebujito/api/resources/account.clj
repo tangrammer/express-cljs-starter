@@ -29,7 +29,7 @@
                     :registrationSource String
                     (s/optional-key :createDigitalCard) Boolean
                     (s/optional-key :market) String
-;                    (s/optional-key :risk) s/Any
+                    (s/optional-key :risk) s/Any
                     }})
 
 (def CreateAccountMimiMapping
