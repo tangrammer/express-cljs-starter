@@ -140,8 +140,11 @@
                                            (assoc :id ::payment/methods
                                                   :oauth {:get  scopes/user
                                                           :post scopes/user}))]
-                                   [["/" :payment-method-id] (-> (payment/method-detail store payment-gateway)
-                                                                 (assoc :id ::payment/method-detail))]]]
+                                   [["/" :payment-method-id] (-> (payment/method-detail user-store store payment-gateway)
+                                                                 (assoc :id ::payment/method-detail
+                                                                        :oauth {:get  scopes/user
+                                                                                :put scopes/user
+                                                                                :post scopes/user}))]]]
                ["/socialprofile/account" (-> (social-profile/account store)
                                              (assoc :id ::social-profile/account))]
                ]]]]

@@ -60,13 +60,9 @@
                                     )
                              :content-type :json}))
             body (-> (bs/to-string body)
-                     (json/parse-string true))
-            _          (is (= status 200))
+                     (json/parse-string true))]
 
-            ]
-
-
-        (clojure.pprint/pprint body)
+        (is (= status 200))
         (is  (:paymentMethodId body))
         (reset! payment-method-id (:paymentMethodId body))
         )
@@ -84,15 +80,47 @@
                          :billingAddressId String
                          :default String
                          :paymentMethodId String
-                         :type String
+                          :type String
+                          (s/optional-key :routingNumber) String
                          :accountNumberLastFour String
                          :nickname s/Any
                          :fullName String
-                         :accountNumber String
+                         (s/optional-key :accountNumber) String
                          :expirationMonth Long}
                          (payment/adapt-mongo-to-spec (first (:paymentMethods (p/find (:user-store *system*) (:_id (p/read-token  (-> *system* :authenticator) *user-access-token*)))))))
 
              (catch Exception e (is (nil? e)))))
+
+
+      (let [path (bidi/path-for (-> *system* :docsite-router :routes) ::payment/method-detail :payment-method-id @payment-method-id)
+            _ (println (format "http://localhost:%s%s?access_token=%s"  port path  *user-access-token*))
+            http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path  *user-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :content-type :json})
+            body (parse-body http-response)
+            ]
+        (is (= 200 (-> http-response :status)))
+
+        (try
+          (s/validate  {:expirationYear s/Num
+                        :billingAddressId (s/maybe String)
+                        :accountNumber String
+                        :default Boolean
+                        :paymentMethodId String
+                        :nickname (s/maybe String)
+                        :paymentType String
+                        :accountNumberLastFour (s/maybe String)
+                        :cvn (s/maybe String)
+                        :fullName String
+                        :routingNumber (s/maybe String)
+                        :expirationMonth s/Num
+                        :isTemporary Boolean
+                        :bankName (s/maybe String)}
+                       body)
+          (catch Exception e (is (nil? e)))
+          )
+)
 
       ;;TODO: we have a difference between mongo schema and specification schema
       ;; https://admin.swarmloyalty.co.za/sbdocs/docs/starbucks_api/my_starbucks_profile/get_payment_methods.html
