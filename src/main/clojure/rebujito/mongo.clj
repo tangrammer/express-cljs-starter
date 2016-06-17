@@ -125,6 +125,36 @@
   (stop [this] this)
 
   protocols/UserStore
+  (get-address [this oid address-id]
+    (let [user-db  (protocols/find this oid)]
+      (if-let [p (first (filter #(= (:addressId %) address-id) (:addresses user-db)))]
+        p
+        (d/error-deferred (ex-info (str "Store ERROR!")
+                                   {:type :store
+                                    :status 400
+                                    :body (format "address doens't exist: %s " address-id)
+                                    :message (format "address doens't exist: %s " address-id)})))))
+  (remove-address [this oid address]
+    (try
+      (log/debug ">>>>" oid address)
+
+      (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$pull {:addresses address}})]
+        (if (pos? (.getN t))
+          true
+          (d/error-deferred (ex-info (str "Store ERROR!")
+                                     {:type :store
+                                      :status 500
+                                      :body "remove-address transaction fails"
+                                      :message "remove-address transaction fails"
+                                      }))
+          ))
+
+      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
+                                                    {:type :store
+                                                     :status 500
+                                                     :body (.getMessage e)
+                                                     :message (.getMessage e)
+                                                     })))))
   (get-addresses [this oid]
     (or (:addresses (protocols/find this oid)) []))
   (insert-address [this oid address]

@@ -52,10 +52,11 @@
                            :query {:access_token String}}
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                           address-id (-> ctx :parameters :path :address-id)
                                            user-id (:_id auth-user)
-                                           addresses (:addresses (p/find user-store user-id))]
-                                          (util/>200 ctx (some #(and (= address-id (:addressId %)) %) addresses)))
+                                           address-id (-> ctx :parameters :path :address-id)
+                                           address (p/get-address user-store user-id address-id)
+                                           ]
+                                          (util/>200 ctx address))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
                                     (domain-exception ctx (ex-data exception-info))))))}
@@ -66,12 +67,11 @@
                              ;; TODO: complete possible outputs
                              ;;      400	111028	Cannot delete registration address.
                              ;;      400	111037	Address is in use.
-                             #_(-> (d/let-flow [auth-user (util/authenticated-user ctx)
-
-                                              res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})
-                                              res-mongo (when res-delete
-                                                          (p/remove-payment-method user-store (:_id auth-user) payment-method))]
-
+                             (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                                              user-id (:_id auth-user)
+                                              address-id (-> ctx :parameters :path :address-id)
+                                              address (p/get-address user-store user-id address-id)
+                                              res-mongo (p/remove-address user-store user-id address)]
 
                                              (util/>200 ctx ["OK" "Success" res-mongo]))
                                  (d/catch clojure.lang.ExceptionInfo
