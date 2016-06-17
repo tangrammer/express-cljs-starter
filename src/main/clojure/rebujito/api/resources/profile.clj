@@ -9,9 +9,7 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(def response-overrides {:rewardsSummary {}
-                         :addresses []
-                         :socialProfile {}
+(def response-overrides {:socialProfile {}
                          :paymentMethods []
                          :favoriteStores []
                          :devices []
@@ -32,6 +30,7 @@
                                           (util/>200 ctx (-> profile-data
                                                              (merge {:user user-data})
                                                              (merge {:rewardsSummary @(p/rewards mimi {})})
+                                                             (merge (select-keys @(p/find user-store user-id) [:addresses]))
                                                              (merge response-overrides)
                                                              (dissoc :target-environment))))
                               (d/catch clojure.lang.ExceptionInfo
