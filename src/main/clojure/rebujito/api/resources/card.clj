@@ -187,11 +187,11 @@
                                            user-id (:_id (util/authenticated-user ctx))
                                            card-data (:cards (p/find user-store user-id))
                                            card-data-bis (first (filter #(= (:cardId %) card-id) card-data))
-                                           _ (log/error ">>>> card-data::::" card-data card-data-bis)
+                                           _ (log/info ">>>> card-data::::" card-data card-data-bis)
                                            card-number (:cardNumber card-data-bis)
                                            payment-method-data (p/get-payment-method user-store user-id (-> ctx :parameters :body :paymentMethodId))
 
-                                           _ (log/error ">>>> payment-method-data::::" payment-method-data)
+                                           _ (log/info ">>>> payment-method-data::::" payment-method-data)
 
                                            payment-data (p/execute-payment
                                                          payment-gateway
