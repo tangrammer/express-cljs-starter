@@ -49,6 +49,7 @@
    :type "Standard"
    :actions ["Reload" "AutoReload"]
    :submarketCode "ZA"
+   :balance 0
    :balanceDate (.toString (java.time.Instant/now))
    :balanceCurrencyCode "ZAR"})
 
