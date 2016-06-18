@@ -199,7 +199,37 @@
   (get-points [this card-number]
     (d/let-flow [rewards (protocols/rewards this card-number)
                  program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
-                (:balance program))))
+                (:balance program)))
+
+  (get-history [this card-number]
+    (log/info "fetching transactions for" card-number)
+    (let [d* (d/deferred)
+          ;; card-number "9623570900002"
+          ]
+      (d/future
+      (try
+        (let [{:keys [status body]} (http-c/get (format "%s/account/%s/transactions" base-url card-number)
+                                                {:headers {"Authorization" (format "Bearer %s" token)}
+                                                 :insecure? true
+                                                 :content-type :json
+                                                 :accept :json
+                                                 :as :json
+                                                 :throw-exceptions true
+                                                 :form-params {}})]
+          (log/info body)
+          (d/success! d* body))
+        (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
+                                              (d/error! d* (ex-info (str "error!!!" (:status ex))
+                                                                    {:type :mimi
+                                                                      :status (:status ex)
+                                                                      :body (:body ex)}))))
+          (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
+                                                   {:type :mimi
+                                                    :status 500
+                                                    :body (.getMessage e)})))
+        ))
+      d*))
+  )
 
 (defrecord MockMimi [base-url token]
   component/Lifecycle
@@ -269,6 +299,7 @@
     (d/let-flow [rewards (protocols/rewards this card-number)
                  program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
                 (:balance program)))
+  (get-history [this card-number])
   )
 
 (defn new-prod-mimi [mimi-config]

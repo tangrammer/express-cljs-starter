@@ -94,7 +94,8 @@
                                 :oauth {:get scopes/user}))]
                  ["/history"
                   (-> (card/history user-store mimi)
-                      (assoc :id ::card/history))]
+                      (assoc :id ::card/history
+                             :oauth {:get scopes/user}))]
                  ["/register"
                   (-> (card/register-physical user-store mimi)
                       (assoc :id ::card/register-physical

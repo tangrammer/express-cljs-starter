@@ -20,6 +20,7 @@
   (load-card [this card-number amount])
   (rewards [this data])
   (get-points [this card-number])
+  (get-history [this card-number])
   )
 
 (defprotocol Encrypter
