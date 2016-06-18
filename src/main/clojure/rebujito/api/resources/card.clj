@@ -42,13 +42,19 @@
 (defn new-digital-card [data]
   (merge data {:digital true}))
 
-(defn dummy-card-data []
+(def value-link-arb-class "242")
+
+(defn blank-card-data []
   {:primary true
    :cardCurrency "ZAR"
    :nickname "My Card"
    :type "Standard"
    :actions ["Reload" "AutoReload"]
    :submarketCode "ZA"
+   :class value-link-arb-class
+   :owner true
+   :partner false
+   :autoReloadProfile nil
    :balance 0
    :balanceDate (.toString (java.time.Instant/now))
    :balanceCurrencyCode "ZAR"})
@@ -59,7 +65,11 @@
                card-data (first card-data)
                balance (p/get-points mimi (:cardNumber card-data))]
     (when card-data
-      (merge (dummy-card-data) card-data {:balance balance}))))
+      (merge
+        (select-keys mocks/card [:imageUrls])
+        (blank-card-data)
+        card-data
+        {:balance balance}))))
 
 (defn cards [user-store mimi]
   (->
@@ -111,7 +121,10 @@
                                                                                   :customerId (id>mimi-id user-id)})
                                          card (new-physical-card {:cardNumber card-number})
                                          card-id (p/insert-card! user-store user-id card)]
-                              (util/>200 ctx (merge mocks/card (dummy-card-data) (assoc card :cardId card-id))))
+                              (util/>200 ctx (merge
+                                              (select-keys mocks/card [:imageUrls])
+                                              (blank-card-data)
+                                              (assoc card :cardId card-id))))
 
                             (d/catch clojure.lang.ExceptionInfo
                                 (fn [exception-info]
@@ -131,7 +144,10 @@
                                                                                   :customerId  (id>mimi-id user-id)})
                                          card (new-digital-card {:cardNumber card-number})
                                          card-id (p/insert-card! user-store user-id card)]
-                              (util/>200 ctx (merge mocks/card (dummy-card-data) (assoc card :cardId card-id))))
+                              (util/>200 ctx (merge
+                                              (select-keys mocks/card [:imageUrls])
+                                              (blank-card-data)
+                                              (assoc card :cardId card-id))))
 
                             (d/catch clojure.lang.ExceptionInfo
                                 (fn [exception-info]
