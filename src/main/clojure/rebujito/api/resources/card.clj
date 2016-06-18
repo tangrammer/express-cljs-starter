@@ -59,7 +59,6 @@
    :balanceDate (.toString (java.time.Instant/now))
    :balanceCurrencyCode "ZAR"})
 
-
 (defn get-card [user-store user-id mimi]
   (d/let-flow [card-data (:cards (p/find user-store user-id))
                card-data (first card-data)

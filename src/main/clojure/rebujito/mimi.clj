@@ -169,9 +169,7 @@
 
   (rewards [this card-number]
     (log/info "fetching rewards for" card-number)
-    (let [d* (d/deferred)
-          ;; card-number "9623570900002"
-          ]
+    (let [d* (d/deferred)]
       (d/future
       (try
         (let [{:keys [status body]} (http-c/get (format "%s/account/%s/balances" base-url card-number)
