@@ -28,11 +28,14 @@
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                            user-id (:_id auth-user)
-                                           user-data (util/generate-user-data auth-user (:sub-market app-config))]
+                                           user-data (util/generate-user-data auth-user (:sub-market app-config))
+                                           real-user-data (p/find user-store user-id)]
                                           (util/>200 ctx (-> response-defaults
-                                                             (merge {:user user-data})
+                                                             (merge
+                                                               {:user user-data}
+                                                               (select-keys real-user-data [:addresses :socialProfile])
+                                                             )
                                                             ;  !! wrong format !! (merge {:rewardsSummary @(p/rewards mimi {})})
-                                                             (merge (select-keys (p/find user-store user-id) [:addresses]))
                                                              (dissoc :target-environment))))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
