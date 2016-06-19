@@ -124,7 +124,7 @@
      (testing ::social-profile/account
                (let [api-id ::social-profile/account
                      path (bidi/path-for r api-id)]
-                 (is (= 200 (-> @(http/put (format "http://localhost:%s%s?access_token=%s"  port path 123)
+                 (is (= 200 (-> @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                            {:throw-exceptions false
                                             :body-encoding "UTF-8"
                                             :body (json/generate-string

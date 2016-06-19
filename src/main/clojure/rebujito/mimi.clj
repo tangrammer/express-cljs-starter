@@ -268,7 +268,7 @@
     (log/info "fetching rewards for" card-number)
     (let [d* (d/deferred)
           ; card-number "9623570800099"
-          ; card-number "9623570900002"
+          card-number "9623570900002"
           ]
       (d/future
         (try
