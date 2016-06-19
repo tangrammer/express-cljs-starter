@@ -40,10 +40,35 @@
     (max 0 (- (* 2 gold-threshold) points-now))
     0))
 
+(defn mimi-to-rebujito-coupons-tr [mimi-coupon]
+ {:couponCode "EFD" ;; earned free drink, or "BFB" birthday, "T3W" tier-3 welcome "WB3" welcome back to tier-3
+  :name (:description mimi-coupon)
+  :posCouponCode (:number mimi-coupon)
+  :allowedRedemptionCount 1
+  :voucherType "MSRPromotionalCoupon"
+  :status "Available"
+  :redemptionCount 0
+  :deliveryMethod "Email"
+  :source "Unknown"
+
+  ;; TODO ask Brandon about these dates
+  ; :issueDate nil
+  ; :expirationDate nil
+  ; :startDate nil
+  ; :lastRedemptionDate nil
+
+  :issueDate "2015-11-11T00:00:00.0000000Z"
+  :expirationDate "2020-11-09T08:54:55.0000000Z"
+  :startDate "2015-11-11T00:00:00.0000000Z"
+  :lastRedemptionDate "1904-01-01T00:00:00.0000000Z"
+  })
+
 (defn translate-mimi-rewards [rewards-response]
   (let [tier-name (-> rewards-response :tier :name (or "Green"))
         tier-date (-> rewards-response :tier :date (or (t/today)))
-        points-balance (-> rewards-response :tier :balance (or 0))]
+        points-balance (-> rewards-response :tier :balance (or 0))
+        coupons (-> rewards-response :coupons (or []))]
+
     {:currentLevel tier-name
      :dateRetrieved (.toString (java.time.Instant/now))
      :pointsTotal points-balance
@@ -53,6 +78,8 @@
      :reevaluationDate (str (t/one-year-from tier-date) "T23:59:59.999Z")
      :pointsNeededForReevaluation (points-needed-for-reevaluation points-balance)
      :pointsEarnedTowardNextFreeReward (points-earned-toward-next-free-reward points-balance)
+
+     :coupons (map mimi-to-rebujito-coupons-tr coupons)
 
      ;; TODO the unknowns
      :cardHolderSinceDate nil
@@ -65,8 +92,7 @@
    #(merge
      m/me-rewards
      {:rewardsProgram rewards-program}
-     {:coupons []
-      :myTiers []}
+     {:myTiers []}
      %)))
 
 (defn me-rewards [store mimi user-store]
