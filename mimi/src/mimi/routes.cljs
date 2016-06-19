@@ -10,6 +10,8 @@
 (def micros (nodejs/require "micros"))
 (def starbucks-micros (nodejs/require "micros/lib/starbucks"))
 (def moment (nodejs/require "moment"))
+(def promise (nodejs/require "bluebird"))
+(def inspect (.-inspect (nodejs/require "util")))
 
 (def app-version (nodejs/require "../../VERSION.json"))
 (def service (.-service app-version))
@@ -105,15 +107,20 @@
                 (.json (.status res 500) #js {:error (.toString err)})))))))))
 
 (.get app "/mimi/starbucks/account/:cardNumber/balances"
-  (fn
-    [req res]
-    "get account balances"
-    (let [card-number (-> req .-params .-cardNumber)]
-      (log/info "getting balances for" card-number)
-      (.then (get-balances card-number)
+  (fn [req res]
+    (let [card-number (-> req .-params .-cardNumber)
+          p0 (get-balances card-number)
+          p1 (.listCoupons micros card-number)
+          p2 (.all promise #js [p0 p1])]
+      (log/info "getting balances and coupons for" card-number)
+      (.then p2
         (fn [result]
-          (log/debug "got result from micros:" result)
-          (.json res (clj->js result)))
+          (log/debug "got result from micros:" (inspect result #js {:depth nil}))
+          (let [rewards (js->clj (get result 0))
+                coupons (js->clj (get result 1))
+                out (merge rewards {:coupons coupons})]
+            (.json res (clj->js out))))
+
         (fn [err]
           (.json (.status res 500) #js {:error (.toString err)}))))))
 
@@ -156,3 +163,19 @@
         (fn [err]
           (log/error "getting transactions" err)
           (.json (.status res 500) #js {:error (.toString err)}))))))
+
+
+(.get app "/mimi/starbucks/account/:cardNumber/coupons"
+  (fn
+    [req res]
+    "get coupons"
+    (let [card-number (-> req .-params .-cardNumber)
+          p0 (.listCoupons micros card-number)]
+      (doto p0
+        (.then
+          (fn [result]
+            (.json res #js {:coupons result})))
+        (.catch
+          (fn [err]
+            (log/error "getting coupons" err)
+            (.json (.status res 500))))))))

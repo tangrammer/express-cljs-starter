@@ -2,6 +2,7 @@
   "name": "mimi",
   "private": "true",
   "dependencies": {
+    "bluebird": "3.4.1",
     "body-parser": "1.15.1",
     "express": "4.13.4",
     "express-jwt": "3.4.0",
