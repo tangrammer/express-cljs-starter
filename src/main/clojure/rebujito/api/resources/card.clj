@@ -225,7 +225,6 @@
                           )
 
                      )}}}
-                      ;  (util/>200 ctx empty-history))}}}
 
    (merge (util/common-resource :me/cards))))
 
