@@ -5,18 +5,16 @@
    [rebujito.scopes :as scopes]
    [rebujito.api.util :as util]
    [rebujito.api.resources :refer (domain-exception)]
+   [rebujito.api.resources.rewards :as rewards]
+   [rebujito.api.resources.card :as card]
+   [rebujito.api.resources.payment :as payment]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(def response-defaults {:socialProfile {}
-                        :paymentMethods []
-                        :favoriteStores []
+(def response-defaults {:favoriteStores []
                         :devices []
-                        :addresses []
-                        :rewardsSummary {}
-                        :tippingPreferences {}
-                        :starbucksCards []})
+                        :tippingPreferences {}})
 
 (def schema {:put {:accountImageUrl String}})
 
@@ -29,17 +27,24 @@
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
                                            user-id (:_id auth-user)
                                            user-data (util/generate-user-data auth-user (:sub-market app-config))
-                                           real-user-data (p/find user-store user-id)]
+                                           real-user-data (p/find user-store user-id)
+                                           card-number (-> real-user-data :cards first :cardNumber)
+                                           rewards (rewards/rewards-response mimi card-number)
+                                           cards [@(card/get-card user-store user-id mimi)]
+                                           payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
+                                                                (map payment/adapt-mongo-to-spec))]
+
                                           (util/>200 ctx (-> response-defaults
                                                              (merge
-                                                               {:user user-data}
-                                                               (select-keys real-user-data [:addresses :socialProfile])
-                                                             )
-                                                            ;  !! wrong format !! (merge {:rewardsSummary @(p/rewards mimi {})})
+                                                               {:user user-data
+                                                                :rewardsSummary rewards
+                                                                :paymentMethods payment-methods
+                                                                :starbucksCards cards}
+                                                               (select-keys real-user-data [:addresses :socialProfile]))
                                                              (dissoc :target-environment))))
                               (d/catch clojure.lang.ExceptionInfo
                                   (fn [exception-info]
-                                    (domain-exception ctx (ex-data exception-info))))
-                              ))}}}
+                                    (domain-exception ctx (ex-data exception-info))))))}}}
+
 
       (merge (util/common-resource :profile))))
