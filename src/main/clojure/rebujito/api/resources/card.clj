@@ -15,12 +15,10 @@
 
 (def schema {:register-physical {:post {:cardNumber String
                                         :pin String
-;                                        :risk s/Any
                                         }
                                  :pin String}
              :reload {:post {:amount Long
                              :paymentMethodId String
-;                             (s/optional-key :risk) s/Any
                              (s/optional-key :acceptTerms) Boolean
                              (s/optional-key :expirationYear) Long
                              (s/optional-key :expirationMonth) Long
@@ -154,281 +152,46 @@
 
    (merge (util/common-resource :me/cards))))
 
-(def empty-history {:paging {:total 6
-                             :offset 0
-                             :limit 50
-                             :returned 6}
-
-                    :historyItems [
-                    {
-
-         :historyId 123124
-         :historyType "SvcTransactionWithPoints"
-         :cardId "a5ede6d4-a4ae-4ec3-bded-758c863a9874"
-         :isoDate "2016-06-16T22:28:59.0000000Z"
-         :modifiedDate nil
-         :currency "ZAR"
-         :localCurrency "ZAR"
-         :totalAmount 101.1
-         :svcTransaction {
-            :checkId nil
-            :transactionType "Redemption"
-            :isVoid false
-            :localizedStoreName "Brokhurstspruit"
-            :storeId "00303"
-            :storeType "Physical"
-            :localDate nil
-            :currency "ZAR"
-            :localCurrency "ZAR"
-            :transactionAmount 0
-            :localTransactionAmount 0
-            :tax nil
-            :newBalance 0
-            :description nil
-            :tipInfo {
-               :tippable false
-               :tippableEndDate nil
-               :tipTransactionId nil
-               :amount nil
-               :status "None"
-            }
-         }
-         :localTotalAmount 0
-         :points [
-            {
-               :pointType "Purchases"
-               :pointsEarned 2
-               :promotionName "Purchase"
-               :amount 0
-               :currency 0
-            }
-         ]
-         :coupon nil
-      }
-      {
-         :historyId 100119
-         :historyType "SvcTransactionWithPoints"
-         :cardId "a5ede6d4-a4ae-4ec3-bded-758c863a9874"
-         :isoDate "2016-06-16T20:42:37.0000000Z"
-         :modifiedDate nil
-         :currency "ZAR"
-         :localCurrency "ZAR"
-         :totalAmount 62.3
-         :svcTransaction {
-            :checkId nil
-            :transactionType "Redemption"
-            :isVoid false
-            :localizedStoreName "Small Town"
-            :storeId "00303"
-            :storeType "Physical"
-            :localDate nil
-            :currency "ZAR"
-            :localCurrency "ZAR"
-            :transactionAmount 0
-            :localTransactionAmount 0
-            :tax nil
-            :newBalance 0
-            :description nil
-            :tipInfo {
-               :tippable false
-               :tippableEndDate nil
-               :tipTransactionId nil
-               :amount nil
-               :status "None"
-            }
-         }
-         :localTotalAmount 6.24
-         :points [
-            {
-               :pointType "Purchases"
-               :pointsEarned 1
-               :promotionName "Purchase"
-               :amount 6.24
-               :currency 0
-            }
-         ]
-         :coupon nil
-      }
-      {
-         :historyId 100174
-         :historyType "Coupon"
-         :cardId nil
-         :isoDate "2016-06-16T00:00:00.0000000Z"
-         :modifiedDate nil
-         :currency nil
-         :localCurrency nil
-         :totalAmount nil
-         :svcTransaction nil
-         :localTotalAmount nil
-         :points nil
-         :coupon {
-            :couponCode "BFB"
-            :name "BIRTHDAY FREE BEVERAGE US"
-            :issueDate nil
-            :expirationDate "2016-07-16T10:21:44.0000000Z"
-            :allowedRedemptionCount 1
-            :voucherType "MSREarnCoupon"
-            :status "Active"
-            :startDate "2016-06-16T00:00:00.0000000Z"
-            :lastRedemptionDate "1904-01-01T00:00:00.0000000Z"
-            :redemptionCount 0
-            :posCouponCode "593"
-            :deliveryMethod "Email"
-            :source "Unknown"
-         }
-      }
-      {
-         :historyId 100188
-         :historyType "Coupon"
-         :cardId nil
-         :isoDate "2016-06-15T00:00:00.0000000Z"
-         :modifiedDate nil
-         :currency nil
-         :localCurrency nil
-         :totalAmount nil
-         :svcTransaction nil
-         :localTotalAmount nil
-         :points nil
-         :coupon {
-            :couponCode "EFD"
-            :name "EARNED FREE DRINK"
-            :issueDate "2016-06-14T00:00:00.0000000Z"
-            :expirationDate "2016-07-30T09:49:08.0000000Z"
-            :allowedRedemptionCount 1
-            :voucherType "MSREarnCoupon"
-            :status "Available"
-            :startDate "2016-06-13T00:00:00.0000000Z"
-            :lastRedemptionDate "1904-01-01T00:00:00.0000000Z"
-            :redemptionCount 0
-            :posCouponCode "594"
-            :deliveryMethod "Email"
-            :source "Unknown"
-         }
-      }
-      {
-         :historyId 100207
-         :historyType "SvcTransaction"
-         :cardId "85607AFB93D21H"
-         :isoDate "2016-06-10T20:28:59.0000000Z"
-         :modifiedDate nil
-         :currency "ZAR"
-         :localCurrency "ZAR"
-         :totalAmount 4.6
-         :svcTransaction {
-            :checkId "a5ede6d4-a4ae-4ec3-bded-758c863a9874"
-            :transactionType "Redemption"
-            :isVoid false
-            :localizedStoreName "Bellevue"
-            :storeId "00303"
-            :storeType "Physical"
-            :localDate "2016-06-09T12:28:59.0000000-07:00"
-            :currency "ZAR"
-            :localCurrency "ZAR"
-            :transactionAmount 4.60
-            :localTransactionAmount 4.60
-            :tax nil
-            :newBalance 249.31
-            :description nil
-            :tipInfo {
-               :tippable false
-               :tippableEndDate nil
-               :tipTransactionId nil
-               :amount nil
-               :status "None"
-            }
-         }
-         :localTotalAmount 4.6
-         :points [
-            {
-               :pointType "Purchases"
-               :pointsEarned 1
-               :promotionName "Purchase"
-               :amount 4.6
-               :currency 0
-            }
-         ]
-         :coupon nil
-      }
-      {
-         :historyId 100207
-         :historyType "Point"
-         :cardId "a5ede6d4-a4ae-4ec3-bded-758c863a9874"
-         :isoDate "2016-06-11T20:28:59.0000000Z"
-         :modifiedDate "2016-06-12T18:05:08.4900000Z"
-         :currency "ZAR"
-         :localCurrency "ZAR"
-         :totalAmount 4.6
-         :svcTransaction nil
-         :localTotalAmount 4.6
-         :points [
-            {
-               :pointType "Purchases"
-               :pointsEarned 1
-               :promotionName "Purchase"
-               :amount 4.6
-               :currency 0
-            }
-         ]
-         :coupon nil
-      }
-
-                    ]})
-
 (defn location-tr [mimi-location-id]
   (case mimi-location-id
-    "43081" "Test Store"
-    "43362" "Head Office Training Store"
-    "43361" "Rosebank"
+    "42581" "QSR Restaurant"
+    "43081" "Starbucks Test Store"
+    "43361" "Rosebank - RB"
+    "43362" "Head Office - Training"
     "43541" "Mall of Africa"
+    "44921" "Head Office - Test Store"
     ""))
 
 (defn mimi-to-rebujito-tx [mimi-tx]
-          {:historyId (:id mimi-tx)
-           :historyType "SvcTransactionWithPoints"
-           :cardId "a5ede6d4-a4ae-4ec3-bded-758c863a9874"
-           :isoDate "2016-05-24T14:17:59.567Z"
-          ;  :isoDate (:date mimi-tx)
-           :modifiedDate nil
-           :currency "ZAR"
-           :localCurrency "ZAR"
-           :totalAmount (:amount mimi-tx)
-           :localTotalAmount 0
-           :points []
-           :coupon nil
-           :svcTransaction {
-              :checkId (:check mimi-tx)
-              :transactionType "Redemption"
-              :isVoid false
-              :localizedStoreName (-> mimi-tx :location location-tr)
-              :storeId (-> mimi-tx :location)
-              :storeType "Physical"
-              :localDate nil
-              :currency "ZAR"
-              :localCurrency "ZAR"
-              :transactionAmount 0
-              :localTransactionAmount 0
-              :tax nil
-              :newBalance (:balance mimi-tx)
-              :description nil
-              :tipInfo {}
-              ; :tipInfo {
-              ;    :tippable false
-              ;    :tippableEndDate nil
-              ;    :tipTransactionId nil
-              ;    :amount nil
-              ;    :status "None"
-              ; }
-           }
-          ;  :points [
-          ;     {
-          ;        :pointType "Purchases"
-          ;        :pointsEarned 2
-          ;        :promotionName "Purchase"
-          ;        :amount 0
-          ;        :currency 0
-          ;     }
-          ;  ]
-          })
+  {:historyId (:id mimi-tx)
+   :historyType "SvcTransactionWithPoints"
+   :cardId "a5ede6d4-a4ae-4ec3-bded-758c863a9874"
+   :isoDate (:date mimi-tx)
+   :modifiedDate nil
+   :currency "ZAR"
+   :localCurrency "ZAR"
+   :totalAmount (:amount mimi-tx)
+   :localTotalAmount 0
+   :points []
+   :coupon nil
+   :svcTransaction {
+      :checkId (:check mimi-tx)
+      :transactionType "Redemption"
+      :isVoid false
+      :localizedStoreName (-> mimi-tx :location location-tr)
+      :storeId (-> mimi-tx :location)
+      :storeType "Physical"
+      :localDate nil
+      :currency "ZAR"
+      :localCurrency "ZAR"
+      :transactionAmount 0
+      :localTransactionAmount 0
+      :tax nil
+      :newBalance (:balance mimi-tx)
+      :description nil
+      :tipInfo {}
+   }
+  })
 
 (defn history [user-store mimi]
   (->
@@ -440,9 +203,14 @@
            :response (fn [ctx]
                       (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
                                        card-data (:cards (p/find user-store user-id))
-                                      ;  card-data-bis (first (filter #(= (:cardId %) card-id) card-data))
                                        card-number (-> card-data first :cardNumber)
-                                       card-number "9623570900003"
+                                       ; some numbers to test history
+                                      ;  card-number "9623570800007"
+                                      ;  card-number "9623570800099"
+                                      ;  card-number "9623570900003"
+                                      ;  card-number "9623570900005"
+                                      ;  card-number "9623570900007"
+                                      ;  card-number "9623570900010"
                                        history-data (p/get-history mimi card-number)
                                        transactions (->> history-data :transactions reverse (take 50))]
                              (util/>200 ctx {:paging {:total (count transactions)
@@ -456,22 +224,7 @@
                                 (domain-exception ctx (ex-data exception-info))))
                           )
 
-                      ;  (util/>200 ctx (merge
-                      ;                   (select-keys empty-history [:paging])
-                      ;                   {:historyItems (map
-                      ;                                   (fn [x]
-                      ;                                     (mimi-to-rebujito-tx
-                      ;                                       {:id x
-                      ;                                        :amount x
-                      ;                                        :check x
-                      ;                                        :location "43541"
-                      ;                                        :balance x
-                      ;                                        :date "2016-06-12T16:12:23.123Z"
-                      ;                                        })
-                      ;                                     ) [1 2 3 4 5 6])}
-                      ;                   ; (mimi-to-rebujito-tx {})
-                      ;                 ))
-                                      )}}}
+                     )}}}
                       ;  (util/>200 ctx empty-history))}}}
 
    (merge (util/common-resource :me/cards))))
