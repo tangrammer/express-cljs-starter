@@ -189,7 +189,7 @@
                                                      :message (.getMessage e)
                                                      })))))
   (insert-card! [this user-id card]
-    (let [card-id (str (java.util.UUID/randomUUID))
+    (let [card-id (str (UUID/randomUUID))
           card (assoc card :cardId card-id)]
       (protocols/update-by-id! this user-id {$push {:cards card}})
       card-id))
@@ -345,7 +345,7 @@
   (get-addresses [this oid]
     (or (:addresses (protocols/find this oid)) []))
   (insert-address [this oid address]
-    (let [address-id (str (java.util.UUID/randomUUID))
+    (let [address-id (str (UUID/randomUUID))
           address (assoc address :addressId address-id)]
       (protocols/update-by-id! this oid {$push {:addresses address}})
       address-id))
