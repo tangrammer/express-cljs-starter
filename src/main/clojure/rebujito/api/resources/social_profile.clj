@@ -3,24 +3,22 @@
    [rebujito.protocols :as p]
    [rebujito.api.util :refer :all]
    [cheshire.core :as json]
+   [manifold.deferred :as d]
    [schema.core :as s]
-   [yada.resource :refer [resource]]))
-
-
+   [yada.resource :refer [resource]]
+   [monger.operators :refer [$set]]))
 
 (def schema {:put {:accountImageUrl String}})
 
-
-(defn account [store]
+(defn account [user-store]
   (->
    {:methods
     {:put {:parameters {:query {:access_token String}
                         :body (-> schema :put)}
            :response (fn [ctx]
-                       (condp = (get-in ctx [:parameters :query :access_token])
-                         "111023" (>400 ctx ["No Request supplied" "Request was malformed. Must contain a body."])
-                         "111033" (>400 ctx ["User does not exist" "User could not be found"])
-                         "500" (>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request"])
-                         (>200 ctx ["OK"])))}}}
+                        (-> (d/let-flow [user-id (:_id (authenticated-user ctx))
+                                         image-url (-> ctx :parameters :body :accountImageUrl)
+                                         _ (p/update-by-id! user-store user-id {$set {"socialProfile.account.accountImageUrl" image-url}})]
+                              (>200 ctx nil))))}}}
 
    (merge (common-resource :me/social-profile))))

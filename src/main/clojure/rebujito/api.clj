@@ -149,8 +149,9 @@
                                                                                 :get  scopes/user
                                                                                 :put scopes/user
                                                                                 :post scopes/user}))]]]
-               ["/socialprofile/account" (-> (social-profile/account store)
-                                             (assoc :id ::social-profile/account))]
+               ["/socialprofile/account" (-> (social-profile/account user-store)
+                                             (assoc :id ::social-profile/account
+                                                    :oauth {:put scopes/user}))]
                ]]]]
   )
 
