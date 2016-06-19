@@ -89,10 +89,10 @@
       (prn payload)
       (if validation-errors
         (.json (.status res 400) (clj->js (assoc invalid-payload :details validation-errors)))
-        (let [promise (.ensureAccountExists starbucks-micros card-number)]
+        (let [p1 (.ensureAccountExists starbucks-micros card-number)]
           (log/info "creating accounts for" card-number)
 
-          (let [p2 (.then promise
+          (let [p2 (.then p1
                       (fn []
                         (log/info "linking card" card-number "to" customer-id)
                         (link-card customer-id card-number)))]
