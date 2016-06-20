@@ -10,6 +10,7 @@
    [monger.json :as mj]
    [monger.result :refer [acknowledged?]]
    [rebujito.protocols :as protocols]
+   [rebujito.util :as util]
    [rebujito.schemas :refer (PaymentMethodMongo AutoReloadMongo)]
    [rebujito.mongo.schemas :refer (query-by-example-coercer)]
    [taoensso.timbre :as log])
@@ -249,27 +250,19 @@
     )
   (add-new-payment-method [this oid p]
     (try
+      ;;example:::
+;;      (throw (rebujito.MongoException. "BOMB!"))
       (let [uuid (str (UUID/randomUUID))
             p (assoc p :paymentMethodId  uuid)]
         (log/debug ">>>>" oid p)
         (s/validate PaymentMethodMongo p)
         (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})]
           (if (pos? (.getN t))
-            {:paymentMethodId uuid}
-            (d/error-deferred (ex-info (str "Store ERROR!")
-                                       {:type :store
-                                        :status 500
-                                        :body "add-new-payment-method transaction fails"
-                                        :message "add-new-payment-method transaction fails"
-                                        }))
-            )))
+              {:paymentMethodId uuid}
+              (util/error* :store 400 ::add-new-payment-method :transaction-failed [oid p]))))
+      (catch Exception error (util/error* :store 500 ::add-new-payment-method (.getMessage error) [oid p error]))))
 
-      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
-                                                    {:type :store
-                                                     :status 500
-                                                     :body (.getMessage e)
-                                                     :message (.getMessage e)
-                                                     })))))
+
   (get-payment-method [this oid payment-method-id]
     (let [user-db  (protocols/find this oid)]
       (if-let [p (first (filter #(= (:paymentMethodId %) payment-method-id) (:paymentMethods user-db)))]

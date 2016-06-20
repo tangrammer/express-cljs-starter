@@ -4,6 +4,7 @@
   :license {:name "Proprietary"}
 
   :resource-paths ["src/main/resources"]
+  :java-source-paths ["src/main/java"]
   :source-paths ["src/main/clojure"]
   :test-paths ["src/test/clojure"]
 
