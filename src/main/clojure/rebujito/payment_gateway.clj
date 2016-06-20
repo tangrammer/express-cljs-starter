@@ -49,7 +49,9 @@
                         (d/error! d* (ex-info (str "error!!!" 500)
                                               {:type :payment-gateway
                                                :status 500
-                                               :body (json/generate-string ["paygate/create-card-token" status error body])}))
+                                               :body (try
+                                                       (json/generate-string ["paygate/create-card-token" status error body])
+                                                       (catch Exception e (.getMessage e)))}))
                         (let [response (xp/xml->doc body)
                               card-token (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
                           (if (first card-token)
