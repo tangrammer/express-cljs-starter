@@ -40,7 +40,13 @@
              "http://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270.png"}
             {:imageType "iosLargeHighRes"
              :uri
-             "http://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270@2x.png"}]
+             "http://starbucks.com/images/mobilev3/card_Coffee_Aroma_Card_FY11_270@2x.png"}
+            {:imageType "androidFullXxhdpi"
+             :uri
+             "https://test.openapi.starbucks.com/v1/images/card/mobile/card_Coffee_Aroma_Card_FY11_androidFull_Xxhdpi.png"}
+            {:imageType "androidThumbXxhdpi"
+         		 :uri
+             "https://test.openapi.starbucks.com/v1/images/card/mobile/card_Coffee_Aroma_Card_FY11_androidThumb_Xxhdpi.png"}]
            :balance 86.0
            :submarketCode "US"
            :cardId "85607AF09DD610"
