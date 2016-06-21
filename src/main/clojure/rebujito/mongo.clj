@@ -268,14 +268,16 @@
 
 
   (get-payment-method [this oid payment-method-id]
-    (let [user-db  (protocols/find this oid)]
-      (if-let [p (first (filter #(= (:paymentMethodId %) payment-method-id) (:paymentMethods user-db)))]
-        p
-        (d/error-deferred (ex-info (str "Store ERROR!")
-                                   {:type :store
-                                    :status 400
-                                    :body (format "payment-method doens't exist: %s " payment-method-id)
-                                    :message (format "payment-method doens't exist: %s " payment-method-id)})))))
+    (let [user-db  (protocols/find this oid)
+          try-type :store
+          try-id ::add-new-payment-method
+          try-context '[oid payment-method-id user-db]]
+      (util/dtry
+       (do
+         (if-let [p (first (filter #(= (:paymentMethodId %) payment-method-id) (:paymentMethods user-db)))]
+           p
+           (util/error* 400 ['xxx ::get-payment-method-failed]))))))
+
   (get-payment-methods [this oid]
     (let [user-db  (protocols/find this oid)]
       (or  (:paymentMethods user-db) [])))
