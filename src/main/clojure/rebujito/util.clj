@@ -147,3 +147,11 @@
               ))
     (manifold.deferred/catch  Exception #(ex-data %))
     )
+
+
+
+(defmacro dcatch [ctx body]
+  `(manifold.deferred/catch ~body clojure.lang.ExceptionInfo
+    (fn [exception-info#]
+      (log/error (.getMessage exception-info#))
+      (rebujito.api.resources/domain-exception ~ctx (ex-data exception-info#)))))
