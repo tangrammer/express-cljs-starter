@@ -1,7 +1,7 @@
 (ns rebujito.util
   (:require [taoensso.timbre :as log]
             [rebujito.api.util :as u]))
-(def send-bugsnag true)
+(def ^:dynamic  *send-bugsnag* true)
 
 (defmacro local-context []
   (let [symbols (keys &env)]
@@ -36,7 +36,7 @@
 (macroexpand '(>take {:hola 1} hola))
 
 ;(println (>take {'hola 1} hola))
-(defmacro error* [status message & ks]
+(defmacro error* [status [code message] & ks]
 
   `(let [local-context# (local-context)
          a# (println '~ks)
@@ -46,12 +46,13 @@
          ex# {:context  (>select local-context#  ~ks (>take local-context# try-context))
               :status ~status
               :body (str (namespace id#) "/" (name id#))
-              :message ~message}
+              :message ~message
+              :code ~code}
          ctx# (or (:ctx local-context#) {})]
-     (if send-bugsnag
+     (if *send-bugsnag*
        (do
         (clj-bugsnag.core/notify
-         (ex? type# (str ~status " :: " (:body ex#) " :: " (name ~message)))
+         (ex? type# (str ~status " :: " (:body ex#) " :: " ~code (name ~message)))
          (let [email# {:email  (or (:emailAddress (rebujito.api.util/authenticated-user ctx#))
                                    "unauthenticated user")}]
            {:api-key (:key (:bugsnag (rebujito.config/config)))
@@ -80,10 +81,11 @@
                                                               :status ~status
                                                               :context (assoc (:context ex#)
                                                                               :fn (:body ex#))
-                                                              :keys   (quote ~('map 'symbol ks))
-                                                              :context-keys   (keys local-context#)
-                                                              :body (str ~status " :: " (:body ex#) " :: " (name ~message))
-                                                              :message (str ~status " :: " (:body ex#) " :: " (name ~message))}))))
+;                                                              :keys   (quote ~('map 'symbol ks))
+ ;                                                             :context-keys   (keys local-context#)
+                                                              :body (str ~status " :: " (:body ex#) " :: " ~code " :: " (name ~message))
+                                                              :code ~code
+                                                              :message (:body ex#)}))))
 
 (comment
   (let [c 3
@@ -98,7 +100,7 @@
 (defmacro dtry [body & context-kw]
   `(try
      ~@body
-     (catch Exception error# (error* 500  (.getMessage error#) ~@('map 'symbol context-kw)))))
+     (catch Exception error# (error* 500  [500 (.getMessage error#)] ~@('map 'symbol context-kw)))))
 
 
 (defmacro hola* [a b & body]
@@ -117,21 +119,22 @@
 
 
 
-(->
- (let [
-        try-type :store
-        try-id ::add-new-payment-method
-       try-context '[oid p jolin]
-       oid 12
-       jolin 4
-       p {:a 12}]
+(binding [*send-bugsnag* false]
+  (time (->
+                   (let [
+                         try-type :store
+                         try-id ::add-new-payment-method
+                         try-context '[oid p jolin]
+                         oid 12
+                         jolin 4
+                         p {:a 12}]
 
-   (dtry (do
-          ;;(println 'try-type)
-;           (throw (Exception. "wow!"))
-           (error* 400  :transaction-failed  oid))))
- (manifold.deferred/catch  Exception #(ex-data %))
- )
+                     (dtry (do
+                             ;;(println 'try-type)
+                                        ;           (throw (Exception. "wow!"))
+                             (error* 400  [44567 :transaction-failed]  oid))))
+                   (manifold.deferred/catch  Exception #(ex-data %))
+                   )))
 
 
 
