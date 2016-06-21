@@ -249,18 +249,22 @@
                                                      }))))
     )
   (add-new-payment-method [this oid p]
-    (try
-      ;;example:::
-;;      (throw (rebujito.MongoException. "BOMB!"))
-      (let [uuid (str (UUID/randomUUID))
-            p (assoc p :paymentMethodId  uuid)]
-        (log/debug ">>>>" oid p)
-        (s/validate PaymentMethodMongo p)
-        (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})]
-          (if (pos? (.getN t))
-              {:paymentMethodId uuid}
-              (util/error* :store 400 ::add-new-payment-method :transaction-failed [oid p]))))
-      (catch Exception error (util/error* :store 500 ::add-new-payment-method (.getMessage error) [oid p error]))))
+    (let [try-type :store
+          try-id ::add-new-payment-method
+          try-context '[oid p]]
+      (util/dtry
+      (do
+        ;; example 500 (throw (Exception. "!wow"))
+        (let [uuid (str (UUID/randomUUID))
+              p (assoc p :paymentMethodId  uuid)]
+          (log/debug ">>>>" oid p)
+          (s/validate PaymentMethodMongo p)
+          (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})]
+            (if (pos? (.getN t))
+                {:paymentMethodId uuid}
+                (util/error* 400 ::transaction-failed)))))))
+
+    )
 
 
   (get-payment-method [this oid payment-method-id]
