@@ -80,12 +80,16 @@
                    (get-in ctx [:parameters :body :client_id])
                    (get-in ctx [:parameters :body :client_secret]))
                ]
+              ;; "force evaluation of signature check :::: signature checked?:" c
+              (assert c)
               (if-let [user (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
                                                      :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
                                  first
                                  (dissoc :password))]
+
                 (>201 ctx (p/grant authorizer (select-keys user [:_id :firstName :lastName :emailAddress]) #{scopes/application scopes/user}))
-                (>404 ctx [:user-not-found (get-in ctx [:parameters :body :username])]))))
+                (>404 ctx {:message :user-not-found
+                           :body (get-in ctx [:parameters :body :username])}))))
 
 (defmethod get-token :refresh_token ; docs -> http://bit.ly/1sLcWfw
   ; TODO verify refresh token #39
@@ -103,12 +107,14 @@
                refresh-token (get-in ctx [:parameters :body :refresh_token])
                data-refresh-token (p/read-token authenticator refresh-token)
                mongo-token (first  (p/find token-store {:refresh-token refresh-token}))]
-;;    (log/info "*refresh_token>>>" mongo-token)
+              ;;    (log/info "*refresh_token>>>" mongo-token)
+              (assert c)
     (if (:valid mongo-token)
       (let [user (-> (p/find user-store (:user-id mongo-token))
                      (dissoc :password))]
         (>201 ctx (p/grant authorizer (select-keys user [:_id :firstName :lastName :emailAddress]) #{scopes/application scopes/user})))
-      (>403 ctx ["refresh-token not valid!"]))))
+      (>400 ctx {:error 400
+                 :message "token expired"}))))
 
 (defn check-value [map key value]
   (let [map (clojure.walk/keywordize-keys map)]
