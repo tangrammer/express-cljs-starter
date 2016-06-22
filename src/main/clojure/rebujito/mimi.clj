@@ -2,6 +2,7 @@
   (:require
    [manifold.deferred :as d]
    [rebujito.protocols :as protocols]
+   [rebujito.util :refer (dtry ddtry)]
    [rebujito.schemas :refer (MimiUser)]
    [clj-http.client :as http-c]
    [org.httpkit.client :as http]
@@ -64,40 +65,24 @@
   protocols/Mimi
   (create-account [this data]
     (log/info "create-account-mimi: " (format "%s/account" base-url) data)
-
-;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
-          (try
-      (s/validate CreateAccountSchema data)
-      (catch Exception e       (d/error! d* (ex-info (str "error!!!" (.getMessage e))
-                                                     {:type :mimi
-                                                      :status 500
-                                                      :body (.getMessage e)}))
-           )
-      )
       (d/future
-        (try
-          (let [{:keys [status body]} (http-c/post (format "%s/account" base-url)
-                                                   {:headers {"Authorization" (format "Bearer %s" token)}
-                                                    :insecure? true
-                                                    :content-type :json
-                                                    :accept :json
-                                                    :as :json
-                                                    :throw-exceptions true
-                                                    :form-params data})]
-            (log/info body)
-            (d/success! d* (-> body :customerId vector (conj :prod-mimi))))
-          (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
-                                                (d/error! d* (ex-info (str "error!!!" (:status ex))
-                                                                      {:type :mimi
-                                                                       :status (:status ex)
-                                                                       :body (:body ex)}))))
-          (catch Exception e (do
-                               (println (.printStackTrace e))
-                               (d/error! d* (ex-info (str "error!!!" 500)
-                                                     {:type :mimi
-                                                      :status 500
-                                                      :body (.getMessage e)}))))))
+        (let [try-type :mimi
+              try-id ::create-account
+              try-context '[data]]
+          (ddtry d* (do
+                      (s/validate CreateAccountSchema data)
+                      (let [{:keys [status body]} (http-c/post (format "%s/account" base-url)
+                                                              {:headers {"Authorization" (format "Bearer %s" token)}
+                                                               :insecure? true
+                                                               :content-type :json
+                                                               :accept :json
+                                                               :as :json
+                                                               :throw-exceptions true
+                                                               :form-params data})]
+                       (log/info body)
+                       (-> body :customerId vector (conj :prod-mimi))))
+                 )))
       d*))
       ; TODO rename to link-card
   (register-physical-card [this data]
