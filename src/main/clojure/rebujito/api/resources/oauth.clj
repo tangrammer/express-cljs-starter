@@ -8,6 +8,7 @@
    [rebujito.scopes :as scopes]
    [rebujito.api.sig :as api-sig]
    [rebujito.api.util :refer :all]
+   [rebujito.util :refer (dcatch)]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]
@@ -129,9 +130,7 @@
                            :charset "UTF-8"}]
 
                :response (fn [ctx]
-                           (-> (get-token ctx store token-store user-store authenticator authorizer crypto api-client-store)
-                               (d/catch clojure.lang.ExceptionInfo
-                                   (fn [exception-info]
-                                     (domain-exception ctx (ex-data exception-info))))))}}}
+                           (dcatch ctx
+                                   (get-token ctx store token-store user-store authenticator authorizer crypto api-client-store)))}}}
 
       (merge (common-resource :oauth))))

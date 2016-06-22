@@ -408,27 +408,15 @@
   protocols/ApiClient
   (login [this id pw]
     (log/info "login" id pw)
-    (-> (protocols/find this id)
-        (d/chain
-         (fn [api-client]
-           (if (= (:secret api-client) pw)
-             api-client
-             (d/error-deferred (ex-info (str "Store ERROR!")
-                                        {:type :store
-                                         :status 400
-                                         :body (format "api client-id and client-secret: %s :: %s not valid  " id pw)
-                                         :message (format "api client-id and client-secret: %s :: %s not valid  " id pw)
-                                         })))))
-        (d/catch Exception
-            (fn [e]
-              (d/error-deferred (ex-info (str "Store ERROR!")
-                                        {:type :store
-                                         :status 400
-                                         :body (str (format "api client-id and client-secret: %s :: %s not valid  " id pw)
-                                                    " " (.getMessage e))
-                                         :message (str (format "api client-id and client-secret: %s :: %s not valid  " id pw)
-                                                    " " (.getMessage e))
-                                         })))))))
+    (let [try-type :store
+          try-id ::login
+          try-context '[id pw]]
+      (util/dtry
+       (do (if-let [api-client (protocols/find this id)]
+          (if (= (:secret api-client) pw)
+            api-client
+            (util/error* 400 ['xxx (str :invalid_client " " (format "api client-id and client-secret: %s :: %s not valid  " id pw))]))
+          (util/error* 400 ['xxx (str :invalid_client " " (format "api client-id  %s not valid  " id ))])))))))
 
 
 (defn new-counter-store
