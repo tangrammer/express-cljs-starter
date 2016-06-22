@@ -337,7 +337,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1000"])))
+                     (json/parse-string true)) {:code 12345,
+                                                :message
+                                                "Please supply an auto reload amount. :: Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1000",
+                                                :body
+                                                "Please supply an auto reload amount. :: Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1000"})))
 
         ;; validation amount with autoReloadType="Date"
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -356,7 +360,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])))
+                     (json/parse-string true)) {:code 12345,
+   :message
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'.",
+   :body
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."})))
 
 
         ;; validation payment-method
@@ -376,7 +384,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing payment method identifier attribute is required"])))
+                     (json/parse-string true)) {:code 12345,
+   :message
+   "Please supply a payment method id. :: Missing payment method identifier attribute is required",
+   :body
+   "Please supply a payment method id. :: Missing payment method identifier attribute is required"})))
 
         ;; validation reload-type
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -395,7 +407,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])))
+                     (json/parse-string true)) {:code 12345,
+   :message
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'.",
+   :body
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."})))
         ;; validation proper reload-type
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                                 {:throw-exceptions false
@@ -413,7 +429,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])))
+                     (json/parse-string true)) {:code 12345,
+   :message
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'.",
+   :body
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."})))
 
         )
 

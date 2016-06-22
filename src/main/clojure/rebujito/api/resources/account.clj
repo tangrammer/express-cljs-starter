@@ -90,21 +90,30 @@
                             :body (:post schema)}
                :response (fn [ctx]
 
-                           (dcatch ctx (let [ctx (update-in ctx [:parameters :body :market] (fn [current-market]
-                                                                                   (if current-market
-                                                                                     current-market
-                                                                                     (-> ctx :parameters :query :market))))]
-
-                              (d/let-flow [mimi-account (d/chain
-                                                         (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
-                                                         (fn [b]
-                                                           (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))))
-                                           mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
+                           (let [ctx (update-in ctx [:parameters :body :market] (fn [current-market]
+                                                                                             (if current-market
+                                                                                               current-market
+                                                                                               (-> ctx :parameters :query :market))))]
 
 
-                                          (log/error "mongo-account!!" mongo-account)
-                                          (util/>201 ctx (dissoc  mongo-account :password)))
-                              )))}}}
+                             (dcatch  ctx
+                                      (d/let-flow [mimi-account (d/chain
+                                                                 (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
+                                                                 (fn [b]
+                                                                   #_(throw (Exception. "BOMB!"))
+                                                                   #_(throw (ex-info "wow!" {:jau true
+                                                                                             :status 400
+                                                                                             :type :default
+                                                                                             :code 12367124
+                                                                                             :message "hola"
+                                                                                             :body "im the exception"}))
+                                                                   (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))))
+                                                   mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
+
+
+                                                  (log/error "mongo-account!!" mongo-account)
+                                                  (util/>201 ctx (dissoc  mongo-account :password))))
+                                        ))}}}
       (merge (util/common-resource :account))))
 
 (defn me [store mimi user-store app-config]

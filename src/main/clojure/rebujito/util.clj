@@ -81,8 +81,8 @@
                                                               :status ~status
                                                               :context (assoc (:context ex#)
                                                                               :fn (:body ex#))
-;                                                              :keys   (quote ~('map 'symbol ks))
- ;                                                             :context-keys   (keys local-context#)
+                                                              :keys   (quote ~('map 'symbol ks))
+                                                              :context-keys   (keys local-context#)
                                                               :body (str ~status " :: " (:body ex#) " :: " ~code " :: " (name ~message))
                                                               :code ~code
                                                               :message (:body ex#)}))))
@@ -151,7 +151,15 @@
 
 
 (defmacro dcatch [ctx body]
-  `(manifold.deferred/catch ~body clojure.lang.ExceptionInfo
-    (fn [exception-info#]
-      (log/error (.getMessage exception-info#))
-      (rebujito.api.resources/domain-exception ~ctx (ex-data exception-info#)))))
+  `(-> ~body
+    (manifold.deferred/catch clojure.lang.ExceptionInfo
+      (fn [exception-info#]
+        (log/error "QUILLO exceptionINFO! "(.getMessage exception-info#))
+        (rebujito.api.resources/domain-exception ~ctx (ex-data exception-info#))))
+    (manifold.deferred/catch Exception
+      (fn [exception-info#]
+        (log/error "QUILLO!"  (.getMessage exception-info#))
+        (rebujito.api.resources/domain-exception ~ctx {:type :default :status 500 :message (.getMessage exception-info#)
+                                                       :code 234124 :body "no se que"})))
+
+    ))

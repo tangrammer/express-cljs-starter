@@ -17,6 +17,20 @@
   (:import [org.bson.types ObjectId]
            [java.util UUID]))
 
+;com.mongodb.WriteResult
+
+(defprotocol Operation
+  (result [this success-data]))
+
+(extend-protocol Operation
+  com.mongodb.WriteResult
+  (result [this success-data]
+    (if (pos? (.getN this))
+             success-data
+             (util/error* 500 ['xxx ::transaction-failed])))
+  )
+
+
 (defn to-mongo-id-hex-string [s]
   (format "%024x"  (read-string s)))
 
@@ -207,13 +221,10 @@
                p (:paymentMethods user)
                p-others (filter #(not= (:paymentMethodId %) (:paymentMethodId payment-method)) p)
 
-               new-p (conj p-others payment-method)
-
-               t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
-                            {$set {:paymentMethods  new-p}})]
-           (if (pos? (.getN t))
-             payment-method
-             (util/error* 500 ['xxx ::transaction-failed])))))))
+               new-p (conj p-others payment-method)]
+           (-> (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                            {$set {:paymentMethods  new-p}})
+               (result payment-method)))))))
 
 
   (remove-payment-method [this oid payment-method]
