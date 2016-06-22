@@ -225,8 +225,6 @@
            (-> (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
                             {$set {:paymentMethods  new-p}})
                (result payment-method)))))))
-
-
   (remove-payment-method [this oid payment-method]
     (let [try-type :store
           try-id ::add-new-payment-method
@@ -255,8 +253,6 @@
                 (util/error* 400 ['xxx ::transaction-failed])))))))
 
     )
-
-
   (get-payment-method [this oid payment-method-id]
     (let [user-db  (protocols/find this oid)
           try-type :store
@@ -267,7 +263,6 @@
          (if-let [p (first (filter #(= (:paymentMethodId %) payment-method-id) (:paymentMethods user-db)))]
            p
            (util/error* 400 ['xxx ::get-payment-method-failed]))))))
-
   (get-payment-methods [this oid]
     (let [user-db  (protocols/find this oid)]
       (or  (:paymentMethods user-db) [])))
@@ -353,7 +348,6 @@
     (insert!* this data))
   (update! [this data-query data-update]
     (update!* this data-query data-update))
-
   (update-by-id! [this hex-id data]
     (update-by-id!* this hex-id data))
   )

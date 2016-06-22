@@ -30,7 +30,7 @@
                                            real-user-data (p/find user-store user-id)
                                            card-number (-> real-user-data :cards first :cardNumber)
                                            rewards (rewards/rewards-response mimi card-number)
-                                           cards [@(card/get-card user-store user-id mimi)]
+                                           card (card/get-card user-store user-id mimi)
                                            payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
                                                                 (map payment/adapt-mongo-to-spec))]
 
@@ -39,7 +39,7 @@
                                                                {:user user-data
                                                                 :rewardsSummary rewards
                                                                 :paymentMethods payment-methods
-                                                                :starbucksCards cards}
+                                                                :starbucksCards [card]}
                                                                (select-keys real-user-data [:addresses :socialProfile]))
                                                              (dissoc :target-environment))))
                               (d/catch clojure.lang.ExceptionInfo
