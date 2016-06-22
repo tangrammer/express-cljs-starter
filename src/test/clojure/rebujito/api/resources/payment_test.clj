@@ -1,5 +1,6 @@
 (ns rebujito.api.resources.payment-test
   (:require
+   [taoensso.timbre :as log]
    [schema.core :as s]
    [schema-generators.generators :as g]
    [byte-streams :as bs]
@@ -29,7 +30,7 @@
     (let [port (-> *system*  :webserver :port)
           payment-method-id (atom "")
           card-id (create-digital-card)]
-
+      (log/info "testing " :GET ::payment/methods)
       (let [path (get-path ::payment/methods)
             http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                      {:throw-exceptions false
@@ -40,6 +41,7 @@
         (is (= 200 (-> http-response :status)))
         (is (= [] body)))
 
+      (log/info "testing " :POST ::payment/methods)
       (let [path (get-path ::payment/methods)
             {:keys [status body] :as all}
             (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -68,7 +70,7 @@
         (reset! payment-method-id (:paymentMethodId body))
         )
 
-
+      (log/info "testing" :GET ::payment/methods)
       (let [path (get-path ::payment/methods)
             http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                      {:throw-exceptions false
@@ -92,7 +94,7 @@
 
              (catch Exception e (is (nil? e)))))
 
-
+      (log/info "testing" :GET ::payment/method-detail)
       (let [path (bidi/path-for (-> *system* :docsite-router :routes) ::payment/method-detail :payment-method-id @payment-method-id)
             _ (println (format "http://localhost:%s%s?access_token=%s"  port path  *user-access-token*))
             http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path  *user-access-token*)
@@ -335,7 +337,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1000"])))
+                     (json/parse-string true)) {:code 12345,
+                                                :message
+                                                "Please supply an auto reload amount. :: Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1000",
+                                                :body
+                                                "Please supply an auto reload amount. :: Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1000"})))
 
         ;; validation amount with autoReloadType="Date"
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -354,7 +360,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])))
+                     (json/parse-string true)) {:code 12345,
+   :message
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'.",
+   :body
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."})))
 
 
         ;; validation payment-method
@@ -374,7 +384,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing payment method identifier attribute is required"])))
+                     (json/parse-string true)) {:code 12345,
+   :message
+   "Please supply a payment method id. :: Missing payment method identifier attribute is required",
+   :body
+   "Please supply a payment method id. :: Missing payment method identifier attribute is required"})))
 
         ;; validation reload-type
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -393,7 +407,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])))
+                     (json/parse-string true)) {:code 12345,
+   :message
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'.",
+   :body
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."})))
         ;; validation proper reload-type
         (let [{:keys [status body]} @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                                 {:throw-exceptions false
@@ -411,7 +429,11 @@
                                                  :content-type :json})]
           (is (= 400 status))
           (is (= (-> (bs/to-string body)
-                     (json/parse-string true)) ["Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])))
+                     (json/parse-string true)) {:code 12345,
+   :message
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'.",
+   :body
+   "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."})))
 
         )
 

@@ -20,9 +20,13 @@
 
 (defn >400* [ctx body]
   (log/error "ERROR >>>> " body)
-  (>base ctx 400 [body])
+  (>base ctx 400 body)
 ;;  (d/error-deferred (ex-info  body {}))
   )
+
+(defn new>500* [ctx {:keys [status body code message] :as ex-data}]
+  (log/error "ERROR>>>>>" body)
+  (d/error-deferred (ex-info message ex-data)))
 
 (defn >500* [ctx body]
   (log/error "ERROR>>>>>" body)
@@ -46,29 +50,15 @@
 (defn >200 [ctx body]
   (>base ctx 200 body))
 
-(def send-bugsnag true)
-
 (defn log-handler  [ctx]
   (if  (>= (-> ctx :response :status) 400)
-    (let [body (bs/to-string (-> ctx :response :body ))]
-      (log/info "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters) " :: " body)
-      (when send-bugsnag
-        (bugsnag/notify
-        (Exception. "log-handler-error")
-        {:api-key (:key (:bugsnag (config/config)))
-         :meta {:status (-> ctx :response :status)
-                :id :log-handler
-                :uri (-> ctx :request :uri)
-                :parameters (-> ctx :parameters)
-                :body body
-                :email "juanantonioruz@gmail.com"
-                }
-         :user {:id :log-handler
-                :uri (-> ctx :request :uri)
-                :parameters (-> ctx :parameters)
-                :body body
-                :email "juanantonioruz@gmail.com"}}))
-      (assoc-in ctx [:response :body] (bs/convert body java.nio.ByteBuffer)))
+    (try
+      (let [body (bs/to-string (-> ctx :response :body ))]
+       (log/error "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters) " :: " body)
+       (assoc-in ctx [:response :body] (bs/convert body java.nio.ByteBuffer)))
+      (catch Exception e
+        (log/error "CALL NO BS!>>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters))
+        ))
     (log/info "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters))))
 
 
@@ -175,10 +165,15 @@
      (when-not (v-fn v)
        (throw (ex-info message {:type :schema
                                 :status status
-                                :body description})))
+                                :code 12345
+                                :message (str message " :: " description)
+                                :body (str message " :: " description)})))
      (catch Exception e (throw (ex-info message {:type :schema
                                                  :status status
-                                                 :body description}))))))
+                                                 :code 12345
+                                                 :message (str message " :: " description)
+
+                                                 :body (str message " :: " description)}))))))
 
 (def optional-risk {(s/optional-key :risk) {(s/optional-key :platform) String
                                             (s/optional-key :reputation) {(s/optional-key :IPAddress) String

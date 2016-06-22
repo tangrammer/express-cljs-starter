@@ -10,11 +10,26 @@
    [monger.json :as mj]
    [monger.result :refer [acknowledged?]]
    [rebujito.protocols :as protocols]
+   [rebujito.util :as util]
    [rebujito.schemas :refer (PaymentMethodMongo AutoReloadMongo)]
    [rebujito.mongo.schemas :refer (query-by-example-coercer)]
    [taoensso.timbre :as log])
   (:import [org.bson.types ObjectId]
            [java.util UUID]))
+
+;com.mongodb.WriteResult
+
+(defprotocol Operation
+  (result [this success-data]))
+
+(extend-protocol Operation
+  com.mongodb.WriteResult
+  (result [this success-data]
+    (if (pos? (.getN this))
+             success-data
+             (util/error* 500 ['xxx ::transaction-failed])))
+  )
+
 
 (defn to-mongo-id-hex-string [s]
   (format "%024x"  (read-string s)))
@@ -196,89 +211,63 @@
 
   protocols/UserPaymentMethodStore
   (update-payment-method [this oid payment-method]
+    (let [try-type :store
+          try-id ::update-payment-method
+          try-context '[oid payment-method]]
+      (util/dtry
+       (do
+         (log/debug ">>>>" oid)
+         (let [user (protocols/find this oid)
+               p (:paymentMethods user)
+               p-others (filter #(not= (:paymentMethodId %) (:paymentMethodId payment-method)) p)
 
-    (try
-      (do
-        (log/debug ">>>>" oid)
-        (let [user (protocols/find this oid)
-              p (:paymentMethods user)
-              p-others (filter #(not= (:paymentMethodId %) (:paymentMethodId payment-method)) p)
+               new-p (conj p-others payment-method)]
+           (-> (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                            {$set {:paymentMethods  new-p}})
+               (result payment-method)))))))
 
-              new-p (conj p-others payment-method)
 
-              t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
-                           {$set {:paymentMethods  new-p}})]
-          (if (pos? (.getN t))
-            payment-method
-            (d/error-deferred (ex-info (str "Store ERROR!")
-                                       {:type :store
-                                        :status 500
-                                        :body "update-payment-method transaction fails"
-                                        :message "update-payment-method transaction fails"
-                                        }))
-            )))
-
-      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
-                                                    {:type :store
-                                                     :status 500
-                                                     :body (.getMessage e)
-                                                     :message (.getMessage e)
-                                                     }))))
-    )
   (remove-payment-method [this oid payment-method]
-    (try
-      (log/debug ">>>>" oid payment-method)
-
-      (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$pull {:paymentMethods payment-method}})]
-        (if (pos? (.getN t))
-          true
-          (d/error-deferred (ex-info (str "Store ERROR!")
-                                     {:type :store
-                                      :status 500
-                                      :body "remove-new-payment-method transaction fails"
-                                      :message "remove-new-payment-method transaction fails"
-                                      }))
-          ))
-
-      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
-                                                    {:type :store
-                                                     :status 500
-                                                     :body (.getMessage e)
-                                                     :message (.getMessage e)
-                                                     }))))
-    )
+    (let [try-type :store
+          try-id ::add-new-payment-method
+          try-context '[oid payment-method]]
+      (util/dtry
+       (do
+         (log/debug ">>>>" oid payment-method)
+         (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$pull {:paymentMethods payment-method}})]
+           (if (pos? (.getN t))
+             true
+             (util/error* 500 ['xxx ::transaction-failed])))))))
   (add-new-payment-method [this oid p]
-    (try
-      (let [uuid (str (UUID/randomUUID))
-            p (assoc p :paymentMethodId  uuid)]
-        (log/debug ">>>>" oid p)
-        (s/validate PaymentMethodMongo p)
-        (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})]
-          (if (pos? (.getN t))
-            {:paymentMethodId uuid}
-            (d/error-deferred (ex-info (str "Store ERROR!")
-                                       {:type :store
-                                        :status 500
-                                        :body "add-new-payment-method transaction fails"
-                                        :message "add-new-payment-method transaction fails"
-                                        }))
-            )))
+    (let [try-type :store
+          try-id ::add-new-payment-method
+          try-context '[oid p]]
+      (util/dtry
+      (do
+        ;; example 500 (throw (Exception. "!wow"))
+        (let [uuid (str (UUID/randomUUID))
+              p (assoc p :paymentMethodId  uuid)]
+          (log/debug ">>>>" oid p)
+          (s/validate PaymentMethodMongo p)
+          (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})]
+            (if (pos? (.getN t))
+                {:paymentMethodId uuid}
+                (util/error* 400 ['xxx ::transaction-failed])))))))
 
-      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
-                                                    {:type :store
-                                                     :status 500
-                                                     :body (.getMessage e)
-                                                     :message (.getMessage e)
-                                                     })))))
+    )
+
+
   (get-payment-method [this oid payment-method-id]
-    (let [user-db  (protocols/find this oid)]
-      (if-let [p (first (filter #(= (:paymentMethodId %) payment-method-id) (:paymentMethods user-db)))]
-        p
-        (d/error-deferred (ex-info (str "Store ERROR!")
-                                   {:type :store
-                                    :status 400
-                                    :body (format "payment-method doens't exist: %s " payment-method-id)
-                                    :message (format "payment-method doens't exist: %s " payment-method-id)})))))
+    (let [user-db  (protocols/find this oid)
+          try-type :store
+          try-id ::add-new-payment-method
+          try-context '[oid payment-method-id user-db]]
+      (util/dtry
+       (do
+         (if-let [p (first (filter #(= (:paymentMethodId %) payment-method-id) (:paymentMethods user-db)))]
+           p
+           (util/error* 400 ['xxx ::get-payment-method-failed]))))))
+
   (get-payment-methods [this oid]
     (let [user-db  (protocols/find this oid)]
       (or  (:paymentMethods user-db) [])))

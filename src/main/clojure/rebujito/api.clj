@@ -147,8 +147,7 @@
                                                                  (assoc :id ::payment/method-detail
                                                                         :oauth {:delete  scopes/user
                                                                                 :get  scopes/user
-                                                                                :put scopes/user
-                                                                                :post scopes/user}))]]]
+                                                                                :put scopes/user}))]]]
                ["/socialprofile/account" (-> (social-profile/account user-store)
                                              (assoc :id ::social-profile/account
                                                     :oauth {:put scopes/user}))]
