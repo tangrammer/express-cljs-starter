@@ -36,7 +36,9 @@
 (macroexpand '(>take {:hola 1} hola))
 
 ;(println (>take {'hola 1} hola))
-(defmacro error* [status [code message] & ks]
+
+
+(defmacro base-error* [status [code message] & ks]
 
   `(let [local-context# (local-context)
          a# (println '~ks)
@@ -76,16 +78,25 @@
 
                    email#)})))
        (log/error "AVOID SENDING BUGSNAG" (str ~status " :: " (:body ex#) " :: " (name ~message))))
-     (manifold.deferred/error-deferred (clojure.core/ex-info (str ~status " :: " (:body ex#) " :: " (name ~message))
-                                                             {:type type#
-                                                              :status ~status
-                                                              :context (assoc (:context ex#)
-                                                                              :fn (:body ex#))
-                                                              :keys   (quote ~('map 'symbol ks))
-                                                              :context-keys   (keys local-context#)
-                                                              :body (str ~status " :: " (:body ex#) " :: " ~code " :: " (name ~message))
-                                                              :code ~code
-                                                              :message (:body ex#)}))))
+     (clojure.core/ex-info (str ~status " :: " (:body ex#) " :: " (name ~message))
+                           {:type type#
+                            :status ~status
+                            :context (assoc (:context ex#)
+                                            :fn (:body ex#))
+                            :keys   (quote ~('map 'symbol ks))
+                            :context-keys   (keys local-context#)
+                            :body (str ~status " :: " (:body ex#) " :: " ~code " :: " (name ~message))
+                            :code ~code
+                            :message (:body ex#)})))
+
+(defmacro error* [status [code message] & ks]
+  `(manifold.deferred/error-deferred (base-error* ~status [~code ~message] ~ks))
+  )
+
+
+(defmacro derror* [d* status [code message] & ks]
+  `(manifold.deferred/error! ~d* (base-error* ~status [~code ~message] ~ks))
+  )
 
 (comment
   (let [c 3
@@ -101,6 +112,11 @@
   `(try
      ~@body
      (catch Exception error# (error* 500  [500 (.getMessage error#)] ~@('map 'symbol context-kw)))))
+
+(defmacro ddtry [d* body & context-kw]
+  `(try
+     (manifold.deferred/success! ~d* ~body)
+     (catch Exception error# (derror* ~d* 500  [500 (.getMessage error#)] ~@('map 'symbol context-kw)))))
 
 
 (defmacro hola* [a b & body]

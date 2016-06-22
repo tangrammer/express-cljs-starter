@@ -33,14 +33,19 @@
                           :status)))
           (pprint (first (seq (p/find (-> *system*  :user-store)))))
           (is (= (count (seq (p/find (-> *system*  :user-store)))) (inc (count users))))
+
           ;; same account throws error
-          (is (= 400  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path *app-access-token* 1234)
-                                      {:throw-exceptions false
-                                       :body (json/generate-string account-data)
-                                       :body-encoding "UTF-8"
-                                       :content-type :json})
-                          ;;                         print-body
-                          :status)))
+          (let [res @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path *app-access-token* 1234)
+                                {:throw-exceptions false
+                                 :body (json/generate-string account-data)
+                                 :body-encoding "UTF-8"
+                                 :content-type :json})]
+
+            (is (= 400  (-> res :status)))
+            (is (= {:code 111027,
+                    :body "Account Management Service returns error that email address is already taken"}
+                   (select-keys (-> res parse-body) [:code :body]))))
+
           (is (= (count (seq (p/find (-> *system*  :user-store)))) (inc (count users))))
           ))
 

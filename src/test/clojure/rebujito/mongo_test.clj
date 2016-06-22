@@ -78,7 +78,9 @@
       (d/chain
        (fn [a]
          (is false)))
-      (d/catch clojure.lang.ExceptionInfo (fn [e] (is (re-find #"invalid hexadecimal representation" (:message (ex-data e)))))))
+      (d/catch clojure.lang.ExceptionInfo (fn [e]
+
+                                            (is (re-find #"invalid_client api client-id" (:body (ex-data e))) ))))
 
 
 
@@ -87,7 +89,9 @@
       (d/chain
        (fn [a]
          (is false)))
-      (d/catch clojure.lang.ExceptionInfo (fn [e] (is (re-find #"api client-id and client-secret" (:message (ex-data e)))))))
+      (d/catch clojure.lang.ExceptionInfo (fn [e]
+
+                                            (is (re-find #"invalid_client api client-id" (:body (ex-data e))) ))))
 
      (->
       (p/login (:api-client-store *system*) (:key api-config) (:secret api-config))
