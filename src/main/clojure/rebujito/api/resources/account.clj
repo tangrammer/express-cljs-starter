@@ -74,12 +74,14 @@
 
 (defn check-account-mongo [data-account user-store]
   (log/info "check-account-mongo" data-account)
-  (if (first (p/find user-store data-account))
+  (when (first (p/find user-store data-account))
     (d/error-deferred (ex-info (str "API ERROR!")
                                {:type :api
                                 :status 400
-                                :body  (format  "Email address %s is not unique" (:emailAddress data-account))}))
-    false))
+                                :code 111027
+                                :message (format  "Email address %s is not unique" (:emailAddress data-account))
+                                :body  "Account Management Service returns error that email address is already taken"
+                                }))))
 
 (defn create [store mimi user-store crypto]
   (-> {:methods
@@ -89,24 +91,15 @@
                                     (s/optional-key :platform) String}
                             :body (:post schema)}
                :response (fn [ctx]
-
-                           (let [ctx (update-in ctx [:parameters :body :market] (fn [current-market]
-                                                                                             (if current-market
-                                                                                               current-market
-                                                                                               (-> ctx :parameters :query :market))))]
-
-
+                           (let [ctx (update-in ctx [:parameters :body :market]
+                                                (fn [current-market]
+                                                  (if current-market
+                                                    current-market
+                                                    (-> ctx :parameters :query :market))))]
                              (dcatch  ctx
                                       (d/let-flow [mimi-account (d/chain
                                                                  (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
                                                                  (fn [b]
-                                                                   #_(throw (Exception. "BOMB!"))
-                                                                   #_(throw (ex-info "wow!" {:jau true
-                                                                                             :status 400
-                                                                                             :type :default
-                                                                                             :code 12367124
-                                                                                             :message "hola"
-                                                                                             :body "im the exception"}))
                                                                    (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))))
                                                    mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
 
