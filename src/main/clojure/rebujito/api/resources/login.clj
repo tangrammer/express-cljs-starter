@@ -40,8 +40,8 @@
                            (let [user (p/read-token authenticator (get-in ctx [:parameters :query :access_token]))
                                  user (p/find user-store (:_id user))]
                              (if (p/check crypto (get-in ctx [:parameters :body :password]) (:password user))
-                               (util/>200 ctx "")
-                               (util/>403 ctx ["Forbidden" "password doesn't match"]))))}}}
+                               (util/>200 ctx nil)
+                               (util/>403 ctx {:message (str "Forbidden: " "password doesn't match")}))))}}}
 
 
       (merge (util/common-resource :login))))
