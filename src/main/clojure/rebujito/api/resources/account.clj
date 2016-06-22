@@ -30,6 +30,8 @@
                     :registrationSource String
                     (s/optional-key :createDigitalCard) Boolean
                     (s/optional-key :market) String
+                    (s/optional-key :reputation) {(s/optional-key :IPAddress) String
+                                                  (s/optional-key :deviceFingerprint) String}
                     }})
 
 (def CreateAccountMimiMapping
@@ -61,8 +63,7 @@
         mongo-account-data (-> data-account
                                (assoc :_id mongo-id)
                                (assoc :password (p/sign crypto (:password data-account)))
-                               (dissoc :createDigitalCard)
-                               (dissoc :risk))
+                               (dissoc :createDigitalCard :risk :reputation))
         try-id ::create-account-mongo
         try-type :store
         try-context '[mimi-id mongo-id mongo-account-data]

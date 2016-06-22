@@ -10,7 +10,10 @@
 (defmacro ex? [t m]
   `(condp = ~t
      :store (rebujito.MongoException. ~m)
+     :user-store (rebujito.UserStorageException. ~m)
+     :api-key-store (rebujito.ApiKeyStorageException. ~m)
      :mimi (rebujito.MimiException. ~m)
+     :api (rebujito.ApiException. ~m)
     (Exception. ~m)))
 
 (defmacro >take [local-context k]
@@ -135,7 +138,7 @@
 
 
 
-(binding [*send-bugsnag* false]
+#_(binding [*send-bugsnag* false]
   (time (->
                    (let [
                          try-type :store
@@ -168,14 +171,11 @@
 
 (defmacro dcatch [ctx body]
   `(-> ~body
-    (manifold.deferred/catch clojure.lang.ExceptionInfo
+  (manifold.deferred/catch clojure.lang.ExceptionInfo
       (fn [exception-info#]
-        (log/error "QUILLO exceptionINFO! "(.getMessage exception-info#))
-        (rebujito.api.resources/domain-exception ~ctx (ex-data exception-info#))))
+        (log/error "clojure.lang.ExceptionInfo:: " (type (:type (ex-data exception-info#))) (ex-data exception-info#) (.getMessage exception-info#))
+        (let [data# (ex-data exception-info#)]
+          (rebujito.api.resources/domain-exception ~ctx data#))))
     (manifold.deferred/catch Exception
-      (fn [exception-info#]
-        (log/error "QUILLO!"  (.getMessage exception-info#))
-        (rebujito.api.resources/domain-exception ~ctx {:type :default :status 500 :message (.getMessage exception-info#)
-                                                       :code 234124 :body "no se que"})))
-
-    ))
+      (fn [exception#]
+        (rebujito.api.resources/domain-exception ~ctx {:type :default :status 500 :message (.getMessage exception#)})))))

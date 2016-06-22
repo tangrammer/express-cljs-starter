@@ -1,9 +1,11 @@
 (ns rebujito.api.resources.rewards
   (:require
+   [taoensso.timbre :as log]
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
    [rebujito.api.time :as t]
    [rebujito.api.util :refer :all]
+   [rebujito.util :refer (dtry error*)]
    [rebujito.api.resources :refer (domain-exception)]
    [cheshire.core :as json]
    [rebujito.store.mocks :as m]
@@ -86,8 +88,8 @@
   }))
 
 (defn rewards-response [mimi card-number]
-
-  (d/chain (p/rewards mimi card-number)
+  (d/chain
+   (p/rewards mimi card-number)
    translate-mimi-rewards
    #(merge
      m/me-rewards

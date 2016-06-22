@@ -6,8 +6,9 @@
 
 (defmulti domain-exception "dispatch on data meaning"
   (fn [ctx ex-data]
-    (log/info (type ex-data))
-    (log/info ex-data)
+    ;; (log/info (type ex-data))
+    ;; (log/info ex-data )
+    ;; (log/error (:type ex-data))
     (:type ex-data)))
 
 
@@ -16,26 +17,29 @@
     400 (>400* ctx {:code code :message message :body body})
     401 (>400* ctx {:code code :message message :body body})
     500 (new>500* ctx {:status 500 :code code :message message :body body})
-    :else (d/error-deferred (ex-info (str "" body) {:status 500 :code code :message message :body body}))
-    )
-  )
+    :else (do
+            (log/error ":else " ex-data)
+            (d/error-deferred (ex-info message ex-data)))))
 
-(defmethod domain-exception :api [ctx {:keys [status body code message] :as ex-data}]
-  (log/error "domain-exception::: api :::" status code message body)
-  (all-domain-exception ctx ex-data)
-  )
 
-(defmethod domain-exception :store [ctx {:keys [status body code message] :as ex-data}]
-  (log/error "domain-exception::: store :::" status code message body)
-  (all-domain-exception ctx ex-data)
-  )
 
-(defmethod domain-exception :payment-gateway [ctx {:keys [status body code message] :as ex-data}]
-  (log/error "domain-exception::: payment-gateway :::" status code message body)
-  (all-domain-exception ctx ex-data)
-  )
+(defmethod domain-exception :api [ctx ex-data]
+  (log/error "domain-exception::: api :::" ex-data)
+  (all-domain-exception ctx ex-data))
 
-(defmethod domain-exception :default [ctx {:keys [status body code message] :as ex-data}]
-  (log/error "domain-exception::: default :::" status code message body)
-  (all-domain-exception ctx ex-data)
-  )
+(defmethod domain-exception :store [ctx ex-data]
+  (log/error "domain-exception::: store :::" ex-data)
+  (all-domain-exception ctx ex-data))
+
+(defmethod domain-exception :payment-gateway [ctx ex-data]
+  (log/error "domain-exception::: payment-gateway :::" ex-data)
+  (all-domain-exception ctx ex-data))
+
+
+(defmethod domain-exception :mimi [ctx ex-data]
+  (log/error "domain-exception::: mimi :::" ex-data)
+  (all-domain-exception ctx ex-data))
+
+(defmethod domain-exception :default [ctx ex-data]
+  (log/error "domain-exception::: default :::" ex-data)
+  (all-domain-exception ctx ex-data))

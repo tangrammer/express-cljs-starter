@@ -26,7 +26,7 @@
 
 (defn new>500* [ctx {:keys [status body code message] :as ex-data}]
   (log/error "ERROR>>>>>" body)
-  (d/error-deferred (ex-info message ex-data)))
+  (>base ctx 500 ex-data))
 
 (defn >500* [ctx body]
   (log/error "ERROR>>>>>" body)
