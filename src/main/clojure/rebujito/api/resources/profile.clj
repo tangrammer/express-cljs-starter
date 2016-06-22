@@ -29,26 +29,30 @@
                                 try-type :api]
                             (dcatch ctx (d/let-flow [auth-user (util/authenticated-user ctx)
                                                      user-id (:_id auth-user)
-                                                     user-data (util/generate-user-data auth-user (:sub-market app-config))
-                                                     real-user-data (p/find user-store user-id)
-                                                     card-number  (let [try-context '[user-data real-user-data]]
-                                                                    (or (-> real-user-data :cards first :cardNumber)
+                                                     user-data (p/find user-store user-id)
+                                                     card-number  (let [try-context '[user-data user-data]]
+                                                                    (or (-> user-data :cards first :cardNumber)
                                                                         (error* 500 [500 ::card-number-cant-be-null])))
-
 
                                                      rewards (rewards/rewards-response mimi card-number)
                                                      card ((fn [rewards]
                                                              (card/get-card user-store user-id mimi)) rewards)
+
                                                      payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
                                                                           (map payment/adapt-mongo-to-spec))]
 
                                                     (util/>200 ctx (-> response-defaults
                                                                        (merge
-                                                                        {:user user-data
+                                                                        {:user (merge
+                                                                                (select-keys user-data [:firstName :lastName :emailAdress])
+                                                                                {:email (:emailAddress user-data)}
+                                                                                {:exId nil
+                                                                                 :subMarket "ZA"
+                                                                                 :partner false})
                                                                          :rewardsSummary rewards
                                                                          :paymentMethods payment-methods
                                                                          :starbucksCards [card]}
-                                                                        (select-keys real-user-data [:addresses :socialProfile]))
+                                                                        (select-keys user-data [:addresses :socialProfile]))
                                                                        (dissoc :target-environment)))))))}}}
 
 
