@@ -61,6 +61,29 @@
         (is (= 200 (-> http-response :status)))
         (is (= nil body)))
 
+      ;; valid password!
+      (let [path (get-path ::login/validate-password)
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path "xxx-invalid-user-access-token")
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string
+                                             (assoc (g/generate (:post (:validate-password login/schema)))
+                                                    :password (:password *user-account-data*))
+
+                                         )
+                                      :content-type :json})
+            body (parse-body http-response)
+            ]
+        (is (= 401 (-> http-response :status)))
+        (is (= {:status 401,
+                :message "Unauthorized",
+                :id "rebujito.api.resources.login/validate-password",
+                :error
+                {:error
+                 "clojure.lang.ExceptionInfo: No authorization provided {:status 401, :headers {}}",
+                 :data "{:status 401, :headers {}}"}} body)))
+
+
       ))
 
 
