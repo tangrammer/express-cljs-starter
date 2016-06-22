@@ -4,6 +4,7 @@
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
    [rebujito.api.util :as util]
+   [rebujito.util :refer (dcatch)]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
@@ -37,11 +38,12 @@
                                     (s/optional-key :locale) String}
                             :body (-> schema :validate-password :post)}
                :response (fn [ctx]
-                           (let [user (p/read-token authenticator (get-in ctx [:parameters :query :access_token]))
-                                 user (p/find user-store (:_id user))]
-                             (if (p/check crypto (get-in ctx [:parameters :body :password]) (:password user))
-                               (util/>200 ctx "")
-                               (util/>403 ctx ["Forbidden" "password doesn't match"]))))}}}
+                           (dcatch ctx
+                                   (let [user (p/read-token authenticator (get-in ctx [:parameters :query :access_token]))
+                                         user (p/find user-store (:_id user))]
+                                     (if (p/check crypto (get-in ctx [:parameters :body :password]) (:password user))
+                                       (util/>200 ctx nil)
+                                       (util/>403 ctx {:message (str "Forbidden: " "password doesn't match")})))))}}}
 
 
       (merge (util/common-resource :login))))

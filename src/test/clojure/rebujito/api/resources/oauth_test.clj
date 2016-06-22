@@ -181,7 +181,7 @@
                         :status)))
 
          ;; try refresh after logout => 403
-         (is (= 403 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+         (is (= 400 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
                                             {:throw-exceptions false
                                              :form-params
                                              (assoc (g/generate (-> oauth/schema :token-refresh-token))
