@@ -18,8 +18,7 @@
   (create-account [this data])
   (register-physical-card [this data])
   (load-card [this card-number amount])
-  (rewards [this data])
-  (get-points-for [this rewards])
+  (balances [this data])
   (get-history [this card-number])
   )
 

@@ -55,7 +55,7 @@
    :region String
    })
 
-(def STORED_VALUE_PROGRAM "Starbucks Card")
+
 
 (defrecord ProdMimi [base-url token]
   component/Lifecycle
@@ -152,7 +152,7 @@
                                                     :body (.getMessage e)})))))
       d*))
 
-  (rewards [this card-number]
+  (balances [this card-number]
     (log/info "fetching rewards for" card-number)
     (let [d* (d/deferred)]
       (d/future
@@ -179,9 +179,7 @@
         ))
       d*))
 
-  (get-points-for [this rewards]
-    (d/let-flow [program  (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
-                (or (:balance program) 0)))
+
 
   (get-history [this card-number]
     (log/info "fetching transactions for" card-number)
@@ -247,7 +245,7 @@
       d*)
     )
 
-  (rewards [this card-number]
+  (balances [this card-number]
     ; TODO: mock the response, don't hit mimi
     (log/info "fetching rewards for" card-number)
     (let [d* (d/deferred)
@@ -277,9 +275,6 @@
                                                     :body (.getMessage e)})))
           ))
       d*))
-  (get-points-for [this rewards]
-    (d/let-flow [program  (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards))) ]
-                (or (:balance program) 0)))
   (get-history [this card-number])
   )
 

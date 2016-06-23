@@ -57,17 +57,22 @@
    :balanceDate (.toString (java.time.Instant/now))
    :balanceCurrencyCode "ZAR"})
 
-(defn get-card [user-store user-id mimi]
-  (d/let-flow [card-data (:cards (p/find user-store user-id))
-               card-data (or (first card-data)
-                             rebujito.store.mocks/card)
-               rewards rebujito.store.mocks/me-rewards
-               #_(when (:cardNumber card-data)
-                         (p/rewards mimi (:cardNumber card-data))
+(def STORED_VALUE_PROGRAM "Starbucks Card")
 
-                         )
-               balance (when rewards
-                         (p/get-points-for mimi rewards))]
+  (defn- get-points-for [balances]
+    (let [program  (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs balances)))]
+                (or (:balance program) 0)))
+
+(defn get-card-data [user-store user-id]
+  (d/let-flow [card-data (:cards (p/find user-store user-id))]
+              #_rebujito.store.mocks/card
+              (first card-data)))
+
+
+(defn get-card* [user-store user-id balances]
+  #_rebujito.store.mocks/card
+  (d/let-flow [card-data (get-card-data user-store user-id) #_rebujito.store.mocks/me-rewards
+               balance (get-points-for balances)]
     (when card-data
       (merge
         (select-keys mocks/card [:imageUrls])
@@ -75,14 +80,21 @@
         card-data
         {:balance balance}))))
 
+
+
+
 (defn cards [user-store mimi]
   (->
    {:methods
     {:get {:parameters {:query {:access_token String}}
            :response (fn [ctx]
                        (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
-                                        card-data (get-card user-store user-id mimi)]
-                             (util/>200 ctx (if card-data [card-data] [])))
+                                        card-data (get-card-data user-store user-id)
+                                        balances (when (:cardNumber card-data)
+                                                   (p/balances mimi (:cardNumber card-data)))
+                                        card (get-card* user-store user-id balances)
+                                        ]
+                             (util/>200 ctx (if card-data [card] [])))
                            (d/catch clojure.lang.ExceptionInfo
                                (fn [exception-info]
                                  (domain-exception ctx (ex-data  exception-info))))))}}}
@@ -96,7 +108,11 @@
                         :query {:access_token String}}
            :response (fn [ctx]
                        (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
-                                        card-data (get-card user-store user-id mimi)]
+                                        card-data (get-card-data user-store user-id)
+                                        balances (when (:cardNumber card-data)
+                                                   (p/balances mimi (:cardNumber card-data)))
+
+                                        card-data (get-card* user-store user-id balances)]
                              (util/>200 ctx card-data))))}
      :delete {:parameters {:path {:card-id String}
                            :query {:access_token String}}
@@ -354,8 +370,12 @@
        {:get {:parameters {:query {:access_token String}
                            :path {:card-id String}}
               :response (fn [ctx]
-                         (d/let-flow [user-id (:_id (util/authenticated-user ctx))
-                                      card (get-card user-store user-id mimi)]
+                          (d/let-flow [user-id (:_id (util/authenticated-user ctx))
+                                       card-data (get-card-data user-store user-id)
+                                       balances (when (:cardNumber card-data)
+                                                   (p/balances mimi (:cardNumber card-data)))
+
+                                      card (get-card* user-store user-id balances)]
                            (util/>200 ctx {:cardId (:cardId card)
                                            :cardNumber (:cardNumber card)
                                            :balance (:balance card)

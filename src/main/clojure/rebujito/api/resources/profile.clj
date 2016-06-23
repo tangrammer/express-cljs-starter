@@ -29,37 +29,38 @@
               :response (fn [ctx]
                           (let [try-id ::profile
                                 try-type :api]
-                            (dcatch ctx (d/let-flow [auth-user (util/authenticated-user ctx)
-                                                     user-id (:_id auth-user)
-                                                     user-data (util/generate-user-data auth-user (:sub-market app-config))
-                                                     real-user-data (p/find user-store user-id)
-                                                     card-number  (let [try-context '[user-data real-user-data]]
-                                                                    (or (-> real-user-data :cards first :cardNumber)
-                                                                        #_(error* 500 [500 ::card-number-cant-be-null])))
+                            (dcatch ctx
+                                    (d/let-flow [auth-user (util/authenticated-user ctx)
+                                                 user-id (:_id auth-user)
+                                                 user-data (util/generate-user-data auth-user (:sub-market app-config))
+                                                 real-user-data (p/find user-store user-id)
+                                                 card-number  (let [try-context '[user-data real-user-data]]
+                                                                (or (-> real-user-data :cards first :cardNumber)
+                                                                    #_(error* 500 [500 ::card-number-cant-be-null])))
 
-                                                     rewards rebujito.store.mocks/me-rewards
-                                                     #_(when (some? card-number)
-                                                               (rewards/rewards-response mimi card-number))
-                                                     card rebujito.store.mocks/card #_(card/get-card user-store user-id mimi)
-                                                     payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
-                                                                          (map payment/adapt-mongo-to-spec))]
+                                                 balances (when (some? card-number)
+                                                            (p/balances mimi card-number))
+                                                 rewards (rewards/rewards-response balances card-number)
+                                                 card (card/get-card* user-store user-id balances)
+                                                 payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
+                                                                      (map payment/adapt-mongo-to-spec))]
 
-
-
-                                                    (util/>200 ctx (-> response-defaults
-                                                                       (merge
-                                                                        {:user (merge
-                                                                                (select-keys user-data [:firstName :lastName :emailAdress])
-                                                                                {:email (:emailAddress user-data)}
-                                                                                {:exId nil
-                                                                                 :subMarket "ZA"
-                                                                                 :partner false})
-                                                                         :rewardsSummary rewards
-                                                                         :paymentMethods payment-methods
-                                                                         :starbucksCards [card]
-                                                                         }
-                                                                        (select-keys real-user-data [:addresses :socialProfile]))
-                                                                        (dissoc :target-environment)))))))}}}
+                                                (util/>200 ctx (-> response-defaults
+                                                                   (merge
+                                                                    {:user (merge
+                                                                            (select-keys user-data [:firstName :lastName :emailAdress])
+                                                                            {:email (:emailAddress user-data)}
+                                                                            {:exId nil
+                                                                             :subMarket "ZA"
+                                                                             :partner false})
+                                                                     :rewardsSummary rewards
+                                                                     :paymentMethods payment-methods
+                                                                     :starbucksCards (if card
+                                                                                       [card]
+                                                                                       [])
+                                                                     }
+                                                                    (select-keys real-user-data [:addresses :socialProfile]))
+                                                                   (dissoc :target-environment)))))))}}}
 
 
       (merge (util/common-resource :profile))))

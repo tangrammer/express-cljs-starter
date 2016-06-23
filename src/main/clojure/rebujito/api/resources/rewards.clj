@@ -87,16 +87,14 @@
      :cardHolderSinceDate nil
   }))
 
-(defn rewards-response [mimi card-number]
+(defn rewards-response [mimi-balances card-number]
   (log/info "rewards-response/card-number=>" card-number)
-  (d/chain
-   (p/rewards mimi card-number)
-   translate-mimi-rewards
-   #(merge
-     m/me-rewards
-     {:rewardsProgram rewards-program}
-     {:myTiers []}
-     %)))
+  (->> mimi-balances
+      translate-mimi-rewards
+      (merge
+        m/me-rewards
+        {:rewardsProgram rewards-program}
+        {:myTiers []})))
 
 (defn me-rewards [store mimi user-store]
  (-> {:methods
@@ -109,10 +107,11 @@
                                           user-data (p/find user-store user-id)
                                           card-number (-> user-data :cards first :cardNumber)
                                           ; can test with:
-                                          ; card-number "9623570900001"
-                                          rewards rebujito.store.mocks/me-rewards
-                                          #_(when card-number
-                                                      (rewards-response mimi card-number))]
+                                        ; card-number "9623570900001"
+
+                                          balances (when card-number
+                                                     (p/balances mimi card-number))
+                                          rewards (rewards-response balances card-number) #_rebujito.store.mocks/me-rewards]
                                          (>200 ctx rewards #_rebujito.store.mocks/me-rewards))
                              (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]
