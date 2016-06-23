@@ -110,7 +110,8 @@
                                           card-number (-> user-data :cards first :cardNumber)
                                           ; can test with:
                                           ; card-number "9623570900001"
-                                          rewards (when card-number
+                                          rewards rebujito.store.mocks/me-rewards
+                                          #_(when card-number
                                                       (rewards-response mimi card-number))]
                                          (>200 ctx rewards #_rebujito.store.mocks/me-rewards))
                              (d/catch clojure.lang.ExceptionInfo

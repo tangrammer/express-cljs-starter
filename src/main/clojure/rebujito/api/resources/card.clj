@@ -59,9 +59,13 @@
 
 (defn get-card [user-store user-id mimi]
   (d/let-flow [card-data (:cards (p/find user-store user-id))
-               card-data (first card-data)
-               rewards (when (:cardNumber card-data)
-                         (p/rewards mimi (:cardNumber card-data)))
+               card-data (or (first card-data)
+                             rebujito.store.mocks/card)
+               rewards rebujito.store.mocks/me-rewards
+               #_(when (:cardNumber card-data)
+                         (p/rewards mimi (:cardNumber card-data))
+
+                         )
                balance (when rewards
                          (p/get-points-for mimi rewards))]
     (when card-data

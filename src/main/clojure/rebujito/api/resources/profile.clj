@@ -35,10 +35,11 @@
                                                                     (or (-> real-user-data :cards first :cardNumber)
                                                                         #_(error* 500 [500 ::card-number-cant-be-null])))
 
-                                                     rewards (when (some? card-number)
+                                                     rewards rebujito.store.mocks/me-rewards
+                                                     #_(when (some? card-number)
                                                                (rewards/rewards-response mimi card-number))
-                                                     card (card/get-card user-store user-id mimi)
-                                                     #_payment-methods #_(->> (p/get-payment-methods user-store (:_id auth-user))
+                                                     card rebujito.store.mocks/card #_(card/get-card user-store user-id mimi)
+                                                     payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
                                                                           (map payment/adapt-mongo-to-spec))]
 
 
@@ -52,7 +53,7 @@
                                                                                  :subMarket "ZA"
                                                                                  :partner false})
                                                                          :rewardsSummary rewards
-                                                                          ;; :paymentMethods payment-methods
+                                                                         :paymentMethods payment-methods
                                                                          :starbucksCards [card]
                                                                          }
                                                                         (select-keys real-user-data [:addresses :socialProfile]))

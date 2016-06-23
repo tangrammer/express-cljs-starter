@@ -180,8 +180,8 @@
       d*))
 
   (get-points-for [this rewards]
-    (d/let-flow [program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
-                (:balance program)))
+    (d/let-flow [program  (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
+                (or (:balance program) 0)))
 
   (get-history [this card-number]
     (log/info "fetching transactions for" card-number)
@@ -278,8 +278,8 @@
           ))
       d*))
   (get-points-for [this rewards]
-    (d/let-flow [program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
-                (:balance program)))
+    (d/let-flow [program  (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards))) ]
+                (or (:balance program) 0)))
   (get-history [this card-number])
   )
 
