@@ -15,6 +15,8 @@
 
 (def response-defaults {:favoriteStores []
                         :devices []
+                        :addresses []
+                        :socialProfile {}
                         :tippingPreferences {}})
 
 (def schema {:put {:accountImageUrl String}})
