@@ -4,6 +4,7 @@
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
    [rebujito.api.util :as util]
+   [rebujito.util :refer (dcatch)]
    [rebujito.api.resources :refer (domain-exception)]
    [cheshire.core :as json]
    [manifold.deferred :as d]
@@ -35,6 +36,19 @@
                    :postalCode String
                    :type String
                    }
+
+             :response {:post  {
+                                 :addressLine1 String
+                                 :addressLine2 String
+                                 :city String
+                                 :country String
+                                 :firstName String
+                                 :lastName String
+                                 :phoneNumber String
+                                 :postalCode String
+                                 :type String
+                                 }}
+
              })
 
 
@@ -44,16 +58,15 @@
        {:post {:parameters {:query {:access_token String}
                             :body (:post schema)}
                :response (fn [ctx]
-                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                            address (-> ctx :body)
-                                            address-id (p/insert-address user-store (:_id auth-user) address)]
-                                           (log/info ">====>>>"(str "/me/addresses/" address-id))
-                                (-> ctx :response (assoc :status 201)
-                                    ; TODO use ::resource/addresses to generate :location
-                                    (assoc-in [:headers :location] (str "/me/addresses/" address-id))))
-                               (d/catch clojure.lang.ExceptionInfo
-                                   (fn [exception-info]
-                                     (domain-exception ctx (ex-data exception-info))))))}
+                           (dcatch  ctx
+                                    (d/let-flow [auth-user (util/authenticated-user ctx)
+                                                 address (-> ctx :body)
+                                                 address-id (p/insert-address user-store (:_id auth-user) address)]
+                                                (log/info ">====>>>"(str "/me/addresses/" address-id))
+                                                (-> ctx :response (assoc :status 201)
+                                                    ;; TODO use ::resource/addresses to generate :location
+                                                    (assoc-in [:headers :location] (str "/me/addresses/" address-id))))
+))}
         :get {:parameters {:query {:access_token String}}
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)

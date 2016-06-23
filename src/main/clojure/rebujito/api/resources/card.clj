@@ -64,10 +64,9 @@
     (let [program  (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs balances)))]
                 (or (:balance program) 0)))
 
-(defn get-card-data [user-store user-id]
-  (d/let-flow [card-data (:cards (p/find user-store user-id))]
-              #_rebujito.store.mocks/card
-              (first card-data)))
+(defn- get-card-data [user-store user-id]
+  #_rebujito.store.mocks/card
+  (first (:cards (p/find user-store user-id))))
 
 
 (defn get-card* [user-store user-id balances]
