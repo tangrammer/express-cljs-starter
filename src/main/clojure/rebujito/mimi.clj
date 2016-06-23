@@ -91,35 +91,24 @@
                                         ;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
       (d/future
-        (try
-          (let [{:keys [status body]}
-                (http-c/post (format "%s/account/card" base-url) {
-;                                 :method :post
-                                 :insecure? true
-                                 :headers {"Authorization" (format "Bearer %s" token)}
-                                 :form-params  data
-                                 :content-type :json
-                                 :accept :json
-                                 :as :json
-                                 }
-                    )]
-            (log/info status body)
-            (d/success! d* (-> [:success]
-                               (conj :prod-mimi))))
-
-          (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
-                                                (log/error (.getMessage e))
-                                                (d/error! d* (ex-info (str "error!!!" (:status ex))
-                                                                      {:type :mimi
-                                                                       :status (:status ex)
-                                                                       :body (:body ex)}))))
-
-          (catch Exception e (let [ex (ex-data e)]
-                               (d/error! d* (ex-info (str "error!!!" 500)
-                                                     {:type :mimi
-                                                      :status 500
-                                                      :body (.getMessage e)}))))
-          ))
+        (let [try-type :mimi
+              try-id ::register-physical-card
+              try-context '[data]]
+          (ddtry d*
+                (let [{:keys [status body]}
+                      (http-c/post (format "%s/account/card" base-url) {
+                                        ;                                 :method :post
+                                                                        :insecure? true
+                                                                        :headers {"Authorization" (format "Bearer %s" token)}
+                                                                        :form-params  data
+                                                                        :content-type :json
+                                                                        :accept :json
+                                                                        :as :json
+                                                                        }
+                                   )]
+                  (log/info status body)
+                  (-> [:success]
+                      (conj :prod-mimi))))))
       d*))
 
   (load-card [this card-number amount]
