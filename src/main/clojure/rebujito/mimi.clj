@@ -112,33 +112,24 @@
       d*))
 
   (load-card [this card-number amount]
-    (let [d* (d/deferred)]
-      (log/info "loading" card-number "with" amount (format "%s/account/%s/SGC001" base-url card-number))
+    (let [d* (d/deferred)
+          try-id ::load-card
+          try-type :mimi
+          try-context '[card-number amount]]
       (d/future
-        (try
-          (let [{:keys [status body]}
-                (http-c/post (format "%s/account/%s/SGC001" base-url card-number)
-                 {:insecure? true
-                  :headers {"Authorization" (format "Bearer %s" token)}
-                  :form-params {:amount amount}
-                  :content-type :json
-                  :accept :json
-                  :as :json}
-                )]
-            (log/info "load-card-mimi response " status body)
-            (d/success! d* {:balance (:balance body)}))
-
-          (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
-                                                (log/error (.getMessage e))
-                                                (d/error! d* (ex-info (str "error!!!" (:status ex))
-                                                                      {:type :mimi
-                                                                       :status (:status ex)
-                                                                       :body (:body ex)}))))
-
-          (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
-                                                   {:type :mimi
-                                                    :status 500
-                                                    :body (.getMessage e)})))))
+        (ddtry d* (do
+                    (log/info "loading" card-number "with" amount (format "%s/account/%s/SGC001" base-url card-number))
+                    (let [{:keys [status body]}
+                          (http-c/post (format "%s/account/%s/SGC001" base-url card-number)
+                                       {:insecure? true
+                                        :headers {"Authorization" (format "Bearer %s" token)}
+                                        :form-params {:amount amount}
+                                        :content-type :json
+                                        :accept :json
+                                        :as :json}
+                                       )]
+                      (log/info "load-card-mimi response " status body)
+                       {:balance (:balance body)}))))
       d*))
 
   (balances [this card-number]

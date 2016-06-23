@@ -29,41 +29,44 @@
   ;;                     (throw (ex-info "500" "Paygate Not Available"))
   ;;                     ))))
   (create-card-token [this data]
-    (let [data (update data :expirationMonth #(format "%02d" %))
-          d* (d/deferred)
-          try-id ::create-card-token
-          try-type :payment-gateway
-          try-context '[data]]
-      (ddtry d* (do
-                  (s/validate {:cardNumber String
-                             :expirationYear Long
-                             :expirationMonth String
-                             (s/optional-key :cvn) String
-                             } data)
-                  (log/info "PayGate Create Card Token Request" data)
-                  (http-k/post (-> this :url)
-                               {:body (velocity/render "paygate/create-card-token.vm"
-                                                       :paygateId (-> this :paygateId)
-                                                       :paygatePassword (-> this :paygatePassword)
-                                                       :cardNumber (-> data :cardNumber)
-                                                       :expirationMonth (-> data :expirationMonth)
-                                                       :expirationYear (-> data :expirationYear))}
-                               (fn [{:keys [status body error]}]
-                                 (log/info "PayGate Create Card Token Response" status error body)
-                                 (if (or error (not= 200 status) (not (.contains body "CardVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
-                                   (derror* d* 500 [500 (try
-                                                      (json/generate-string ["paygate/create-card-token" status error body])
-                                                      (catch Exception e (.getMessage e)))] )
+    (let [d* (d/deferred)]
+      (d/future
+        (let [data (update data :expirationMonth #(format "%02d" %))
+              try-id ::create-card-token
+              try-type :payment-gateway
+              try-context '[data]]
+          (ddtry d* (do
+                      (s/validate {:cardNumber String
+                                   :expirationYear Long
+                                   :expirationMonth String
+                                   (s/optional-key :cvn) String
+                                   } data)
+                      (log/info "PayGate Create Card Token Request" data)
+                      (let [{:keys [status body error]}
+                            @(http-k/post (-> this :url)
+                                          {:body (velocity/render "paygate/create-card-token.vm"
+                                                                  :paygateId (-> this :paygateId)
+                                                                  :paygatePassword (-> this :paygatePassword)
+                                                                  :cardNumber (-> data :cardNumber)
+                                                                  :expirationMonth (-> data :expirationMonth)
+                                                                  :expirationYear (-> data :expirationYear))})]
 
-                                   (let [response (xp/xml->doc body)
-                                         card-token (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
-                                     (log/info "CARD_TOKEN:" (first card-token))
-                                     (if (first card-token)
-                                       {:card-token (first card-token)}
-                                       (derror* d* 400 [400 (try
-                                                              (json/generate-string ["paygate/create-card-token NULL card-token" status error body])
-                                                              (catch Exception e (.getMessage e)))] )
-)))))))
+                        (log/info "PayGate Create Card Token Response" status error body)
+                        (if (or error (not= 200 status) (not (.contains body "CardVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
+                          (derror* d* 500 [500 (try
+                                                 (json/generate-string ["paygate/create-card-token" status error body])
+                                                 (catch Exception e (.getMessage e)))] )
+
+                          (let [response (xp/xml->doc body)
+                                card-token (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
+                            (log/info "CARD_TOKEN:" (first card-token))
+                            (if (first card-token)
+                              {:card-token (first card-token)}
+                              (derror* d* 400 [400 (try
+                                                     (json/generate-string ["paygate/create-card-token NULL card-token" status error body])
+                                                     (catch Exception e (.getMessage e)))] )
+                              ))))))
+          ))
       d*))
   (delete-card-token [this data]
     (let [d* (d/deferred)]
@@ -90,67 +93,70 @@
                                                    :body (json/generate-string ["paygate/delete-card-token" status error body])})))))))
       d*))
   (execute-payment [this data]
-
-    (s/validate {(s/optional-key :firstName) String
-                 :lastName String
-                 :emailAddress String
-                 :routingNumber String
-                 :cvn String
-                 :transactionId String
-;                 :currency "ZAR"
-                 :amount Long
-                 } data)
     (let [d* (d/deferred)]
-      (log/debug "PayGate Payment Request" data)
-      (http-k/post (-> this :url)
-                   {:body (velocity/render "paygate/payment-with-token.vm"
-                                           :paygateId (-> this :paygateId)
-                                           :paygatePassword (-> this :paygatePassword)
-                                           :firstName (-> data :firstName)
-                                           :lastName (-> data :lastName)
-                                           :emailAddress (-> data :emailAddress)
-                                           :cardToken (-> data :routingNumber)
-                                           :cvn (-> data :cvn)
-                                           :transactionId (-> data :transactionId)
-                                           :currency "ZAR"
-                                           :amount (-> data :amount))
-                    }
-                   (fn [{:keys [status body error]}]
-                     (log/info "PayGate Payment Response" status error body)
-                     (if (or error (not= 200 status) (not (.contains body "CardPaymentResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
-                       (d/error! d* (ex-info (str "API GATEWAY ERROR!")
-                                             {:type :payment-gateway
-                                              :status 500
-                                              :body (str "An unexpected error occurred processing the payment."
-                                                         error "  ::  " status)}))
+     (d/future
+       (let [try-id ::execute-payment
+             try-type :payment-gateway
+             try-context '[data]]
+         (ddtry d*
+                (do
+                  (s/validate {(s/optional-key :firstName) String
+                               :lastName String
+                               :emailAddress String
+                               :routingNumber String
+                               :cvn String
+                               :transactionId String
+                               :currency String
+                               :amount Long
+                               } data)
+                  (log/info "PayGate Payment Request" data (-> this :url))
+                  (let  [{:keys [status body error]}
+                         @(http-k/post (-> this :url)
+                                       {:body (velocity/render "paygate/payment-with-token.vm"
+                                                               :paygateId (-> this :paygateId)
+                                                               :paygatePassword (-> this :paygatePassword)
+                                                               :firstName (-> data :firstName)
+                                                               :lastName (-> data :lastName)
+                                                               :emailAddress (-> data :emailAddress)
+                                                               :cardToken (-> data :routingNumber)
+                                                               :cvn (-> data :cvn)
+                                                               :transactionId (-> data :transactionId)
+                                                               :currency "ZAR"
+                                                               :amount (-> data :amount))
+                                        })]
 
-                       (let [response (xp/xml->doc body)
-                             TransactionId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionId" response)
-                             StatusName (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/StatusName" response)
-                             AuthCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/AuthCode" response)
-                             PayRequestId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/PayRequestId" response)
-                             TransactionStatusCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusCode" response)
-                             TransactionStatusDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusDescription" response)
-                             ResultCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultCode" response)
-                             ResultDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultDescription" response)
-                             res-debug (vector "TransactionId" TransactionId
-                                               "StatusName" StatusName
-                                               "AuthCode" AuthCode
-                                               "PayRequestId" PayRequestId
-                                               "TransactionStatusCode" TransactionStatusCode
-                                               "TransactionStatusDescription" TransactionStatusDescription
-                                               "ResultCode" ResultCode
-                                               "ResultDescription" ResultDescription
-                                               )]
-                         (log/info res-debug)
-                         (if (and (not-empty TransactionStatusCode) (= (first TransactionStatusCode)  "1"))
-                           (d/success! d* res-debug)
-                           (d/error! d* (ex-info (str "Payment Failed!")
-                                                 {:type :payment-gateway
-                                                  :status 500
-                                                  :body (json/generate-string ["paygate/payment" res-debug])})))
-                         ))))
-      d*)))
+
+                    (log/info "PayGate Payment Response" status error body)
+                    (if (or error (not= 200 status) (not (.contains body "CardPaymentResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
+                      (derror* d* 500 [500 (str "An unexpected error occurred processing the payment." error "  ::  " status)])
+
+
+                      (let [response (xp/xml->doc body)
+                            TransactionId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionId" response)
+                            StatusName (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/StatusName" response)
+                            AuthCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/AuthCode" response)
+                            PayRequestId (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/PayRequestId" response)
+                            TransactionStatusCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusCode" response)
+                            TransactionStatusDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/TransactionStatusDescription" response)
+                            ResultCode (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultCode" response)
+                            ResultDescription (xp/$x:text* "/Envelope/Body/SinglePaymentResponse/CardPaymentResponse/Status/ResultDescription" response)
+                            res-debug (vector "TransactionId" TransactionId
+                                              "StatusName" StatusName
+                                              "AuthCode" AuthCode
+                                              "PayRequestId" PayRequestId
+                                              "TransactionStatusCode" TransactionStatusCode
+                                              "TransactionStatusDescription" TransactionStatusDescription
+                                              "ResultCode" ResultCode
+                                              "ResultDescription" ResultDescription
+                                              )]
+                        (log/info res-debug)
+                        (if (and (not-empty TransactionStatusCode) (= (first TransactionStatusCode)  "1"))
+                          res-debug
+                          (derror* d* 500 [500 (str (json/generate-string ["paygate/payment" res-debug]) error "  ::  " status)])
+                          )
+                        )))))
+         ))
+     d*)))
 
 (defrecord MockPaymentGateway []
   component/Lifecycle

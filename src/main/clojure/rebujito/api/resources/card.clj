@@ -251,13 +251,13 @@
                :response (fn [ctx]
                            (let [card-id (-> ctx :parameters :path :card-id)
                                  amount (-> ctx :parameters :body :amount)]
-                             (->
+                             (dcatch ctx
                               (d/let-flow [profile-data (util/user-profile-data ctx user-store (:sub-market app-config))
                                            user-id (:_id (util/authenticated-user ctx))
-                                           card-data (:cards (p/find user-store user-id))
-                                           card-data-bis (first (filter #(= (:cardId %) card-id) card-data))
-                                           _ (log/info ">>>> card-data::::" card-data card-data-bis)
-                                           card-number (:cardNumber card-data-bis)
+                                           cards (:cards (p/find user-store user-id))
+                                           card-data (first (filter #(= (:cardId %) card-id) cards))
+                                           _ (log/info ">>>> card-data::::" card-data card-data)
+                                           card-number (:cardNumber card-data)
                                            payment-method-data (p/get-payment-method user-store user-id (-> ctx :parameters :body :paymentMethodId))
 
                                            _ (log/info ">>>> payment-method-data::::" payment-method-data)
@@ -273,14 +273,12 @@
                                            _ (log/info ">>>> payment-data::::" payment-data)
                                            mimi-card-data (p/load-card mimi card-number amount)
                                            _ (log/info "mimi response" mimi-card-data)]
+
                                           (util/>200 ctx {:balance (:balance mimi-card-data)
                                                           :balanceDate (.toString (java.time.Instant/now))
                                                           :cardId card-id
                                                           :balanceCurrencyCode "ZA"
-                                                          :cardNumber card-number}))
-                              (d/catch clojure.lang.ExceptionInfo
-                                  (fn [exception-info]
-                                    (domain-exception ctx (ex-data exception-info)))))))}}}
+                                                          :cardNumber card-number})))))}}}
 
       (merge (util/common-resource :me/cards))))
 
