@@ -179,9 +179,8 @@
         ))
       d*))
 
-  (get-points [this card-number]
-    (d/let-flow [rewards (protocols/rewards this card-number)
-                 program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
+  (get-points-for [this rewards]
+    (d/let-flow [program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
                 (:balance program)))
 
   (get-history [this card-number]
@@ -278,9 +277,8 @@
                                                     :body (.getMessage e)})))
           ))
       d*))
-  (get-points [this card-number]
-    (d/let-flow [rewards (protocols/rewards this card-number)
-                 program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
+  (get-points-for [this rewards]
+    (d/let-flow [program (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs rewards)))]
                 (:balance program)))
   (get-history [this card-number])
   )

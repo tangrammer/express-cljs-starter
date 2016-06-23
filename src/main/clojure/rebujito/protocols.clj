@@ -19,7 +19,7 @@
   (register-physical-card [this data])
   (load-card [this card-number amount])
   (rewards [this data])
-  (get-points [this card-number])
+  (get-points-for [this rewards])
   (get-history [this card-number])
   )
 

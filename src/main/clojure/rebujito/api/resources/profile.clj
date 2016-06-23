@@ -33,21 +33,23 @@
                                                      real-user-data (p/find user-store user-id)
                                                      card-number  (let [try-context '[user-data real-user-data]]
                                                                     (or (-> real-user-data :cards first :cardNumber)
-                                                                        (error* 500 [500 ::card-number-cant-be-null])))
+                                                                        #_(error* 500 [500 ::card-number-cant-be-null])))
 
-
-                                                     rewards (rewards/rewards-response mimi card-number)
-                                                     card ((fn [rewards]
-                                                             (card/get-card user-store user-id mimi)) rewards)
-                                                     payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
+                                                     rewards (when (some? card-number)
+                                                               (rewards/rewards-response mimi card-number))
+                                                     card (card/get-card user-store user-id mimi)
+                                                     #_payment-methods #_(->> (p/get-payment-methods user-store (:_id auth-user))
                                                                           (map payment/adapt-mongo-to-spec))]
+
+
 
                                                     (util/>200 ctx (-> response-defaults
                                                                        (merge
                                                                         {:user user-data
                                                                          :rewardsSummary rewards
-                                                                         :paymentMethods payment-methods
-                                                                         :starbucksCards [card]}
+                                                                         ;; :paymentMethods payment-methods
+                                                                         :starbucksCards [card]
+                                                                         }
                                                                         (select-keys real-user-data [:addresses :socialProfile]))
                                                                        (dissoc :target-environment)))))))}}}
 

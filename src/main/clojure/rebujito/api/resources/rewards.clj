@@ -88,6 +88,7 @@
   }))
 
 (defn rewards-response [mimi card-number]
+  (log/info "rewards-response/card-number=>" card-number)
   (d/chain
    (p/rewards mimi card-number)
    translate-mimi-rewards
@@ -109,7 +110,8 @@
                                           card-number (-> user-data :cards first :cardNumber)
                                           ; can test with:
                                           ; card-number "9623570900001"
-                                          rewards (rewards-response mimi card-number)]
+                                          rewards (when card-number
+                                                      (rewards-response mimi card-number))]
                                          (>200 ctx rewards #_rebujito.store.mocks/me-rewards))
                              (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]

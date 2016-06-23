@@ -60,7 +60,10 @@
 (defn get-card [user-store user-id mimi]
   (d/let-flow [card-data (:cards (p/find user-store user-id))
                card-data (first card-data)
-               balance (p/get-points mimi (:cardNumber card-data))]
+               rewards (when (:cardNumber card-data)
+                         (p/rewards mimi (:cardNumber card-data)))
+               balance (when rewards
+                         (p/get-points-for mimi rewards))]
     (when card-data
       (merge
         (select-keys mocks/card [:imageUrls])
