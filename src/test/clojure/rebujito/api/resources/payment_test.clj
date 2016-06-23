@@ -80,16 +80,17 @@
             ]
         (is (= 200 (-> http-response :status)))
         (try (s/validate {:expirationYear Long
-                         :billingAddressId String
-                         :default String
-                         :paymentMethodId String
+                          :billingAddressId String
+                          :default String
+                          :paymentMethodId String
                           :type String
+                          :paymentType String
                           (s/optional-key :routingNumber) String
-                         :accountNumberLastFour String
-                         :nickname s/Any
-                         :fullName String
-                         (s/optional-key :accountNumber) String
-                         :expirationMonth Long}
+                          :accountNumberLastFour String
+                          :nickname s/Any
+                          :fullName String
+                          (s/optional-key :accountNumber) String
+                          :expirationMonth Long}
                          (payment/adapt-mongo-to-spec (first (:paymentMethods (p/find (:user-store *system*) (:_id (p/read-token  (-> *system* :authenticator) *user-access-token*)))))))
 
              (catch Exception e (is (nil? e)))))

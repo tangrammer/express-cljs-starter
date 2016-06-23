@@ -6,6 +6,7 @@
    [rebujito.protocols :as p]
    [rebujito.schemas :refer (AutoReloadMongo)]
    [rebujito.api.util :as util]
+   [rebujito.util :refer (dtry dcatch error*)]
    [rebujito.mongo :refer [id>mimi-id]]
    [rebujito.store.mocks :as mocks]
    [monger.operators :refer [$push]]
@@ -80,24 +81,19 @@
         card-data
         {:balance balance}))))
 
-
-
-
 (defn cards [user-store mimi]
   (->
    {:methods
     {:get {:parameters {:query {:access_token String}}
            :response (fn [ctx]
-                       (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
-                                        card-data (get-card-data user-store user-id)
-                                        balances (when (:cardNumber card-data)
-                                                   (p/balances mimi (:cardNumber card-data)))
-                                        card (get-card* user-store user-id balances)
-                                        ]
-                             (util/>200 ctx (if card-data [card] [])))
-                           (d/catch clojure.lang.ExceptionInfo
-                               (fn [exception-info]
-                                 (domain-exception ctx (ex-data  exception-info))))))}}}
+                       (dcatch
+                        ctx
+                        (d/let-flow [user-id (:_id (util/authenticated-user ctx))
+                                     card-data (get-card-data user-store user-id)
+                                     balances (when (:cardNumber card-data)
+                                                (p/balances mimi (:cardNumber card-data)))
+                                     card (get-card* user-store user-id balances)]
+                                    (util/>200 ctx (if card-data [card] [])))))}}}
 
    (merge (util/common-resource :me/cards))))
 
