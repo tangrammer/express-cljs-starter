@@ -138,7 +138,8 @@
   (-> payment-method
       (assoc :nickname (:nickName payment-method)
              :type (:paymentType payment-method))
-      (dissoc :paymentType :nickName )))
+             ;; https://github.com/naartjie/rebujito/issues/95
+      (dissoc :nickName )))
 
 (defn methods [user-store payment-gateway]
   (-> {:methods

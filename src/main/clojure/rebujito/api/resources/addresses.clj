@@ -27,7 +27,7 @@
                    :addressLine2 String
                    :city String
                    :country String
-                   :countrySubdivision String
+                   (s/optional-key :countrySubdivision) String
                    :firstName String
                    :lastName String
                    :name String

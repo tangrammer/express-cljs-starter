@@ -45,13 +45,18 @@
 
                                                     (util/>200 ctx (-> response-defaults
                                                                        (merge
-                                                                        {:user user-data
+                                                                        {:user (merge
+                                                                                (select-keys user-data [:firstName :lastName :emailAdress])
+                                                                                {:email (:emailAddress user-data)}
+                                                                                {:exId nil
+                                                                                 :subMarket "ZA"
+                                                                                 :partner false})
                                                                          :rewardsSummary rewards
-                                                                         ;; :paymentMethods payment-methods
+                                                                          ;; :paymentMethods payment-methods
                                                                          :starbucksCards [card]
                                                                          }
                                                                         (select-keys real-user-data [:addresses :socialProfile]))
-                                                                       (dissoc :target-environment)))))))}}}
+                                                                        (dissoc :target-environment)))))))}}}
 
 
       (merge (util/common-resource :profile))))
