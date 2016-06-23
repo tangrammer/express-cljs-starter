@@ -9,7 +9,7 @@
  :bugsnag {:key "be92431f82f5769f212a85bfd7ba9520"}
 
  :yada {:base-url #profile {:prod "/starbucks/api/v1"
-                            :test "/starbucks/dev/v1"
+                            :test "/starbucks/api/v1"
                             :default "/starbucks/dev/v1"}
         :port #or [#env REBUJITO_YADA_PORT #profile {:prod 3023
                                                      :default 3000}]}
