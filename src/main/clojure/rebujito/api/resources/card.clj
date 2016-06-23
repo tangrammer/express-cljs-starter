@@ -151,22 +151,18 @@
   (->
    {:methods
     {:post {:parameters {:query {:access_token String}}
-            :response (fn [ctx]
-                        (-> (d/let-flow [card-number (get-next-card-number counter-store)
-                                         auth-user (util/authenticated-user ctx)
-                                         user-id (:_id auth-user)
-                                         mimi-res (p/register-physical-card mimi {:cardNumber card-number
-                                                                                  :customerId  (id>mimi-id user-id)})
-                                         card (new-digital-card {:cardNumber card-number})
-                                         card-id (p/insert-card! user-store user-id card)]
-                              (util/>200 ctx (merge
-                                              (select-keys mocks/card [:imageUrls])
-                                              (blank-card-data)
-                                              (assoc card :cardId card-id))))
-
-                            (d/catch clojure.lang.ExceptionInfo
-                                (fn [exception-info]
-                                  (domain-exception ctx (ex-data  exception-info))))))}}}
+            :response (dcatch ctx
+                       (d/let-flow [card-number (get-next-card-number counter-store)
+                                        auth-user (util/authenticated-user ctx)
+                                        user-id (:_id auth-user)
+                                        mimi-res (p/register-physical-card mimi {:cardNumber card-number
+                                                                                 :customerId  (id>mimi-id user-id)})
+                                        card (new-digital-card {:cardNumber card-number})
+                                        card-id (p/insert-card! user-store user-id card)]
+                                       (util/>200 ctx (merge
+                                                       (select-keys mocks/card [:imageUrls])
+                                                       (blank-card-data)
+                                                       (assoc card :cardId card-id)))))}}}
 
    (merge (util/common-resource :me/cards))))
 

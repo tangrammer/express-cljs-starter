@@ -5,6 +5,7 @@
    [taoensso.timbre :as log]
    [rebujito.protocols :as p]
    [rebujito.api.util :as util]
+   [rebujito.util :refer (dcatch)]
    [rebujito.scopes :as scopes]
    [rebujito.api.resources :refer (domain-exception)]
    [cheshire.core :as json]
@@ -34,7 +35,24 @@
                                    :paymentType String
                                    :cvn String
                                    :fullName String
-                                   :expirationMonth Long}}})
+                                   :expirationMonth Long}}
+             :responses {:methods {:post {
+                                          :accountNumber (s/maybe String)
+                                          :accountNumberLastFour String
+                                          :bankName (s/maybe String)
+                                          :billingAddressId (s/maybe String)
+                                          :cvn (s/maybe String)
+                                          :default (s/maybe String)
+                                          :expirationMonth Long
+                                          :expirationYear Long
+                                          :fullName (s/maybe String)
+                                          :isTemporary Boolean
+                                          :nickname String
+                                          :paymentMethodId String
+                                          :paymentType String
+                                          :routingNumber (s/maybe String)
+                                          }}}
+             })
 
 
 (defn detail-adapt-mongo-to-spec [payment-method]
@@ -157,13 +175,14 @@
         :post {:parameters {:query {:access_token String}
                             :body (-> schema :methods :post)}
                :response (fn [ctx]
-                           (-> (d/let-flow [request (get-in ctx [:parameters :body])
+                           (dcatch ctx (d/let-flow [request (get-in ctx [:parameters :body])
                                             auth-user (util/authenticated-user ctx)
                                             card-token (p/create-card-token payment-gateway
                                                                             {:cardNumber (-> request :accountNumber)
                                                                              :expirationMonth (-> request :expirationMonth)
                                                                              :expirationYear (-> request :expirationYear)
                                                                              :cvn (-> request :cvn)})
+
 
                                             new-payment-method (p/add-new-payment-method
                                                                 user-store
@@ -181,6 +200,7 @@
                                                                        (util/field? request :default)
                                                                        (util/field? request :fullName)
                                                                        ))]
+
                                            (util/>200 ctx {
                                                            :accountNumber nil
                                                            :accountNumberLastFour (take-last* (-> request :accountNumber) 4)
@@ -198,7 +218,5 @@
                                                            :paymentType (-> request :paymentType)
                                                            :routingNumber nil
                                                            }))
-                               (d/catch clojure.lang.ExceptionInfo
-                                   (fn [exception-info]
-                                     (domain-exception ctx (ex-data exception-info))))))}}}
+))}}}
       (merge (util/common-resource :me/payment-methods))))

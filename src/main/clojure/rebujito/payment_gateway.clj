@@ -3,6 +3,7 @@
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [schema.core :as s]
+   [rebujito.util :refer (ddtry error* derror*)]
    [taoensso.timbre :as log]
    [rebujito.protocols :as protocols]
    [com.stuartsierra.component  :as component]
@@ -29,37 +30,40 @@
   ;;                     ))))
   (create-card-token [this data]
     (let [data (update data :expirationMonth #(format "%02d" %))
-          _     (s/validate {:cardNumber String
+          d* (d/deferred)
+          try-id ::create-card-token
+          try-type :payment-gateway
+          try-context '[data]]
+      (ddtry d* (do
+                  (s/validate {:cardNumber String
                              :expirationYear Long
                              :expirationMonth String
                              (s/optional-key :cvn) String
                              } data)
-          d* (d/deferred)]
-      (log/info "PayGate Create Card Token Request" data)
-      (http-k/post (-> this :url)
-                    {:body (velocity/render "paygate/create-card-token.vm"
-                                            :paygateId (-> this :paygateId)
-                                            :paygatePassword (-> this :paygatePassword)
-                                            :cardNumber (-> data :cardNumber)
-                                            :expirationMonth (-> data :expirationMonth)
-                                            :expirationYear (-> data :expirationYear))}
-                    (fn [{:keys [status body error]}]
-                      (log/info "PayGate Create Card Token Response" status error body)
-                      (if (or error (not= 200 status) (not (.contains body "CardVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
-                        (d/error! d* (ex-info (str "error!!!" 500)
-                                              {:type :payment-gateway
-                                               :status 500
-                                               :body (try
-                                                       (json/generate-string ["paygate/create-card-token" status error body])
-                                                       (catch Exception e (.getMessage e)))}))
-                        (let [response (xp/xml->doc body)
-                              card-token (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
-                          (if (first card-token)
-                            (d/success! d* {:card-token (first card-token)})
-                            (d/error! d* (ex-info (str "error!!!" 400)
-                                                  {:type :payment-gateway
-                                                   :status 400
-                                                   :body (json/generate-string ["paygate/create-card-token NULL card-token" status error body])})))))))
+                  (log/info "PayGate Create Card Token Request" data)
+                  (http-k/post (-> this :url)
+                               {:body (velocity/render "paygate/create-card-token.vm"
+                                                       :paygateId (-> this :paygateId)
+                                                       :paygatePassword (-> this :paygatePassword)
+                                                       :cardNumber (-> data :cardNumber)
+                                                       :expirationMonth (-> data :expirationMonth)
+                                                       :expirationYear (-> data :expirationYear))}
+                               (fn [{:keys [status body error]}]
+                                 (log/info "PayGate Create Card Token Response" status error body)
+                                 (if (or error (not= 200 status) (not (.contains body "CardVaultResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
+                                   (derror* d* 500 [500 (try
+                                                      (json/generate-string ["paygate/create-card-token" status error body])
+                                                      (catch Exception e (.getMessage e)))] )
+
+                                   (let [response (xp/xml->doc body)
+                                         card-token (xp/$x:text* "/Envelope/Body/SingleVaultResponse/CardVaultResponse/Status/VaultId" response)]
+                                     (log/info "CARD_TOKEN:" (first card-token))
+                                     (if (first card-token)
+                                       {:card-token (first card-token)}
+                                       (derror* d* 400 [400 (try
+                                                              (json/generate-string ["paygate/create-card-token NULL card-token" status error body])
+                                                              (catch Exception e (.getMessage e)))] )
+)))))))
       d*))
   (delete-card-token [this data]
     (let [d* (d/deferred)]
