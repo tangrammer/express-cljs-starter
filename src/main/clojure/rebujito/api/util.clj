@@ -131,6 +131,9 @@
 (defn authenticated-user [ctx]
   (get-in ctx [:authentication "default"]))
 
+(defn authenticated-user-id [ctx]
+  (:_id (authenticated-user ctx)))
+
 
 (defn generate-user-data [readed-jwt sub-market]
   (merge (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress]))
