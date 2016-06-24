@@ -1,5 +1,6 @@
 (ns rebujito.mimi
   (:require
+   [clojure.core.async :as async :refer [<! >! timeout]]
    [manifold.deferred :as d]
    [rebujito.protocols :as protocols]
    [rebujito.util :refer (dtry ddtry)]
@@ -263,3 +264,39 @@
 
 (defn new-mock-mimi [mimi-config]
   (map->MockMimi  mimi-config))
+
+
+
+(comment "code prototype for
+          >> we should retry 3 times, with maybe a 100ms delay in between the calls"
+
+         (defn random-value []
+           (first (random-sample 0.1 (cycle [:fail :fail :fail :success]))))
+
+         (declare http-call)
+
+         (defn listener [rchan c  options]
+           (async/go-loop [attempt-number 0]
+             (let [res (async/<! c)]
+               (if (= :fail res)
+                 (do
+                   (async/<!! (async/timeout 100))
+                   (println "Attempt: "  attempt-number " :: Res: " res)
+                   (http-call c  options)
+                   (if (> 3 attempt-number)
+                     (recur (inc attempt-number))
+                     (async/>! rchan :exception)))
+                 (async/>! rchan res)))))
+
+
+         (defn http-call
+           [c  options]
+           (async/thread
+             (async/<!! (async/timeout 1000))
+             (async/>!! c (random-value))))
+
+         (let [r (async/chan)
+               c (async/chan)]
+           (listener r c {})
+           (http-call c {})
+           (println (async/<!! r))))
