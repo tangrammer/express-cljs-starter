@@ -34,18 +34,15 @@
          (select-keys ~local-context  ~('map 'symbol more))
          r#))))
 
-(macroexpand-1 '(macroexpand-1 '(>take {:hola 1} hola)))
+(comment (macroexpand-1 '(macroexpand-1 '(>take {:hola 1} hola)))
 
-(macroexpand '(>take {:hola 1} hola))
+         (macroexpand '(>take {:hola 1} hola)))
 
 ;(println (>take {'hola 1} hola))
 
 
 (defmacro base-error* [status [code message] & ks]
-
   `(let [local-context# (local-context)
-         a# (println '~ks)
-
          type# (or (>take local-context# try-type) :default-error-type)
          id# (or (>take local-context# try-id) 'macro-error-default-id)
          ex# {:context  (>select local-context#  ~ks (>take local-context# try-context))
@@ -53,33 +50,31 @@
               :body (str (namespace id#) "/" (name id#))
               :message ~message
               :code ~code}
-         ctx# (or (:ctx local-context#) {})]
+         ctx# (or (:ctx local-context#) {})
+         email#  (:emailAddress (rebujito.api.util/authenticated-user ctx#))]
      (if *send-bugsnag*
        (do
         (clj-bugsnag.core/notify
          (ex? type# (str ~status " :: " (:body ex#) " :: " ~code (name ~message)))
-         (let [email# {:email  (or (:emailAddress (rebujito.api.util/authenticated-user ctx#))
-                                   "unauthenticated user")}]
-           {:api-key (:key (:bugsnag (rebujito.config/config)))
-            :meta (merge {:context (assoc (:context ex#)
-                                          :fn (:body ex#))
-                          :id (:body ex#)}
-                         (when (-> ctx# :response :status)
-                           {:status (-> ctx# :response :status)})
-                         (when (-> ctx# :request :uri)
-                           {:uri (-> ctx# :request :uri)})
-                         (when (-> ctx# :parameters)
-                           {:parameters (-> ctx# :parameters)})
-                          email#
-                         )
-            :user (merge
-                   {:id (:body ex#)}
-                   (when (-> ctx# :request :uri)
-                     {:uri (-> ctx# :request :uri)})
-                   (when (-> ctx# :parameters)
-                     {:parameters (-> ctx# :parameters)})
-
-                   email#)})))
+         {:api-key (:key (:bugsnag (rebujito.config/config)))
+          :meta (merge {:context (assoc (:context ex#)
+                                        :fn (:body ex#))
+                        :id (:body ex#)}
+                       (when (-> ctx# :response :status)
+                         {:status (-> ctx# :response :status)})
+                       (when (-> ctx# :request :uri)
+                         {:uri (-> ctx# :request :uri)})
+                       (when (-> ctx# :parameters)
+                         {:parameters (-> ctx# :parameters)})
+                       (when email#
+                         {:email email#}))
+          :user (merge
+                 {:id (:body ex#)}
+                 (when (-> ctx# :request :uri)
+                   {:uri (-> ctx# :request :uri)})
+                 (when (-> ctx# :parameters)
+                   {:parameters (-> ctx# :parameters)})
+                 email#)}))
        (log/error "AVOID SENDING BUGSNAG" (str ~status " :: " (:body ex#) " :: " (name ~message))))
      (clojure.core/ex-info (str ~status " :: " (:body ex#) " :: " (name ~message))
                            {:type type#
@@ -128,32 +123,33 @@
     )
   )
 
-(hola* :a :b)
+(comment (hola* :a :b)
 
-(macroexpand-1 '(t* [a b]))
+         (macroexpand-1 '(t* [a b]))
 
-(t* [a b])
-
-
+         (t* [a b]))
 
 
 
-#_(binding [*send-bugsnag* false]
-  (time (->
-                   (let [
-                         try-type :store
-                         try-id ::add-new-payment-method
-                         try-context '[oid p jolin]
-                         oid 12
-                         jolin 4
-                         p {:a 12}]
 
-                     (dtry (do
-                             ;;(println 'try-type)
+
+(comment
+  (binding [*send-bugsnag* true]
+   (time (->
+          (let [
+                try-type :store
+                try-id ::add-new-payment-method
+                try-context '[oid p jolin]
+                oid 12
+                jolin 4
+                p {:a 12}]
+
+            (dtry (do
+                    ;;(println 'try-type)
                                         ;           (throw (Exception. "wow!"))
-                             (error* 400  [44567 :transaction-failed]  oid))))
-                   (manifold.deferred/catch  Exception #(ex-data %))
-                   )))
+                    (error* 400  [44567 :transaction-failed]  oid))))
+          (manifold.deferred/catch  Exception #(ex-data %))
+          ))))
 
 
 
