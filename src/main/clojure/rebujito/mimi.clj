@@ -14,6 +14,42 @@
    [rebujito.store.mocks :as mocks]
    [taoensso.timbre :as log]))
 
+
+(defn random-value []
+  (first (random-sample 0.1 (cycle [{:status 500 :body :fail-message} {:status 500 :body :fail-message}{:status 500 :body :fail-message} {:status 200 :body :success!}]))))
+
+
+(defn repeat-and-delay [http-fn* attempts time-to-delay  ex-data-fn]
+  (let [c (async/chan)
+        rchan (d/deferred)]
+    (async/go-loop [attempt-number 0]
+      (let [res (async/<! c)]
+        (log/info "Attempt: "  attempt-number " :: Res: " res)
+        (if (>= (:status res) 400)
+          (do
+            (async/<!! (async/timeout time-to-delay))
+            (if (> attempts attempt-number)
+              (do (http-fn* c)
+                (recur (inc attempt-number)))
+              (d/error! rchan  (ex-info (format "Mimi exception after %s retries " attempts) (ex-data-fn res)))))
+          (d/success! rchan res))))
+    (http-fn* c)
+    rchan))
+
+
+(defn http-call
+  [c]
+  (async/thread
+    (async/<!! (async/timeout 1000))
+    (let [http-res (random-value)]
+      (println "http res: " http-res)
+      (async/>!! c http-res))))
+
+#_(do
+  (println @(repeat-and-delay  http-call 1 100 (fn [res] (merge res {:type :mimi :code 134 :message "wow!"})))))
+
+
+
 (def errors {:create-account {"111000" [400 "Username is already taken" "Account Management Service returns error that user name is already taken"]
                               "111001" [400"Unknown error occured" "Account Management Service returns error"]
                               "111005" [400 "Email address too long. Must be 50 characters or less." ""]
@@ -134,31 +170,25 @@
       d*))
 
   (balances [this card-number]
-    (log/info "fetching rewards for" card-number)
-    (let [d* (d/deferred)]
-      (d/future
-      (try
-        (let [{:keys [status body]} (http-c/get (format "%s/account/%s/balances" base-url card-number)
-                                                {:headers {"Authorization" (format "Bearer %s" token)}
-                                                 :insecure? true
-                                                 :content-type :json
-                                                 :accept :json
-                                                 :as :json
-                                                 :throw-exceptions true
-                                                 :form-params {}})]
-          (log/info body)
-          (d/success! d* body))
-        (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
-                                              (d/error! d* (ex-info (str "error!!!" (:status ex))
-                                                                    {:type :mimi
-                                                                      :status (:status ex)
-                                                                      :body (:body ex)}))))
-          (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
-                                                   {:type :mimi
-                                                    :status 500
-                                                    :body (.getMessage e)})))
-        ))
-      d*))
+    (log/info "fetching prod balances for" card-number)
+    (repeat-and-delay
+                       #(d/future
+                          (try
+                            (let [{:keys [status body] :as all} (http-c/get (format "%s/account/%s/balances" base-url card-number)
+                                                                            {:headers {"Authorization" (format "Bearer %s" token)}
+                                                                             :insecure? true
+                                                                             :content-type :json
+                                                                             :accept :json
+                                                                             :as :json
+                                                                             :throw-exceptions true
+                                                                             :form-params {}})]
+                              (log/info "balances retrieved from prod mimi: " body)
+                              (async/>!! % all))
+                            (catch Exception e (async/>!! % {:status 500
+                                                             :body (.getMessage e)}))
+                            ))
+                       3 100 (fn [res] (merge res {:type :mimi :code "xxxxx" :message "Balances error!"}))
+                       ))
 
 
 
@@ -228,34 +258,29 @@
 
   (balances [this card-number]
     ; TODO: mock the response, don't hit mimi
-    (log/info "fetching rewards for" card-number)
+    (log/info "fetching mock balances for ..." card-number)
     (let [d* (d/deferred)
           ; card-number "9623570800099"
           card-number "9623570900002"
           ]
-      (d/future
-        (try
-          (let [{:keys [status body]} (http-c/get (format "%s/account/%s/balances" base-url card-number)
-                                                  {:headers {"Authorization" (format "Bearer %s" token)}
-                                                   :insecure? true
-                                                   :content-type :json
-                                                   :accept :json
-                                                   :as :json
-                                                   :throw-exceptions true
-                                                   :form-params {}})]
-            (log/info body)
-            (d/success! d* body))
-          (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
-                                                (d/error! d* (ex-info (str "error!!!" (:status ex))
-                                                                      {:type :mimi
-                                                                        :status (:status ex)
-                                                                        :body (:body ex)}))))
-          (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
-                                                   {:type :mimi
-                                                    :status 500
-                                                    :body (.getMessage e)})))
-          ))
-      d*))
+          (repeat-and-delay
+                       #(d/future
+                          (try
+                            (let [{:keys [status body] :as all} (http-c/get (format "%s/account/%s/balances" base-url card-number)
+                                                                            {:headers {"Authorization" (format "Bearer %s" token)}
+                                                                             :insecure? true
+                                                                             :content-type :json
+                                                                             :accept :json
+                                                                             :as :json
+                                                                             :throw-exceptions true
+                                                                             :form-params {}})]
+                              (log/info body)
+                              (async/>!! % all))
+                            (catch Exception e (async/>!! % {:status 500
+                                                             :body (.getMessage e)}))
+                            ))
+                       3 100 (fn [res] (merge res {:type :mimi :code "xxxxx" :message "Balances error!"}))
+                       )))
   (get-history [this card-number])
   )
 
@@ -264,39 +289,3 @@
 
 (defn new-mock-mimi [mimi-config]
   (map->MockMimi  mimi-config))
-
-
-
-(comment "code prototype for
-          >> we should retry 3 times, with maybe a 100ms delay in between the calls"
-
-         (defn random-value []
-           (first (random-sample 0.1 (cycle [:fail :fail :fail :success]))))
-
-         (declare http-call)
-
-         (defn listener [rchan c  options]
-           (async/go-loop [attempt-number 0]
-             (let [res (async/<! c)]
-               (if (= :fail res)
-                 (do
-                   (async/<!! (async/timeout 100))
-                   (println "Attempt: "  attempt-number " :: Res: " res)
-                   (http-call c  options)
-                   (if (> 3 attempt-number)
-                     (recur (inc attempt-number))
-                     (async/>! rchan :exception)))
-                 (async/>! rchan res)))))
-
-
-         (defn http-call
-           [c  options]
-           (async/thread
-             (async/<!! (async/timeout 1000))
-             (async/>!! c (random-value))))
-
-         (let [r (async/chan)
-               c (async/chan)]
-           (listener r c {})
-           (http-call c {})
-           (println (async/<!! r))))
