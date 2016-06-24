@@ -71,7 +71,8 @@
   (remove-address [this oid address])
   (update-address [this oid address]))
 
-
+(defprotocol TokenStore
+  (invalidate [this user-id]))
 
 
 (defprotocol ApiClient

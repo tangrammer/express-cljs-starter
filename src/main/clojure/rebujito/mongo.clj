@@ -413,6 +413,39 @@
           (util/error* 400 ['xxx (str :invalid_client " " (format "api client-id  %s not valid  " id ))])))))))
 
 
+
+(defrecord TokenStorage [db-conn collection secret-key ephemeral?]
+  component/Lifecycle
+  (start [this]
+    (start* this))
+  (stop [this] this)
+
+  protocols/MutableStorage
+  (generate-id [this data]
+    (generate-account-id data))
+  (find [this]
+    (find* this))
+  (find [this data]
+    (find* this data))
+  (get-and-insert! [this data]
+    (get-and-insert!* this data))
+  (insert! [this data]
+    (insert!* this data))
+  (update! [this data-query data-update]
+    (update!* this data-query data-update))
+  (update-by-id! [this hex-id data]
+    (update-by-id!* this hex-id data))
+
+  protocols/TokenStore
+  (invalidate [this user-id]
+    (log/info "invalidate" user-id)
+    (let [try-type :token-store
+          try-id ::invalidate
+          try-context '[user-id]]
+      (util/dtry
+       (protocols/update! this {:user-id user-id} {:valid false})))))
+
+
 (defn new-counter-store
   ([auth-data]
    (new-counter-store auth-data false ))
@@ -436,7 +469,7 @@
   ([auth-data]
    (new-token-store auth-data false))
   ([auth-data ephemeral?]
-   (map->BaseStorage {:collection :tokens
+   (map->TokenStorage {:collection :tokens
                       :secret-key (:secret-key auth-data)
                       :ephemeral?  ephemeral?})))
 

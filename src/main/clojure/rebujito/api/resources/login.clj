@@ -53,8 +53,8 @@
       {:get {:parameters {:query {:access_token String
                                   (s/optional-key :locale) String}}
              :response (fn [ctx]
-
-                         (p/update! token-store {:user-id (:_id (util/authenticated-user ctx))} {:valid false})
-                         (util/>200 ctx {:status "ok"}))}}}
+                         (dcatch ctx
+                                 (do (p/invalidate token-store (util/authenticated-user-id ctx))
+                                     (util/>200 ctx {:status "ok"}))))}}}
 
      (merge (util/common-resource :me/login))))
