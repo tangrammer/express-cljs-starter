@@ -12,7 +12,7 @@
   (start [this]
     this)
   (stop [this] this)
-  protocols/Store
+  #_protocols/Store
   #_(get-cards [this]
     (assoc mocks/card :target-environment :prod))
   #_(get-deferred-card [this data]
@@ -57,7 +57,7 @@
   (start [this]
     this)
   (stop [this] this)
-  protocols/Store
+  #_protocols/Store
   #_(get-cards [this]
     (assoc mocks/card :target-environment :dev))
   #_(get-deferred-card [this data]
