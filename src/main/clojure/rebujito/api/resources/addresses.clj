@@ -94,7 +94,7 @@
                                               address (p/get-address user-store user-id address-id)
                                               res-mongo (p/remove-address user-store user-id address)]
 
-                                             (util/>200 ctx ["OK" "Success" res-mongo]))
+                                             (util/>200 ctx nil))
                                  (d/catch clojure.lang.ExceptionInfo
                                      (fn [exception-info]
                                        (domain-exception ctx (ex-data exception-info))))))}

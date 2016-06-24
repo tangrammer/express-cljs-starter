@@ -79,10 +79,8 @@
             ]
 
         (is (= 200 (-> http-response :status)))
-        (is (= '("OK" "Success" true) body))
+        (is (= nil body)))
 
-
-        )
       ;; get-details now doesn't exist after deleting it
       (let [path (bidi/path-for (-> *system* :docsite-router :routes) ::addresses/get :address-id @address-id)
             http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
