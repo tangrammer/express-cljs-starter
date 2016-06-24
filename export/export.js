@@ -32,6 +32,7 @@ sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
 .then(getAccounts)
 // .then(console.log)
 .then(accounts => {
+  console.log(`got ${accounts.length} accounts`)
   return Promise.map(accounts, (account) => {
     const accountNumber = account.primaryposref
     console.log(`starting ${accountNumber}`)
@@ -47,7 +48,10 @@ function exportCustomer(accountNumber) {
     micros.transactions({accountNumber}),
     micros.getStarbucksBalances(accountNumber),
   ])
-  .then(([[customer], txs, balances]) => {
+  .then(([customerArr, txs, balances]) => {
+    if (!customerArr || !customerArr[0]) return
+
+    let customer = customerArr[0]
     return exportCustomerProfile(customer)
     .then(() => {
       return exportTransactions(customer, txs)
@@ -62,7 +66,8 @@ function getAccounts() {
   // const accounts = require('./accounts')
   // return accounts
   // return micros.get('Customer', {condition: 'primaryposref = ?', values: [{primaryposref: '9623570900002'}], resultCols: ['primaryposref']})
-  return Promise.resolve([ { id: '42406261', primaryposref: '9623570900002' } ])
+  return micros.get('Customer', {condition: '', values: [], resultCols: ['primaryposref']})
+  // return Promise.resolve([ { id: '42406261', primaryposref: '9623570900002' } ])
   // return Promise.resolve([ { id: '42229452', primaryposref: '9623570900003' }])
 }
 
