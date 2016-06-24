@@ -76,7 +76,7 @@
                                                   :routingNumber @token
                                                   :cvn "123"
                                                   :transactionId "12345"
-                                        ;                                                     :currency "ZAR"
+                                                  :currency "ZAR"
                                                   :amount 100
                                                   })]
            (println "execute-payment: " r)
