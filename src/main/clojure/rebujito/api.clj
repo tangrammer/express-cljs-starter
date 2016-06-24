@@ -35,7 +35,7 @@
            app-config
            counter-store]
 
-  [""  [[["/checkReload/" :account-number]  (-> (card/check-reload user-store mimi)
+  [""  [[["/checkReload/" :card-number]  (-> (card/check-reload user-store mimi)
                                                 (assoc :id ::card/check-reload))]
         ["/health"  (-> {:id :health
                          :methods
