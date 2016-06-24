@@ -107,18 +107,16 @@
                                      (fn [exception-info]
                                        (domain-exception ctx (ex-data exception-info))))))}
         :put {:parameters {:query {:access_token String}
-                        :path {:address-id String}
-                        :body (-> schema  :put)}
+                           :path {:address-id String}
+                           :body (-> schema :put)}
            :response (fn [ctx]
-                       (let [request (get-in ctx [:parameters :body])]
-                         (-> (d/let-flow [auth-user (util/authenticated-user ctx)
+                       (let [payload (-> ctx :parameters :body)]
+                         (-> (d/let-flow [user-id (-> ctx util/authenticated-user :_id)
                                           address-id (get-in ctx [:parameters :path :address-id])
-                                          address (p/get-address user-store (:_id auth-user)  address-id)
+                                          new-address (assoc payload :addressId address-id)]
 
-                                          updated-address (assoc (p/update-address user-store (:_id auth-user) address)
-                                                                 :addressId address-id)]
-
-                                         (util/>200 ctx nil))
+                               (p/update-address user-store user-id new-address)
+                               (util/>200 ctx nil))
                              (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]
                                    (domain-exception ctx (ex-data exception-info)))))))}

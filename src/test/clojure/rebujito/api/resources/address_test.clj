@@ -123,8 +123,8 @@
 
      (is (= 200 (-> http-response :status)))
      (is (nil? body))
-    ;  (is (= "poes" (-> address-in-db :firstName)))
-    ;  (is (= "doos" (-> address-in-db :lastName)))
+     (is (= "poes" (-> address-in-db :firstName)))
+     (is (= "doos" (-> address-in-db :lastName)))
      ))
     )
 
