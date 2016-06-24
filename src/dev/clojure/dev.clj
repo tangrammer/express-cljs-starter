@@ -3,6 +3,7 @@
   not be included in a production build of the application."
   (:import [java.util Locale])
   (:require
+   [clojure.test :refer [run-tests run-all-tests]]
    [bidi.bidi :as bidi]
    [buddy.core.codecs :refer (bytes->hex)]
    [buddy.core.nonce :as nonce]
@@ -151,3 +152,39 @@
                          (.printStackTrace e)
                          (pst e)
                          (check-mobile-user)))))
+
+
+
+
+(defn assert-test [ns]
+  (time
+   (do
+       (let [sum (run-tests ns)]
+         (assert (= 0 (:fail sum)) sum))
+       (println "running: " ns)
+       ))
+  )
+
+
+(defn >run-tests []
+
+  (assert-test 'rebujito.addresses-test)
+  (assert-test 'rebujito.api-test)
+  (assert-test 'rebujito.coercion-test)
+  (assert-test 'rebujito.mongo-test)
+  (assert-test 'rebujito.payment-gateway-test)
+
+
+  (assert-test 'rebujito.api.time-test)
+
+  (assert-test 'rebujito.api.resources.account-test)
+  (assert-test 'rebujito.api.resources.address-test)
+  (assert-test 'rebujito.api.resources.card-test)
+  (assert-test 'rebujito.api.resources.content-test)
+  (assert-test 'rebujito.api.resources.login-test)
+  (assert-test 'rebujito.api.resources.oauth-test)
+  (assert-test 'rebujito.api.resources.payment-test)
+  (assert-test 'rebujito.api.resources.rewards-test)
+
+
+  )
