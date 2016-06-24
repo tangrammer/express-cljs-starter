@@ -79,6 +79,24 @@
         card-data
         {:balance balance}))))
 
+(defn check-reload [user-store mimi]
+  (->
+   {:methods
+    {:get {:parameters {:path {:account-number String}
+                        ;:query {:access_token String}
+                        }
+           :response (fn [ctx]
+                       {:account-number (-> ctx :parameters :path :account-number)}
+                       #_(dcatch
+                        ctx
+                        (d/let-flow [user-id (:_id (util/authenticated-user ctx))
+                                     card-data (get-card-data user-store user-id)
+                                     balances (when (:cardNumber card-data)
+                                                (p/balances mimi (:cardNumber card-data)))
+                                     card (get-card* user-store user-id balances)]
+                                    (util/>200 ctx (if card-data [card] [])))))}}}
+
+   (merge (util/common-resource :me/cards))))
 (defn cards [user-store mimi]
   (->
    {:methods

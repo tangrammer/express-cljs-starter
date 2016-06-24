@@ -62,6 +62,13 @@
           ]
       (is (-> card :autoReloadProfile :active))
       (is (p/disable-auto-reload (:user-store *system*) user-id (:cardId card)) )
+
+      (let [card-number  (:cardNumber (->(p/find (:user-store *system*) user-id) :cards first))
+            found (p/get-card (-> *system* :user-store ) card-number)]
+        (is found)
+        (is (= card-number (:cardNumber found))))
+
+
       (is (false? (-> (p/find (:user-store *system*) user-id)
               :cards first :autoReloadProfile :active)))))
 
