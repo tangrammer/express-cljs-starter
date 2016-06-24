@@ -111,9 +111,11 @@
    (open-app :dev))
   ([env]
    (assert (contains? #{:dev :test :prod} env))
-   (browse-url (format "http://%s/swagger-ui/index.html?url=/starbucks/v1/swagger.json"
+   (browse-url (format "http://%s/swagger-ui/index.html?url=%s/swagger.json"
                        (condp = env
-                         :dev (str "localhost:" (-> (config env) :yada :port)))))))
+                         :dev (str "localhost:" (-> (config env) :yada :port)))
+                       (-> (config env) :yada :base-url)
+                       ))))
 
 (defn set-env! [& env]
   (alter-var-root #'env/env (constantly (set env))))
