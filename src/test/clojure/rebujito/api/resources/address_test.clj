@@ -116,15 +116,16 @@
                                   {:throw-exceptions false
                                    :body-encoding "UTF-8"
                                    :content-type :json
-                                   :body (json/generate-string
-                                          (g/generate (:put addresses/schema)))})
+                                   :body (-> addresses/schema :put g/generate (assoc :firstName "poes" :lastName "doos") json/generate-string)})
+
+         address-in-db (p/get-address (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*)) @address-id)
          body (parse-body http-response)]
 
      (is (= 200 (-> http-response :status)))
-     (is (= [200 "OK" true] body))))
+     (is (nil? body))
+    ;  (is (= "poes" (-> address-in-db :firstName)))
+    ;  (is (= "doos" (-> address-in-db :lastName)))
+     ))
     )
-
-
-
 
   )

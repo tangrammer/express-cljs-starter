@@ -88,8 +88,10 @@
                                  (dissoc :password))]
 
                 (>201 ctx (p/grant authorizer (select-keys user [:_id :firstName :lastName :emailAddress]) #{scopes/application scopes/user}))
-                (>404 ctx {:message :user-not-found
-                           :body (get-in ctx [:parameters :body :username])}))))
+
+                (>400 ctx {:error "invalid_grant"
+                           :description "Resource owner credentials could not be validated."})
+                           )))
 
 (defmethod get-token :refresh_token ; docs -> http://bit.ly/1sLcWfw
   ; TODO verify refresh token #39
@@ -106,8 +108,9 @@
 
                refresh-token (get-in ctx [:parameters :body :refresh_token])
                data-refresh-token (p/read-token authenticator refresh-token)
-               mongo-token (when (and data-refresh-token c)
-                             (first  (p/find token-store {:refresh-token refresh-token})))]
+               mongo-token (first  (p/find token-store {:refresh-token refresh-token}))]
+              ;;    (log/info "*refresh_token>>>" mongo-token)
+              (assert c)
     (if (:valid mongo-token)
       (let [user (-> (p/find user-store (:user-id mongo-token))
                      (dissoc :password))]

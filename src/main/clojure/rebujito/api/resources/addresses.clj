@@ -116,9 +116,9 @@
                                           address (p/get-address user-store (:_id auth-user)  address-id)
 
                                           updated-address (assoc (p/update-address user-store (:_id auth-user) address)
-                                                                 :addressId address-id)
-]
-                                         (util/>200 ctx [200 "OK" (some? updated-address)]))
+                                                                 :addressId address-id)]
+
+                                         (util/>200 ctx nil))
                              (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]
                                    (domain-exception ctx (ex-data exception-info)))))))}
