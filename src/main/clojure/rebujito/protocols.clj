@@ -1,12 +1,6 @@
 (ns rebujito.protocols
   (:refer-clojure :exclude (find send deref)))
 
-(defprotocol Store
-  (get-cards [this])
-
-  (post-payment-method [this data])
-  (post-token-resource-owner [this])
-  (post-refresh-token [this]))
 
 (defprotocol PaymentGateway
 ;  (ping [this data])

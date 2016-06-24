@@ -1,3 +1,4 @@
+;; deprecated !!
 (ns rebujito.store
   (:require
    [manifold.deferred :as d]
@@ -12,7 +13,7 @@
     this)
   (stop [this] this)
   protocols/Store
-  (get-cards [this]
+  #_(get-cards [this]
     (assoc mocks/card :target-environment :prod))
   #_(get-deferred-card [this data]
     (let [d* (d/deferred)]
@@ -34,7 +35,7 @@
     d*))
   #_(put-payment-method-detail [this data]
     (assoc mocks/put-payment-method-detail :target-environment :prod))
-  (post-payment-method [this data]
+  #_(post-payment-method [this data]
     (let [d* (d/deferred)]
       (if-let [payment-method-data  (assoc mocks/post-payment-method :target-environment :prod)]
         (d/success! d* payment-method-data)
@@ -45,9 +46,9 @@
       d*))
   #_(get-payment-method [this]
     (mapv #(assoc % :target-environment :prod) mocks/get-payment-method))
-  (post-token-resource-owner [this]
+  #_(post-token-resource-owner [this]
     (assoc mocks/post-token-resource-owner :target-environment :prod))
-  (post-refresh-token [this]
+  #_(post-refresh-token [this]
     (assoc mocks/post-refresh-token :target-environment :prod))
   )
 
@@ -57,7 +58,7 @@
     this)
   (stop [this] this)
   protocols/Store
-  (get-cards [this]
+  #_(get-cards [this]
     (assoc mocks/card :target-environment :dev))
   #_(get-deferred-card [this data]
     (let [d* (d/deferred)]
@@ -79,7 +80,7 @@
     d*))
   #_(put-payment-method-detail [this data]
     (assoc mocks/put-payment-method-detail :target-environment :dev))
-  (post-payment-method [this data]
+  #_(post-payment-method [this data]
     (let [d* (d/deferred)]
       (if-let [payment-method-data  (assoc mocks/post-payment-method :target-environment :dev)]
         (d/success! d* payment-method-data)
@@ -90,9 +91,9 @@
       d*))
   #_(get-payment-method [this]
     (mapv #(assoc % :target-environment :dev) mocks/get-payment-method))
-  (post-token-resource-owner [this]
+  #_(post-token-resource-owner [this]
     (assoc mocks/post-token-resource-owner  :target-environment :dev))
-  (post-refresh-token [this]
+  #_(post-refresh-token [this]
     (assoc mocks/post-refresh-token :target-environment :dev))
   )
 
