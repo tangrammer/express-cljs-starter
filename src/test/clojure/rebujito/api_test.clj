@@ -165,7 +165,8 @@
 
      )))
 
-(defn create-digital-card []
+
+(defn create-digital-card* []
   (let [port (-> *system*  :webserver :port)
         path (get-path ::card/register-digital-cards)
         res @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -174,7 +175,7 @@
                          :content-type :json})]
     ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
     (is (= 200 (-> res :status)))
-    (:cardId (parse-body res))))
+    (parse-body res)))
 
 
 (deftest testing-nested-params

@@ -11,7 +11,7 @@
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
-   [rebujito.api-test :refer (print-body create-digital-card parse-body)]
+   [rebujito.api-test :refer (print-body create-digital-card* parse-body)]
    [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
@@ -29,7 +29,9 @@
   (testing ::payment/methods
     (let [port (-> *system*  :webserver :port)
           payment-method-id (atom "")
-          card-id (create-digital-card)]
+          card (create-digital-card*)
+          card-id (:cardId card)
+          ]
       (log/info "testing " :GET ::payment/methods)
       (let [path (get-path ::payment/methods)
             http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -437,6 +439,25 @@
    "Please supply an auto reload type. :: Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."})))
 
         )
+
+
+      (let [api-id ::card/check-reload
+            r (-> *system* :docsite-router :routes)
+            path (bidi/path-for r api-id :card-number (:cardNumber card))]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path card-id))
+        (let [res @(http/get (format "http://localhost:%s%s"  port path)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+
+                                   :content-type :json})
+              body (parse-body res)
+              ]
+          (is (= 200(-> res :status)))
+          (is (= "active" (:enabled? body)))
+          (is (-> body :card :autoReloadProfile :active))
+          (is (= (:cardNumber card) (:card-number body)))
+          (is (= card-id (-> body :card :cardId)))
+          ))
 
       (let [api-id ::card/autoreload-disable
             r (-> *system* :docsite-router :routes)

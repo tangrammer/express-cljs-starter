@@ -7,7 +7,7 @@
    [rebujito.protocols :as p]
    [rebujito.api.resources.card :as card]
    [aleph.http :as http]
-   [rebujito.api-test :refer (print-body parse-body create-digital-card)]
+   [rebujito.api-test :refer (print-body parse-body create-digital-card*)]
    [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path)]
    [clojure.test :refer :all]
    [rebujito.mongo :refer (generate-account-id id>mimi-id)]))
@@ -21,7 +21,10 @@
   (testing :test-auto-reload-profile
     (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))
           user (p/find (:user-store *system*) user-id)
-          card-id (create-digital-card)]
+          card (create-digital-card*)
+          card-id (:cardId card)
+
+          ]
       (is (p/add-auto-reload (:user-store *system*) user-id {} (assoc (g/generate rs/AutoReloadMongo)
                                                                             :cardId card-id)))
 
@@ -32,7 +35,9 @@
 (deftest user-store
   (testing :add-auto-reload
     (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))
-          card-id (create-digital-card)]
+          card (create-digital-card*)
+          card-id (:cardId card)
+          ]
       (is (nil? (:autoReloadProfile (first (:cards (p/find (:user-store *system*) user-id))))))
       (is (p/add-auto-reload (:user-store *system*) user-id {} (assoc (g/generate rs/AutoReloadMongo)
                                                                       :cardId card-id)))

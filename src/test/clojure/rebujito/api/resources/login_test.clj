@@ -10,7 +10,7 @@
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
-   [rebujito.api-test :refer (print-body create-digital-card parse-body)]
+   [rebujito.api-test :refer (print-body create-digital-card* parse-body)]
    [rebujito.base-test :refer (system-fixture *system* *user-account-data* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
