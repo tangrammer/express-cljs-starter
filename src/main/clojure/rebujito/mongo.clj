@@ -5,7 +5,7 @@
    [com.stuartsierra.component  :as component]
    [monger.collection :as mc]
    [monger.conversion :refer [from-db-object]]
-   [monger.operators :refer [$inc $set $push $pull]]
+   [monger.operators :refer [$inc $set $push $pull $elemMatch]]
    [monger.core :as mg]
    [monger.json :as mj]
    [monger.result :refer [acknowledged?]]
@@ -208,7 +208,17 @@
           card (assoc card :cardId card-id)]
       (protocols/update-by-id! this user-id {$push {:cards card}})
       card-id))
+  (get-card [this card-number]
+    (let [try-type :store
+          try-id ::get-card
+          try-context '[card-number]]
+      (util/dtry
+       (do
+         (let [found (mc/find-one-as-map  (:db this) (:collection this)  {:cards {$elemMatch {:cardNumber card-number}}})]
+           (first (filter #(= (:cardNumber %) card-number) (:cards found) )))
+       )))
 
+    )
   protocols/UserPaymentMethodStore
   (update-payment-method [this oid payment-method]
     (let [try-type :store

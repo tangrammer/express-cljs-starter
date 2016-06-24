@@ -35,7 +35,9 @@
            app-config
            counter-store]
 
-  [""  [["/health"  (-> {:id :health
+  [""  [[["/checkReload/" :account-number]  (-> (card/check-reload user-store mimi)
+                                                (assoc :id ::card/check-reload))]
+        ["/health"  (-> {:id :health
                          :methods
                                  {:get {:consumes [{:media-type #{"application/json"}
                                                     :charset "UTF-8"}]
