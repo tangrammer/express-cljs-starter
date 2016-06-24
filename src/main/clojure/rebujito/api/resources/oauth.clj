@@ -106,9 +106,8 @@
 
                refresh-token (get-in ctx [:parameters :body :refresh_token])
                data-refresh-token (p/read-token authenticator refresh-token)
-               mongo-token (first  (p/find token-store {:refresh-token refresh-token}))]
-              ;;    (log/info "*refresh_token>>>" mongo-token)
-              (assert c)
+               mongo-token (when (and data-refresh-token c)
+                             (first  (p/find token-store {:refresh-token refresh-token})))]
     (if (:valid mongo-token)
       (let [user (-> (p/find user-store (:user-id mongo-token))
                      (dissoc :password))]
