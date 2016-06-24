@@ -116,7 +116,7 @@
                                   {:throw-exceptions false
                                    :body-encoding "UTF-8"
                                    :content-type :json
-                                   :body (-> addresses/schema :put g/generate (assoc :firstName "poes" :lastName "doos") json/generate-string)})
+                                   :body (-> addresses/schema :put g/generate (assoc :firstName "poes" :lastName "doos" :addressId "CosMediaMonkeysSuckAtThisGame") json/generate-string)})
 
          address-in-db (p/get-address (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*)) @address-id)
          body (parse-body http-response)]

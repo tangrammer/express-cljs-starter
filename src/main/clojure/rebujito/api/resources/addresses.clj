@@ -12,8 +12,7 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
-(def schema {:post {
-                    :addressLine1 String
+(def schema {:post {:addressLine1 String
                     :addressLine2 String
                     :city String
                     :country String
@@ -21,37 +20,30 @@
                     :lastName String
                     :phoneNumber String
                     :postalCode String
-                    :type String
-                    }
-             :put {
-                   :addressLine1 String
+                    :type String}
+
+             :put {:addressLine1 String
                    :addressLine2 String
                    :city String
                    :country String
-                   (s/optional-key :countrySubdivision) String
                    :firstName String
                    :lastName String
                    :name String
                    :phoneNumber String
                    :postalCode String
                    :type String
-                   }
+                   (s/optional-key :countrySubdivision) String
+                   (s/optional-key :addressId) String}
 
-             :response {:post  {
-                                 :addressLine1 String
-                                 :addressLine2 String
-                                 :city String
-                                 :country String
-                                 :firstName String
-                                 :lastName String
-                                 :phoneNumber String
-                                 :postalCode String
-                                 :type String
-                                 }}
-
-             })
-
-
+             :response {:post {:addressLine1 String
+                               :addressLine2 String
+                               :city String
+                               :country String
+                               :firstName String
+                               :lastName String
+                               :phoneNumber String
+                               :postalCode String
+                               :type String}}})
 
 (defn addresses [user-store]
   (-> {:methods
