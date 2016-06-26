@@ -26,7 +26,7 @@
     (log/info "PROD: sending mail with this data" data config)
     (let [data (merge {:from (:from  config)} data)
           try-id ::send
-          try-type :mailer
+          try-type :mail
           try-context '[data]]
       (log/info data config)
       (dtry
