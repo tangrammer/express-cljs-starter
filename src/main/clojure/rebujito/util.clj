@@ -14,7 +14,8 @@
      :api-key-store (rebujito.ApiKeyStorageException. ~m)
      :mimi (rebujito.MimiException. ~m)
      :api (rebujito.ApiException. ~m)
-    (Exception. ~m)))
+     :mail (rebujito.MailException. ~m)
+     (Exception. ~m)))
 
 (defmacro >take [local-context k]
   `(do

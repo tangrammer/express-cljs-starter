@@ -33,4 +33,8 @@
 
  :payment-gateway {:paygate {:paygateId "10011064270"
                              :paygatePassword "test"
-                             :url "https://secure.paygate.co.za/payhost/process.trans"}}}
+                             :url "https://secure.paygate.co.za/payhost/process.trans"}}
+ :mailer {:from "info@swarm.rebujito.com"
+          :api {:url "https://api.sendgrid.com/v3/mail/send/beta"
+                :token "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"}}
+ }

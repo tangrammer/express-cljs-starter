@@ -21,13 +21,17 @@
                                     (s/optional-key :locale) String}
                             :body (-> schema :forgot-password :post)}
                :response (fn [ctx]
-                           (let [token (get-in ctx [:parameters :query :access_token])]
-                             (if (p/verify authorizer token scopes/application)
-                               (do
-                                 (p/send mailer {:what "sending forgot-password"
-                                                 :data (get-in ctx [:parameters :body])})
-                                 (util/>200 ctx nil))
-                               (util/>403 ctx {:message (str "Unauthorized: " "access-token doens't have grants for this resource")}))))}}}
+                           (dcatch ctx
+                                   (let [token (get-in ctx [:parameters :query :access_token])]
+                                     (if (p/verify authorizer token scopes/application)
+                                       (do
+                                         (p/send mailer {:subject (format "sending forgot-password to %s" (get-in ctx [:parameters :body :userName]))
+                                                         :to (get-in ctx [:parameters :body :emailAddress])
+
+                                                         :content "TODO: this is the link for your new password! "
+                                                         })
+                                         (util/>200 ctx nil))
+                                       (util/>403 ctx {:message (str "Unauthorized: " "access-token doens't have grants for this resource")})))))}}}
 
 
       (merge (util/common-resource :login))))
