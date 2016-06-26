@@ -89,9 +89,14 @@
                        (dcatch ctx
                                (d/let-flow [card-number (-> ctx :parameters :path :card-number)
                                             card (p/get-card user-store card-number)
+                                            balances (when (:cardNumber card)
+                                                       (p/balances mimi (:cardNumber card)))
+
                                             enabled? (-> card :autoReloadProfile :status)
                                             ]
                                            (util/>200 ctx {:enabled? enabled?
+                                                           :balances (:body balances)
+                                                           :amount (-> card :autoReloadProfile :amount)
                                                            :card-number card-number
                                                            :card card}))))}}}
 
