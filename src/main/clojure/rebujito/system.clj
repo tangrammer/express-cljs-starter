@@ -15,7 +15,7 @@
    [rebujito.webserver.handler :as wh]
    [rebujito.store :as store]
    [rebujito.mongo :refer (new-user-store new-api-key-store new-counter-store new-token-store)]
-   [rebujito.mailer :refer (new-prod-mailer)]
+   [rebujito.mailer :refer (new-sendgrid-mailer)]
    [rebujito.mimi :as mimi]
    [taoensso.timbre :as log])
   (:import [java.util Date]))
@@ -47,7 +47,7 @@
 
                   :db-conn (new-mongo-connection)
 
-                  :mailer (new-prod-mailer (-> config :mailer))
+                  :mailer (new-sendgrid-mailer (-> config :mailer))
 
                   :store (store/new-prod-store)
 

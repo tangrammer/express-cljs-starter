@@ -58,7 +58,7 @@
                                       :oauth {:post scopes/application}))]
         ["/oauth/token" (->  (oauth/token-resource-owner store token-store user-store authenticator authorizer crypto api-client-store)
                              (assoc :id ::oauth/token-resource-owner))]
-        ["/login/forgot-password" (-> (login/forgot-password mailer authorizer)
+        ["/login/forgot-password" (-> (login/forgot-password user-store mailer authorizer)
                                       (assoc :id ::login/forgot-password
                                              :oauth {:post scopes/application}))]
         ["/devices/register" (-> (devices/register store)
