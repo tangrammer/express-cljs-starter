@@ -91,12 +91,23 @@
                                             card (p/get-card user-store card-number)
                                             balances (when (:cardNumber card)
                                                        (p/balances mimi (:cardNumber card)))
-
-                                            enabled? (-> card :autoReloadProfile :status)
+                                            current-balance (->> (-> balances :body :programs )
+                                                                 (filter (fn [{:keys [code]}]
+                                                                           (= "SGC001" code)))
+                                                                 first
+                                                                 :balance)
+                                            autoreload-profile (-> card :autoReloadProfile )
+                                            autoreload-threshold-amount (:amount autoreload-profile)
+                                            enabled? (:status autoreload-profile)
                                             ]
+
+
+
                                            (util/>200 ctx {:enabled? enabled?
                                                            :balances (:body balances)
-                                                           :amount (-> card :autoReloadProfile :amount)
+                                                           :current-balance current-balance
+                                                           :balance-below-auto-reload-threshold (< current-balance autoreload-threshold-amount)
+                                                           :auto-reload-threshold-amount autoreload-threshold-amount
                                                            :card-number card-number
                                                            :card card}))))}}}
 
