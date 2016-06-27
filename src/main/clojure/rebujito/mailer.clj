@@ -38,7 +38,6 @@
                                :headers {"Authorization" (format "Bearer %s" (-> config :api :token))}
                                :body (json/generate-string
                                       {:personalizations [{:to [{:email (:to data)}]}],
-
                                        :from {:email (:from data)},
                                        :subject (:subject data)
                                        :content [{:type "text/plain", :value (:content data)}]})

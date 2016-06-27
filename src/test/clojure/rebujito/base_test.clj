@@ -40,7 +40,7 @@
    :addressLine1 "zz",
    :addressLine2 "yy",
    :password "real-secret",
-   :emailAddress (format  "%s@hola.com" (generate-random 6)),
+   :emailAddress (format  "juanantonioruz+%s@gmail.com" (generate-random 6)),
    :city "Sevilla",
    :firstName (format  "Juan-%s" (generate-random 6))
    :birthDay "13",
@@ -201,7 +201,7 @@
 
 (defn system-fixture [config-env]
   (fn[f]
-    (alter-var-root (var rebujito.util/*send-bugsnag*) (fn [d] false))
+    (alter-var-root (var rebujito.util/*send-bugsnag*) (fn [d] true))
     (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port]
                                                                (comp inc (fn [s]
                                                                            (if (= String (type s))

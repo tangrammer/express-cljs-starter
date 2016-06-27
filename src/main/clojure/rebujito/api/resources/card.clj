@@ -79,7 +79,7 @@
         card-data
         {:balance balance}))))
 
-(defn check-reload [user-store mimi payment-gateway app-config]
+(defn check-reload [user-store mimi payment-gateway app-config mailer]
   (->
    {:methods
     {:get {:parameters {:path {:card-number String}}
@@ -116,18 +116,25 @@
 
                                             autoreload-threshold-amount (:amount autoreload-profile)
 
-                                            mimi-card-data (p/load-card mimi card-number (:amount autoreload-profile))
+                                            mimi-card-data (when payment-data
+                                                             (p/load-card mimi card-number (:amount autoreload-profile)))
 
 
                                             enabled? (:status autoreload-profile)
 
-                                            ]
+                                            send-mail (p/send mailer {:to (:emailAddress user)
+                                                                      :subject "Rebujito: a new automatic payment has been done "
+                                                                      :content (format  "Hello %s ! \n A new payment with this ammount %s has been processed into your starbucks card: %s. \n Your current balance is %s . Enjoy it!"
+                                                                                        (:firstName user)
+                                                                                        (:amount autoreload-profile)
+                                                                                        (:cardId card)
+                                                                                        (:balance mimi-card-data))})]
 
 
 
                                            (util/>200 ctx {:user user
                                                            :mimi-card-data mimi-card-data
-
+                                                           :send-mail send-mail
                                                            :enabled? enabled?
                                                            :balances (:body balances)
                                                            :current-balance current-balance
