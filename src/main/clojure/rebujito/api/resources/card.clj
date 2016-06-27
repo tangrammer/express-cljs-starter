@@ -175,19 +175,7 @@
                                                         (p/balances mimi (:cardNumber card-data)))
 
                                              card-data (get-card* user-store user-id balances)]
-                                            (util/>200 ctx card-data)))))}
-     :delete {:parameters {:path {:card-id String}
-                           :query {:access_token String}}
-              :response (fn [ctx]
-                          (condp = (get-in ctx [:parameters :query :access_token])
-                            "500"    (util/>500 ctx ["Internal Server Error :( " "An unexpected error occurred processing the request."])
-                            "403"    (util/>403 ctx ["Forbidden" "You have not been granted permission to access the requested method or object."])
-                            "121032" (util/>403 ctx ["Card is reported lost or stolen" ""])
-                            "121037" (util/>403 ctx ["Card is closed." ""])
-                            "404"    (util/>404 ctx ["Not Found" "Resource was not found"])
-                            "121018" (util/>400 ctx ["Cannot unregister a digital card that has a balance greater than zero." "Only zero balance digital cards can be unregistered"])
-                            (util/>200 ctx ["OK" "Success"])))}}}
-
+                                            (util/>200 ctx card-data)))))}}}
    (merge (util/common-resource :me/cards))))
 
 (defn register-physical [user-store mimi]
