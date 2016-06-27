@@ -32,7 +32,7 @@
               (do (http-fn* c)
                 (recur (inc attempt-number)))
               (d/error! rchan  (ex-info (format "Mimi exception after %s retries " attempts) (ex-data-fn res)))))
-          (d/success! rchan res))))
+          (d/success! rchan (:body res)))))
     (http-fn* c)
     rchan))
 
