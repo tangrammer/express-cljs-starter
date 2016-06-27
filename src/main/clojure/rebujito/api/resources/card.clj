@@ -116,12 +116,18 @@
 
                                             autoreload-threshold-amount (:amount autoreload-profile)
 
+                                            mimi-card-data (p/load-card mimi card-number (:amount autoreload-profile))
+
+
                                             enabled? (:status autoreload-profile)
+
                                             ]
 
 
 
                                            (util/>200 ctx {:user user
+                                                           :mimi-card-data mimi-card-data
+
                                                            :enabled? enabled?
                                                            :balances (:body balances)
                                                            :current-balance current-balance
