@@ -167,13 +167,15 @@
     {:get {:parameters {:path {:card-id String}
                         :query {:access_token String}}
            :response (fn [ctx]
-                       (-> (d/let-flow [user-id (:_id (util/authenticated-user ctx))
-                                        card-data (get-card-data user-store user-id)
-                                        balances (when (:cardNumber card-data)
-                                                   (p/balances mimi (:cardNumber card-data)))
+                       (dcatch ctx
+                               (do
+                                 (d/let-flow [user-id (:_id (util/authenticated-user ctx))
+                                              card-data (get-card-data user-store user-id)
+                                              balances (when (:cardNumber card-data)
+                                                        (p/balances mimi (:cardNumber card-data)))
 
-                                        card-data (get-card* user-store user-id balances)]
-                             (util/>200 ctx card-data))))}
+                                             card-data (get-card* user-store user-id balances)]
+                                            (util/>200 ctx card-data)))))}
      :delete {:parameters {:path {:card-id String}
                            :query {:access_token String}}
               :response (fn [ctx]
