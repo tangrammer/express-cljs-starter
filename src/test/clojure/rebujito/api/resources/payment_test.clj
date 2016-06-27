@@ -452,7 +452,7 @@
                                    :content-type :json})
               body (parse-body res)
               ]
-          (is (= 200(-> res :status)))
+          (is (= 200 (-> res :status)))
           (is (= "active" (:enabled? body)))
           (is (-> body :card :autoReloadProfile :active))
           (is (= (:cardNumber card) (:card-number body)))
