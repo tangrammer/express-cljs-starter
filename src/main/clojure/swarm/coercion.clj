@@ -1,5 +1,7 @@
 ;; utils about schema coercion
 (ns swarm.coercion
+  (:require [schema.macros :refer (error!)]
+            [schema.utils :refer (validation-error-explain)])
   (:import [schema.utils ErrorContainer]))
 
 
@@ -9,8 +11,8 @@ By default p/schema catch all errors "
   [c]
   (fn [schema]
     (let [coercion-result (c schema)]
-      (if (= schema.utils.ErrorContainer (type coercion-result))
+      (if (= ErrorContainer (type coercion-result))
         (->
-         (str "COERCER_ERROR: " (schema.utils/validation-error-explain (->  coercion-result :error)))
-         schema.macros/error!)
+         (str "COERCER_ERROR: " (validation-error-explain (->  coercion-result :error)))
+         error!)
         coercion-result))))
