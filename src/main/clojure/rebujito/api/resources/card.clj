@@ -91,7 +91,7 @@
                                             balances (when (:cardNumber card)
                                                        (p/balances mimi (:cardNumber card)))
 
-                                            current-balance (->> (-> balances :body :programs)
+                                            current-balance (->> (-> balances :programs)
                                                                  (filter (fn [{:keys [code]}]
                                                                            (= "SGC001" code)))
                                                                  first
