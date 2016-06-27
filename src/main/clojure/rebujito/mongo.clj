@@ -52,7 +52,7 @@
 
 (defmethod db-find :default [_ data]
   (throw (IllegalArgumentException.
-          (str "Not ready to db-find using: " (type data)))))
+          (str "Not ready to db-find using: " (if (nil? data) "nil" (type data))))))
 
 (defn- update!* [this data-query data-update]
 
