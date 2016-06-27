@@ -25,7 +25,7 @@
           card-id (:cardId card)
 
           ]
-      (is (p/add-auto-reload (:user-store *system*) user-id {} (assoc (g/generate rs/AutoReloadMongo)
+      (is (p/add-autoreload-profile-card (:user-store *system*) user-id  (assoc (g/generate rs/AutoReloadMongo)
                                                                             :cardId card-id)))
 
       (is  (-> (p/find (:user-store *system*) user-id)
@@ -39,7 +39,7 @@
           card-id (:cardId card)
           ]
       (is (nil? (:autoReloadProfile (first (:cards (p/find (:user-store *system*) user-id))))))
-      (is (p/add-auto-reload (:user-store *system*) user-id {} (assoc (g/generate rs/AutoReloadMongo)
+      (is (p/add-autoreload-profile-card (:user-store *system*) user-id  (assoc (g/generate rs/AutoReloadMongo)
                                                                       :cardId card-id)))
   ;    (println (p/add-auto-reload (:user-store *system*) user-id {} (g/generate rs/AutoReloadMongo)))
   ;    (println user-id)

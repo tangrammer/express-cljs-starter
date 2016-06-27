@@ -380,10 +380,10 @@
                                               payment-method-data (p/get-payment-method user-store (:_id auth-user) (-> ctx :parameters :body :paymentMethodId))
                                               body (-> ctx :parameters :body)
                                               body (if (= (-> body :status ) "enabled") (assoc body :status "active") body)
-                                              auto-reload-data (p/add-auto-reload user-store (:_id auth-user)
-                                                                                  payment-method-data
-                                                                                  (-> (select-keys body (keys AutoReloadMongo))
-                                                                                      (assoc  :cardId (-> ctx :parameters :path :card-id))))]
+                                              auto-reload-data (when payment-method-data
+                                                                 (p/add-autoreload-profile-card user-store (:_id auth-user)
+                                                                                                (-> (select-keys body (keys AutoReloadMongo))
+                                                                                                    (assoc  :cardId (-> ctx :parameters :path :card-id)))))]
 
                                              (util/>200 ctx {
                                                              :amount (-> body :amount)

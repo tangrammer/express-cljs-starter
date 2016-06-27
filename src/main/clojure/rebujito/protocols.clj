@@ -52,7 +52,7 @@
   (update-by-id! [this id data]))
 
 (defprotocol UserStore
-  (add-auto-reload [this oid payment-data data])
+  (add-autoreload-profile-card [this oid autoreload-profile-card])
   (disable-auto-reload [this oid card-id])
   (insert-card! [this oid card])
   (get-user-and-card [this card-number]

@@ -140,21 +140,21 @@
   (stop [this] this)
 
   protocols/UserStore
-  (add-auto-reload [this oid payment-data data]
+  (add-autoreload-profile-card [this oid autoreload-profile-card]
     (try
       (let [uuid (str (UUID/randomUUID))
-            data (assoc data
+            autoreload-profile-card (assoc autoreload-profile-card
                         :autoReloadId  uuid
                         :active true)
             user (protocols/find this oid)
             cards (:cards user)
-            others (filter #(not= (:cardId %) (:cardId data)) cards)
-            card  (-> (first (filter #(= (:cardId %) (:cardId data)) cards))
-                      (assoc :autoReloadProfile data))
+            others (filter #(not= (:cardId %) (:cardId autoreload-profile-card)) cards)
+            card  (-> (first (filter #(= (:cardId %) (:cardId autoreload-profile-card)) cards))
+                      (assoc :autoReloadProfile autoreload-profile-card))
             new-cards (conj others card)
             ]
-        (log/debug   ">>>>" oid data)
-        (s/validate AutoReloadMongo data)
+        (log/debug   ">>>>" oid autoreload-profile-card)
+        (s/validate AutoReloadMongo autoreload-profile-card)
         (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
                            {$set {:cards  new-cards}})]
           (if (pos? (.getN t))
