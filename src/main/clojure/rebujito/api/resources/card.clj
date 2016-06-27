@@ -418,8 +418,7 @@
                                        card-data (get-card-data user-store user-id)
                                        balances (when (:cardNumber card-data)
                                                    (p/balances mimi (:cardNumber card-data)))
-
-                                      card (get-card* user-store user-id balances)]
+                                       card (get-card* user-store user-id balances)]
                            (util/>200 ctx {:cardId (:cardId card)
                                            :cardNumber (:cardNumber card)
                                            :balance (:balance card)
