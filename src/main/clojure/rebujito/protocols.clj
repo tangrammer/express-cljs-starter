@@ -55,7 +55,7 @@
   (add-auto-reload [this oid payment-data data])
   (disable-auto-reload [this oid card-id])
   (insert-card! [this oid card])
-  (get-card [this card-number]
+  (get-user-and-card [this card-number]
     "get card with card-number not the card-id, and without user-id.
      The query is a nested over :cards collection")
   )

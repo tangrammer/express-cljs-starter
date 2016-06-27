@@ -69,9 +69,9 @@
       (is (p/disable-auto-reload (:user-store *system*) user-id (:cardId card)) )
 
       (let [card-number  (:cardNumber (->(p/find (:user-store *system*) user-id) :cards first))
-            found (p/get-card (-> *system* :user-store ) card-number)]
-        (is found)
-        (is (= card-number (:cardNumber found))))
+            {:keys [user card]} (p/get-user-and-card (-> *system* :user-store ) card-number)]
+        (is card)
+        (is (= card-number (:cardNumber card))))
 
 
       (is (false? (-> (p/find (:user-store *system*) user-id)

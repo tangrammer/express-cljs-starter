@@ -208,14 +208,14 @@
           card (assoc card :cardId card-id)]
       (protocols/update-by-id! this user-id {$push {:cards card}})
       card-id))
-  (get-card [this card-number]
+  (get-user-and-card [this card-number]
     (let [try-type :store
           try-id ::get-card
           try-context '[card-number]]
       (util/dtry
        (do
          (let [found (mc/find-one-as-map  (:db this) (:collection this)  {:cards {$elemMatch {:cardNumber card-number}}})]
-           (first (filter #(= (:cardNumber %) card-number) (:cards found) )))
+           {:user  found :card (first (filter #(= (:cardNumber %) card-number) (:cards found) ))})
        )))
 
     )

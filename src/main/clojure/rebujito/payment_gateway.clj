@@ -121,14 +121,14 @@
                                                                :cardToken (-> data :routingNumber)
                                                                :cvn (-> data :cvn)
                                                                :transactionId (-> data :transactionId)
-                                                               :currency "ZAR"
+                                                               :currency (-> data :currency)
                                                                :amount (-> data :amount))
                                         })]
 
 
                     (log/info "PayGate Payment Response" status error body)
                     (if (or error (not= 200 status) (not (.contains body "CardPaymentResponse")) (.contains body "SOAP-ENV:Fault|payhost:error"))
-                      (derror* d* 500 [500 (str "An unexpected error occurred processing the payment." error "  ::  " status)])
+                      (derror* d* 500 [500 (str "An unexpected error occurred processing the payment." error "  ::  " status " :: " body)])
 
 
                       (let [response (xp/xml->doc body)

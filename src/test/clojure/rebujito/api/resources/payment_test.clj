@@ -457,7 +457,7 @@
           (is (-> body :card :autoReloadProfile :active))
           (is (= (:cardNumber card) (:card-number body)))
           (is (= card-id (-> body :card :cardId)))
-;          (is (= nil (-> body)))
+          (is (-> body :payment-data))
           ))
 
       (let [api-id ::card/autoreload-disable
