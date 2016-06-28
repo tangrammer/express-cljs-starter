@@ -276,9 +276,8 @@
         [(clojure.set/difference mi-res expected-res) (clojure.set/difference  expected-res mi-res)])
            [#{:paymentType :nickName :routingNumber} #{:accountNumber :nickname :type}]
 
-      ;; ::card/reload
 
-      (let [api-id ::card/reload
+      (let [api-id ::card-reload/reload
             r (-> *system* :docsite-router :routes)
             path (bidi/path-for r api-id :card-id card-id)]
         ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path card-id))

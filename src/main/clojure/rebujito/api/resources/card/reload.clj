@@ -14,6 +14,14 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
+
+(def schema {:reload {:post {:amount Long
+                             :paymentMethodId String
+                             (s/optional-key :acceptTerms) Boolean
+                             (s/optional-key :expirationYear) Long
+                             (s/optional-key :expirationMonth) Long
+                             (s/optional-key :sessionId) String}}})
+
 (defn check [user-store mimi payment-gateway app-config mailer]
   (->
    {:methods
@@ -101,3 +109,45 @@
                                              ))))}}}
 
    (merge (util/common-resource :me/cards))))
+
+
+
+;; TODO: needs to manage all the 400 posibiliites https://admin.swarmloyalty.co.za/sbdocs/docs/starbucks_api/card_management/reload_card.html
+(defn reload [user-store mimi payment-gateway app-config]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :path {:card-id String}
+                            :body (-> schema :reload :post)}
+               :response (fn [ctx]
+                           (let [card-id (-> ctx :parameters :path :card-id)
+                                 amount (-> ctx :parameters :body :amount)]
+                             (dcatch ctx
+                              (d/let-flow [profile-data (util/user-profile-data ctx user-store (:sub-market app-config))
+                                           user-id (:_id (util/authenticated-user ctx))
+                                           cards (:cards (p/find user-store user-id))
+                                           card-data (first (filter #(= (:cardId %) card-id) cards))
+                                           _ (log/info ">>>> card-data::::" card-data card-data)
+                                           card-number (:cardNumber card-data)
+                                           payment-method-data (p/get-payment-method user-store user-id (-> ctx :parameters :body :paymentMethodId))
+
+                                           _ (log/info ">>>> payment-method-data::::" payment-method-data)
+
+                                           payment-data (p/execute-payment
+                                                         payment-gateway
+                                                         (merge (select-keys profile-data [:emailAddress :lastName :firstName])
+                                                                {:amount amount
+                                                                 :currency (:currency-code app-config)
+                                                                 :cvn "123"
+                                                                 :routingNumber (-> payment-method-data :routingNumber)
+                                                                 :transactionId "12345"}))
+                                           _ (log/info ">>>> payment-data::::" payment-data)
+                                           mimi-card-data (p/load-card mimi card-number amount)
+                                           _ (log/info "mimi response" mimi-card-data)]
+
+                                          (util/>200 ctx {:balance (:balance mimi-card-data)
+                                                          :balanceDate (.toString (java.time.Instant/now))
+                                                          :cardId card-id
+                                                          :balanceCurrencyCode "ZA"
+                                                          :cardNumber card-number})))))}}}
+
+      (merge (util/common-resource :me/cards))))

@@ -13,6 +13,8 @@
    [clojure.pprint :refer (pprint)]
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [rebujito.api.resources.card
+    [reload :as card-reload]]
    ))
 
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
@@ -60,8 +62,8 @@
                                     :content-type :json})
                        :status)))))
 
-    (testing ::card/reload
-      (let [api-id ::card/reload
+    (testing ::card-reload/reload
+      (let [api-id ::card-reload/reload
             path (bidi/path-for r api-id :card-id 123)]
         ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
