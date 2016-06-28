@@ -337,7 +337,7 @@
             ]
                                         ;          (is (= nil body))
         (is (= 200 (-> res :status)))
-        (is (= false body))
+        (is (= nil body))
         (let [mails @(:mails (:mailer *system*))]
           (is (= 0 (count mails)))))
 
@@ -375,7 +375,7 @@
                                    :body-encoding "UTF-8"
                                    :body (json/generate-string
                                           {
-                                           :amount 15.00,
+                                           :amount 149.00,
                                            :autoReloadType "Amount",
                                            :day 0,
                                            :paymentMethodId @payment-method-id
@@ -395,6 +395,38 @@
                             :content-type :json})
             body (parse-body res)
             ]
+        (is (= 200 (-> res :status)))
+        (is (= nil body))
+        (let [mails @(:mails (:mailer *system*))]
+          (is (= 0 (count mails)))))
+
+      (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
+        (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :body (json/generate-string
+                                          {
+                                           :amount 151.00,
+                                           :autoReloadType "Amount",
+                                           :day 0,
+                                           :paymentMethodId @payment-method-id
+                                           :status "active",
+                                           :triggerAmount 10.00,
+                                           }
+                                          )
+                                   :content-type :json})
+                      (print-body)
+                      :status))))
+
+
+      (let [path (bidi/path-for r ::card/check-reload :card-number (:cardNumber card))
+            res @(http/get (format "http://localhost:%s%s"  port path)
+                           {:throw-exceptions false
+                            :body-encoding "UTF-8"
+
+                            :content-type :json})
+            body (parse-body res)
+            ]
 
         (is (= 200 (-> res :status)))
 
@@ -405,4 +437,6 @@
         (let [mails @(:mails (:mailer *system*))]
           (is (= 1 (count mails)))
           (= (select-keys (first mails) [:subject]) {:subject "A new automatic payment has been done "}))))
+
+
     ))
