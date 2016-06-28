@@ -169,3 +169,99 @@ Coupon earned/redeemed:
 		}
 	}
 ```
+
+
+Here is the history response from BR market including reloads:
+
+```JSON
+{
+  "historyItems" : [
+    {
+      "currency" : "BRL",
+      "localTotalAmount" : 25,
+      "localTotalAccruableAmount" : 0,
+      "totalAmount" : 25,
+      "points" : null,
+      "localCurrency" : "BRL",
+      "coupon" : null,
+      "modifiedDate" : "2016-06-22T13:34:01.7870000Z",
+      "cardId" : "8C6771F998D618AF",
+      "svcTransaction" : {
+        "localDate" : "2016-06-22T06:34:01.8461374-07:00",
+        "storeId" : null,
+        "localizedStoreName" : null,
+        "storeNumber" : null,
+        "storeType" : "Starbucks.com",
+        "transactionAmount" : 25,
+        "localCurrency" : "BRL",
+        "localTransactionAmount" : 25,
+        "tax" : null,
+        "newBalance" : 35,
+        "description" : null,
+        "tipInfo" : {
+          "amount" : null,
+          "tippableEndDate" : null,
+          "status" : "None",
+          "tippable" : false,
+          "tipTransactionId" : null
+        },
+        "localTransactionAccruableAmount" : 0,
+        "isVoid" : false,
+        "transactionType" : "Reload",
+        "checkId" : null,
+        "brandName" : "Starbucks",
+        "currency" : "BRL"
+      },
+      "historyId" : 1584309,
+      "historyType" : "SvcTransaction",
+      "isoDate" : "2016-06-22T13:34:02.2051733Z"
+    },
+    {
+      "currency" : "BRL",
+      "localTotalAmount" : 10,
+      "localTotalAccruableAmount" : 0,
+      "totalAmount" : 10,
+      "points" : null,
+      "localCurrency" : "BRL",
+      "coupon" : null,
+      "modifiedDate" : "2016-06-22T13:32:41.0570000Z",
+      "cardId" : "8C6771F998D618AF",
+      "svcTransaction" : {
+        "localDate" : "2016-06-22T06:32:40.9250461-07:00",
+        "storeId" : null,
+        "localizedStoreName" : null,
+        "storeNumber" : null,
+        "storeType" : "Starbucks.com",
+        "transactionAmount" : 10,
+        "localCurrency" : "BRL",
+        "localTransactionAmount" : 10,
+        "tax" : null,
+        "newBalance" : 10,
+        "description" : null,
+        "tipInfo" : {
+          "amount" : null,
+          "tippableEndDate" : null,
+          "status" : "None",
+          "tippable" : false,
+          "tipTransactionId" : null
+        },
+        "localTransactionAccruableAmount" : 0,
+        "isVoid" : false,
+        "transactionType" : "Reload",
+        "checkId" : null,
+        "brandName" : "Starbucks",
+        "currency" : "BRL"
+      },
+      "historyId" : 1584307,
+      "historyType" : "SvcTransaction",
+      "isoDate" : "2016-06-22T13:32:41.2430779Z"
+    }
+  ],
+  "paging" : {
+    "returned" : 2,
+    "offset" : 0,
+    "total" : 2,
+    "limit" : 50
+  }
+}
+```
