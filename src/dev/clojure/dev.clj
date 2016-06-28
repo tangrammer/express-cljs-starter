@@ -81,7 +81,8 @@
   (stop-system!))
 
 (defn dont-send-bugsnag []
-  (alter-var-root (var rebujito.util/*send-bugsnag*) (fn [d] false)))
+  (alter-var-root (var rebujito.util/*send-bugsnag*) (fn [d] false))
+  (alter-var-root (var rebujito.util/*bugsnag-release*) (fn [d] "development")))
 
 (defn go
   "Initializes and starts the system running."

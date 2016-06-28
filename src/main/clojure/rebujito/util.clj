@@ -1,7 +1,9 @@
 (ns rebujito.util
   (:require [taoensso.timbre :as log]
+            [schema.core :as s]
             [rebujito.api.util :as u]))
 (def ^:dynamic  *send-bugsnag* true)
+(def ^:dynamic  *bugsnag-release* "production")
 
 (defmacro local-context []
   (let [symbols (keys &env)]
@@ -26,11 +28,11 @@
 
 (defmacro >select [local-context ks more]
   `(do
-     (println "more" ~more (select-keys ~local-context   ~('map 'symbol more)))
+     ;;    (println "more" ~more (select-keys ~local-context   ~('map 'symbol more)))
      ;;    (println (symbol  (name '~k)))
      ;;    (println (keys ~local-context))
      (let [r# (select-keys ~local-context  (quote ~('map 'symbol ks)))]
-       (println "(some? r#)" (empty? r#) r#)
+       ;;       (println "(some? r#)" (empty? r#) r#)
        (if (empty? r#)
          (select-keys ~local-context  ~('map 'symbol more))
          r#))))
@@ -39,7 +41,7 @@
 
          (macroexpand '(>take {:hola 1} hola)))
 
-;(println (>take {'hola 1} hola))
+                                        ;(println (>take {'hola 1} hola))
 
 
 (defmacro base-error* [status [code message] & ks]
@@ -55,27 +57,28 @@
          email#  (:emailAddress (rebujito.api.util/authenticated-user ctx#))]
      (if *send-bugsnag*
        (do
-        (clj-bugsnag.core/notify
-         (ex? type# (str ~status " :: " (:body ex#) " :: " ~code (name ~message)))
-         {:api-key (:key (:bugsnag (rebujito.config/config)))
-          :meta (merge {:context (assoc (:context ex#)
-                                        :fn (:body ex#))
-                        :id (:body ex#)}
-                       (when (-> ctx# :response :status)
-                         {:status (-> ctx# :response :status)})
-                       (when (-> ctx# :request :uri)
-                         {:uri (-> ctx# :request :uri)})
-                       (when (-> ctx# :parameters)
-                         {:parameters (-> ctx# :parameters)})
-                       (when email#
-                         {:email email#}))
-          :user (merge
-                 {:id (:body ex#)}
-                 (when (-> ctx# :request :uri)
-                   {:uri (-> ctx# :request :uri)})
-                 (when (-> ctx# :parameters)
-                   {:parameters (-> ctx# :parameters)})
-                 email#)}))
+         (clj-bugsnag.core/notify
+          (ex? type# (str ~status " :: " (:body ex#) " :: " ~code (name ~message)))
+          {:api-key (:key (:bugsnag (rebujito.config/config)))
+           :meta (merge {:context (assoc (:context ex#)
+                                         :fn (:body ex#))
+                         :id (:body ex#)}
+                        (when (-> ctx# :response :status)
+                          {:status (-> ctx# :response :status)})
+                        (when (-> ctx# :request :uri)
+                          {:uri (-> ctx# :request :uri)})
+                        (when (-> ctx# :parameters)
+                          {:parameters (-> ctx# :parameters)})
+                        (when email#
+                          {:email email#}))
+           :environment *bugsnag-release*
+           :user (merge
+                  {:id (:body ex#)}
+                  (when (-> ctx# :request :uri)
+                    {:uri (-> ctx# :request :uri)})
+                  (when (-> ctx# :parameters)
+                    {:parameters (-> ctx# :parameters)})
+                  email#)}))
        (log/error "AVOID SENDING BUGSNAG" (str ~status " :: " (:body ex#) " :: " (name ~message))))
      (clojure.core/ex-info (str ~status " :: " (:body ex#) " :: " (name ~message))
                            {:type type#
@@ -99,9 +102,9 @@
 
 (comment
   (let [c 3
-       d 7]
-   (error* :store 500 :resouid "e exception message" [c d])
-   ))
+        d 7]
+    (error* :store 500 :resouid "e exception message" [c d])
+    ))
 
 (defmacro t* [ks]
   `(quote ~ks)
@@ -121,7 +124,7 @@
 (defmacro hola* [a b & body]
   `(do
      (println ~(nil? body))
-    )
+     )
   )
 
 (comment (hola* :a :b)
@@ -135,44 +138,60 @@
 
 
 (comment
-  (binding [*send-bugsnag* true]
-   (time (->
-          (let [
-                try-type :store
-                try-id ::add-new-payment-method
-                try-context '[oid p jolin]
-                oid 12
-                jolin 4
-                p {:a 12}]
+  (binding [*send-bugsnag* true
+            *bugsnag-release* "development"]
+    (time (->
+           (let [
+                 try-type :store
+                 try-id ::add-new-payment-method
+                 try-context '[oid p jolin]
+                 oid 12
+                 jolin 4
+                 p {:a 12}]
 
-            (dtry (do
-                    ;;(println 'try-type)
+             (dtry (do
+                     ;;(println 'try-type)
                                         ;           (throw (Exception. "wow!"))
-                    (error* 400  [44567 :transaction-failed]  oid))))
-          (manifold.deferred/catch  Exception #(ex-data %))
-          ))))
+                     (error* 400  [44567 :transaction-failed]  oid))))
+           (manifold.deferred/catch  Exception #(ex-data %))
+           )))
+  )
 
 
 
 #_(-> (let [try-type :store
-          try-id ::add-new-payment-method
-          try-context '[oid p]
-          oid 12
-          p {:a 12}]
-      (error* 400  :transaction-failed
-              ))
-    (manifold.deferred/catch  Exception #(ex-data %))
-    )
+            try-id ::add-new-payment-method
+            try-context '[oid p]
+            oid 12
+            p {:a 12}]
+        (error* 400  [400 :transaction-failed]
+                ))
+      (manifold.deferred/catch  Exception #(ex-data %))
+      )
 
 
 
 (defmacro dcatch [ctx body]
   `(-> ~body
-  (manifold.deferred/catch clojure.lang.ExceptionInfo
-      (fn [exception-info#]
-        (log/error "clojure.lang.ExceptionInfo:: " (type (:type (ex-data exception-info#))) (ex-data exception-info#) (.getMessage exception-info#))
-        (let [data# (ex-data exception-info#)]
-          (rebujito.api.resources/domain-exception ~ctx data#))))
-    (manifold.deferred/catch Exception
-      (fn [exception#]
-        (rebujito.api.resources/domain-exception ~ctx {:type :default :status 500 :message (.getMessage exception#)})))))
+       (manifold.deferred/catch clojure.lang.ExceptionInfo
+           (fn [exception-info#]
+             (log/error "clojure.lang.ExceptionInfo:: " (type (:type (ex-data exception-info#))) (ex-data exception-info#) (.getMessage exception-info#))
+             (let [data# (ex-data exception-info#)]
+               (rebujito.api.resources/domain-exception ~ctx data#))))
+       (manifold.deferred/catch Exception
+           (fn [exception#]
+             (rebujito.api.resources/domain-exception ~ctx {:type :default :status 500 :message (.getMessage exception#)})))))
+
+
+
+#_(dcatch {} (-> (let [try-type :store
+                     try-id ::add-new-payment-method
+                     try-context '[oid p]
+                     oid 12
+                     p {:a 12}]
+                 (dtry
+                  (do
+                ;    (s/validate  Long "asd")
+                   (error* 400  [3223 :transaction-failed]))))
+
+               ))

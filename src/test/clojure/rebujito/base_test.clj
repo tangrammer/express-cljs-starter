@@ -202,6 +202,7 @@
 (defn system-fixture [config-env]
   (fn[f]
     (alter-var-root (var rebujito.util/*send-bugsnag*) (fn [d] false))
+    (alter-var-root (var rebujito.util/*bugsnag-release*) (fn [d] "test"))
     (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port]
                                                                (comp inc (fn [s]
                                                                            (if (= String (type s))

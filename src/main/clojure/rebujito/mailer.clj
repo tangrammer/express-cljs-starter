@@ -11,9 +11,17 @@
    [com.stuartsierra.component  :as component]))
 
 (def Mail {:subject String
-           :to String
+           :to (s/conditional string? String :else [String])
            :from String
            :content String})
+
+(s/validate Mail {:to ["hoal"] :subject "asfd"  :from "asda" :content "asfda"} )
+(defn- generate-to [to]
+  (if (= (type to) clojure.lang.PersistentVector)
+    (mapv #(hash-map :email %) to)
+    [{:email to}]))
+
+(generate-to ["hoa" "ueue"])
 
 (defrecord SendGridMailer [config]
   component/Lifecycle
@@ -36,7 +44,7 @@
                                :body-encoding "UTF-8"
                                :headers {"Authorization" (format "Bearer %s" (-> config :api :token))}
                                :body (json/generate-string
-                                      {:personalizations [{:to [{:email (:to data)}]}],
+                                      {:personalizations [{:to (generate-to (:to data))}],
                                        :from {:email (:from data)},
                                        :subject (:subject data)
                                        :content [{:type "text/plain", :value (:content data)}]})
