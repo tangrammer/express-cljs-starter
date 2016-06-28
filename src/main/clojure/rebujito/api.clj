@@ -23,6 +23,10 @@
      [social-profile :as social-profile]
      ]))
 
+(defn- rewrite-methods [resource]
+ (let [delete (-> resource :methods :delete)]
+   (assoc resource :methods {:post delete})))
+
 (defn api [store mimi
            token-store
            user-store
@@ -147,11 +151,16 @@
                                            (assoc :id ::payment/methods
                                                   :oauth {:get  scopes/user
                                                           :post scopes/user}))]
-                                   [["/" :payment-method-id] (-> (payment/method-detail user-store store payment-gateway)
-                                                                 (assoc :id ::payment/method-detail
-                                                                        :oauth {:delete  scopes/user
-                                                                                :get  scopes/user
-                                                                                :put scopes/user}))]]]
+                                   [["/" :payment-method-id] [["" (-> (payment/method-detail user-store store payment-gateway)
+                                                                      (assoc :id ::payment/method-detail
+                                                                             :oauth {:delete scopes/user
+                                                                                     :get scopes/user
+                                                                                     :put scopes/user}))]
+                                                               ["/delete" (-> (payment/method-detail user-store store payment-gateway)
+                                                                              (rewrite-methods)
+                                                                              (assoc :id ::payment/delete-method-detail
+                                                                                     :oauth {:post scopes/user}))]]
+                                   ]]]
                ["/socialprofile/account" (-> (social-profile/account user-store)
                                              (assoc :id ::social-profile/account
                                                     :oauth {:put scopes/user}))]
