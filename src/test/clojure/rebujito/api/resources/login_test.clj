@@ -11,7 +11,7 @@
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
    [rebujito.api-test :refer (print-body create-digital-card* parse-body)]
-   [rebujito.base-test :refer (system-fixture *system* *user-account-data* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
+   [rebujito.base-test :refer (system-fixture *system* *user-account-data* *app-access-token* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
     [payment :as payment]
@@ -23,7 +23,7 @@
    [clojure.test :refer :all]))
 
 
-(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
+(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
 
 (deftest login-testing
   (testing ::login/validate-password
@@ -90,3 +90,70 @@
 
 
   )
+
+(deftest reset-pw
+
+  (testing ::login/forgot-password
+    (let [port (-> *system*  :webserver :port)
+          address-id (atom "")]
+
+      (let [path (get-path ::login/forgot-password)
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *app-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string
+                                             (assoc (g/generate (:post (:forgot-password login/schema)))
+                                                    :emailAddress (:emailAddress *user-account-data*)))
+                                      :content-type :json})
+            body (parse-body http-response)
+            ]
+        (is (= 200 (-> http-response :status)))
+        (is (= nil body)))
+        (let [mails @(:mails (:mailer *system*))]
+          (is (= 1 (count mails)))
+          (is (.contains (:subject (first mails)) "sending forgot-password")  )
+          (is (p/read-token (:authenticator *system*) (:content (first mails)))  )
+          (is (p/verify (:authorizer *system*) (:content (first mails)) rebujito.scopes/reset-password))))))
+
+
+
+
+(deftest change-pw
+
+  (testing ::login/change-password
+    (let [port (-> *system*  :webserver :port)
+          address-id (atom "")]
+
+      (let [path (get-path ::login/forgot-password)
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *app-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string
+                                             (assoc (g/generate (:post (:forgot-password login/schema)))
+                                                    :emailAddress (:emailAddress *user-account-data*)))
+                                      :content-type :json})
+            body (parse-body http-response)
+            ])
+
+
+      (is (-> *system* :mailer :mails deref first :content))
+
+      (let [path (get-path ::login/change-password)
+            data (g/generate (:post (:change-password login/schema)))
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path (-> *system* :mailer :mails deref first :content))
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string data)
+                                      :content-type :json})
+            body (parse-body http-response)]
+        ;; checking that password for user is the new but encrypted :)
+        (let [user-by-email (first (p/find (-> *system* :user-store) {:emailAddress (:emailAddress *user-account-data*)}))]
+          (is (=  (p/check (:crypto *system*)
+                           (:new-password data)
+                           (:password user-by-email)))))
+
+)
+
+
+
+ )))

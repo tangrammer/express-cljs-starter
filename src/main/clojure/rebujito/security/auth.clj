@@ -1,6 +1,7 @@
 (ns rebujito.security.auth
   (:require [buddy.core.mac :as mac]
             [taoensso.timbre :as log]
+            [rebujito.util :as util]
             [com.stuartsierra.component :refer [system-map system-using using] :as component]
             [rebujito.protocols :as p]
             [plumbing.core :refer [defnk]]
@@ -31,7 +32,11 @@
           access-token (p/generate-token authenticator (merge data scopes) 60)
           refresh-token (p/generate-token authenticator {:refresh (merge data scopes)} 1440)
           _ (p/update! token-store {:user-id (:_id data)} {:valid false})
-          mongo-token (p/get-and-insert! token-store {:access-token access-token :refresh-token refresh-token :user-id (:_id data) :scopes scopes :valid true})]
+          mongo-token (p/get-and-insert! token-store {:access-token access-token
+                                                      :refresh-token refresh-token
+                                                      :user-id (:_id data)
+                                                      :scopes scopes
+                                                      :valid true})]
 ;      (log/info "MONGO_TOKEN >" mongo-token)
       (merge {:extended nil
               :access_token access-token
@@ -41,7 +46,15 @@
               :token_type "bearer"
               :expires_in 3600
               :uri nil})))
-
+  (invalidate [this token]
+    (let [user (p/read-token authenticator token)
+          user-id (:_id (p/read-token authenticator token))
+          try-type :token-store
+          try-id ::invalidate
+          try-context '[user-id]]
+      (log/info "invalidate token for" user-id)
+      (util/dtry
+       (p/update! token-store {:user-id user-id} {:valid false}))))
   (verify [this token scope]
     (let [data (p/read-token authenticator token)]
       (contains? (into #{} (:scope data)) (str (.-sym scope))))))

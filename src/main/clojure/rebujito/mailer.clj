@@ -5,7 +5,8 @@
    [byte-streams :as bs]
    [cheshire.core :as json]
    [rebujito.util :refer (error* dtry)]
-   [aleph.http :as http]
+   [org.httpkit.client :as http]
+   ;[aleph.http :as http]
    [taoensso.timbre :as log]
    [rebujito.protocols :as protocols]
    [com.stuartsierra.component  :as component]))
@@ -34,7 +35,7 @@
     (let [data (merge {:from (:from  config)} data)
           try-id ::send
           try-type :mail
-          try-context '[data]]
+          try-context '[data config]]
       (log/info data config)
       (dtry
        (do
@@ -51,7 +52,7 @@
                                :content-type :json})]
           (if (= 202 (:status res))
             true
-            (error* 500 [500 (-> res :body bs/to-string (json/parse-string true))]))))))))
+            (error* 500 [500 (-> res :body bs/to-string )]))))))))
 
 (defrecord MockMailer [config]
   component/Lifecycle

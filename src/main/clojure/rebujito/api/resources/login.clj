@@ -11,12 +11,38 @@
    [yada.resource :refer [resource]]))
 
 
-(def schema {:forgot-password {:post {:userName String
+(def schema {:change-password {:post {:new-password String}}
+             :forgot-password {:post {:userName String
                                       :emailAddress String}}
              :validate-password {:post {(s/optional-key :encoded) Boolean
                                         :password String}}})
 
-(defn forgot-password [user-store mailer authorizer ]
+(comment
+
+  (defn validate-token [authorizer])
+
+  (defn change-password [user-store authorizer])
+
+  )
+
+(defn change-password [user-store crypto]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :body (-> schema :change-password :post)}
+               :response (fn [ctx]
+                           (dcatch ctx
+                                   (let [token (get-in ctx [:parameters :query :access_token])]
+                                     (do
+                                       (d/let-flow [new-password (get-in ctx [:parameters :body :new-password])
+                                                    user-id (util/authenticated-user-id ctx)
+                                                    updated? (p/update-by-id! user-store user-id {:password (p/sign crypto new-password)})]
+                                                   (util/>200 ctx updated?)))
+                                     )))}}}
+
+
+      (merge (util/common-resource :login))))
+
+(defn forgot-password [user-store mailer authenticator]
   (-> {:methods
        {:post {:parameters {:query {:access_token String
                                     (s/optional-key :locale) String}
@@ -25,18 +51,23 @@
                            (dcatch ctx
                                    (let [token (get-in ctx [:parameters :query :access_token])]
                                      (do
-
                                        (d/let-flow [params (get-in ctx [:parameters :body])
                                                     user (or (first (p/find user-store {:emailAddress (get-in ctx [:parameters :body :emailAddress])}))
                                                              (error* 400 [400 (format "user %s doesn't exist" (:emailAddress params))]))
-
+                                                    _ (log/info user)
+                                                    data (merge (select-keys [:emailAddress :_id] user)
+                                                                {:scope #{scopes/reset-password}})
+                                                    access-token (p/generate-token authenticator data 60)
+                                                    _ (log/info access-token)
                                                     send (p/send mailer {:subject (format "sending forgot-password to %s" (get-in ctx [:parameters :body :userName]))
                                                                          :to (:emailAddress user)
 
-                                                                         :content "TODO: this is the link for your new password! "
-                                                                         })]
+                                                                         :content access-token
+                                                                         })
+                                                    _ (log/info send)
+                                                    ]
                                                    (util/>200 ctx (if send nil send))))
-)))}}}
+                                     )))}}}
 
 
       (merge (util/common-resource :login))))
@@ -57,13 +88,13 @@
 
       (merge (util/common-resource :login))))
 
-(defn logout [user-store token-store]
+(defn logout [authorizer]
  (-> {:methods
       {:get {:parameters {:query {:access_token String
                                   (s/optional-key :locale) String}}
              :response (fn [ctx]
                          (dcatch ctx
-                                 (do (p/invalidate token-store (util/authenticated-user-id ctx))
+                                 (do (p/invalidate authorizer (-> ctx :parameters :query :access_token))
                                      (util/>200 ctx {:status "ok"}))))}}}
 
      (merge (util/common-resource :me/login))))

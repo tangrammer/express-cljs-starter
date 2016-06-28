@@ -23,7 +23,8 @@
 (defprotocol Authorizer
   (grant [this data scopes])
   (verify [this token scope])
-  (scopes [this token]))
+  (scopes [this token])
+  (invalidate [this user-id]))
 
 (defprotocol Authenticator
   (read-token [this token])
@@ -74,8 +75,7 @@
   (remove-address [this oid address])
   (update-address [this oid address]))
 
-(defprotocol TokenStore
-  (invalidate [this user-id]))
+
 
 
 (defprotocol ApiClient

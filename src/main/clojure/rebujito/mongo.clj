@@ -443,16 +443,7 @@
   (update! [this data-query data-update]
     (update!* this data-query data-update))
   (update-by-id! [this hex-id data]
-    (update-by-id!* this hex-id data))
-
-  protocols/TokenStore
-  (invalidate [this user-id]
-    (log/info "invalidate" user-id)
-    (let [try-type :token-store
-          try-id ::invalidate
-          try-context '[user-id]]
-      (util/dtry
-       (protocols/update! this {:user-id user-id} {:valid false})))))
+    (update-by-id!* this hex-id data)))
 
 
 (defn new-counter-store

@@ -64,9 +64,12 @@
                                       :oauth {:post scopes/application}))]
         ["/oauth/token" (->  (oauth/token-resource-owner store token-store user-store authenticator authorizer crypto api-client-store)
                              (assoc :id ::oauth/token-resource-owner))]
-        ["/login/forgot-password" (-> (login/forgot-password user-store mailer authorizer)
+        ["/login/forgot-password" (-> (login/forgot-password user-store mailer authenticator)
                                       (assoc :id ::login/forgot-password
                                              :oauth {:post scopes/application}))]
+        ["/login/change-password" (-> (login/change-password user-store crypto)
+                                      (assoc :id ::login/change-password
+                                             :oauth {:post scopes/reset-password}))]
         ["/devices/register" (-> (devices/register store)
                                  (assoc :id ::devices/register))]
         ["/me"[
@@ -83,12 +86,10 @@
                                                               :oauth {:put scopes/user
                                                                       :delete scopes/user
                                                                       :get scopes/user}))]]]
-               ["/logout"  (-> (login/logout user-store token-store)
+               ["/logout"  (-> (login/logout authorizer)
                                (assoc :id ::login/logout
                                       :oauth {:get scopes/user}))]
-               ["/logout/"  (-> (login/logout user-store token-store)
-                                (assoc :id ::login/logout
-                                       :oauth {:get scopes/user}))]
+
                ["/login/validate-password" (-> (login/validate-password user-store crypto authenticator)
                                                (assoc :id ::login/validate-password
                                                       :oauth {:post scopes/user}))]
