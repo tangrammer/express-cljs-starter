@@ -28,11 +28,11 @@
 
 (defmacro >select [local-context ks more]
   `(do
-     (println "more" ~more (select-keys ~local-context   ~('map 'symbol more)))
+     ;;    (println "more" ~more (select-keys ~local-context   ~('map 'symbol more)))
      ;;    (println (symbol  (name '~k)))
      ;;    (println (keys ~local-context))
      (let [r# (select-keys ~local-context  (quote ~('map 'symbol ks)))]
-       (println "(some? r#)" (empty? r#) r#)
+       ;;       (println "(some? r#)" (empty? r#) r#)
        (if (empty? r#)
          (select-keys ~local-context  ~('map 'symbol more))
          r#))))

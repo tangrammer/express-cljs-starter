@@ -31,31 +31,30 @@
                                  :amount s/Num
                                  :paymentMethodId String}}})
 
-
-
-
 (defn new-physical-card [data]
   (merge data {:digital false}))
 
 (defn new-digital-card [data]
   (merge data {:digital true}))
 
-(def value-link-arb-class "242")
+(def VALUE_LINK_ARB_CLASS "242")
+
+(def CURRENCY_CODE "ZAR")
 
 (defn blank-card-data []
   {:primary true
-   :cardCurrency "ZAR"
+   :cardCurrency CURRENCY_CODE
    :nickname "My Card"
    :type "Standard"
    :actions ["Reload" "AutoReload"]
    :submarketCode "ZA"
-   :class value-link-arb-class
+   :class VALUE_LINK_ARB_CLASS
    :owner true
    :partner false
    :autoReloadProfile nil
    :balance 0
    :balanceDate (.toString (java.time.Instant/now))
-   :balanceCurrencyCode "ZAR"})
+   :balanceCurrencyCode CURRENCY_CODE})
 
 (def STORED_VALUE_PROGRAM "Starbucks Card")
 
@@ -64,12 +63,21 @@
               (or (:balance program) 0)))
 
 (defn- get-card-data [user-store user-id]
-  #_rebujito.store.mocks/card
-  (first (:cards (p/find user-store user-id))))
+  (comment rebujito.store.mocks/card)
+  (let [cards (:cards (p/find user-store user-id))]
+    (when (>  (count cards) 1)
+      (clj-bugsnag.core/notify
+          (Exception. (str "Rebujito data error! There's more than one card for this user: " user-id))
+          {:api-key (:key (:bugsnag (rebujito.config/config)))
+           :meta {:user-id user-id}
+           :environment rebujito.util/*bugsnag-release*
+           :user user-id}))
+    (first cards)))
 
 (defn get-card* [user-store user-id balances]
-  #_rebujito.store.mocks/card
-  (d/let-flow [card-data (get-card-data user-store user-id) #_rebujito.store.mocks/me-rewards
+  (comment rebujito.store.mocks/card
+           rebujito.store.mocks/me-rewards)
+  (d/let-flow [card-data (get-card-data user-store user-id)
                balance (get-points-for balances)]
     (when card-data
       (merge
@@ -90,9 +98,8 @@
 
                                             autoreload-profile (-> card :autoReloadProfile )
 
-                                            enabled? (:status autoreload-profile)
-                                            ]
-                                           (log/info "autoreload-profike" card autoreload-profile (type (:status autoreload-profile)))
+                                            enabled? (:status autoreload-profile)]
+
                                            (if enabled?
                                              (d/let-flow [balances (when (:cardNumber card)
                                                                      (p/balances mimi (:cardNumber card)))
@@ -102,36 +109,50 @@
                                                                                          (= "SGC001" code)))
                                                                                first
                                                                                :balance)
+
                                                           autoreload-threshold-amount (:amount autoreload-profile)
 
                                                           balance-below-auto-reload-threshold (<= current-balance autoreload-threshold-amount)]
 
                                                          (if balance-below-auto-reload-threshold
+
                                                            (d/let-flow [payment-method-data (first (filter (fn [{:keys [paymentMethodId]}]
                                                                                                              (= paymentMethodId (:paymentMethodId autoreload-profile)))
                                                                                                            (:paymentMethods user)))
 
-                                                                        payment-data (p/execute-payment
-                                                                                      payment-gateway
-                                                                                      (merge (select-keys user [:emailAddress :lastName :firstName])
-                                                                                             {:amount  (long (:amount autoreload-profile))
-                                                                                              :currency (:currency-code app-config)
-                                                                                              :cvn "123" ;; TODO how can i find this value?
-                                                                                              :routingNumber (-> payment-method-data :routingNumber)
-                                                                                              :transactionId "12345" ;; todo how can I find this value?
-                                                                                              }))
+                                                                        payment-data (-> (p/execute-payment
+                                                                                          payment-gateway
+                                                                                          (merge (select-keys user [:emailAddress :lastName :firstName])
+                                                                                                 {:amount  (long (:amount autoreload-profile))
+                                                                                                  :currency (:currency-code app-config)
+                                                                                                  :cvn "123" ;; TODO how can i find this value?
+                                                                                                  :routingNumber (-> payment-method-data :routingNumber)
+                                                                                                  :transactionId "12345" ;; todo how can I find this value?
+                                                                                                  }))
+                                                                                         (d/catch clojure.lang.ExceptionInfo
+                                                                                             (fn [e]
+                                                                                               (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
+                                                                                                               :subject "Error payment! "
+                                                                                                               :content "ups!!!!"})
+                                                                                               (manifold.deferred/error-deferred e))))
 
                                                                         mimi-card-data (when payment-data
-                                                                                         (p/load-card mimi card-number (:amount autoreload-profile)))
+                                                                                         (-> (p/load-card mimi card-number (:amount autoreload-profile))
+                                                                                             (d/catch clojure.lang.ExceptionInfo
+                                                                                                 (fn [e]
+                                                                                                   (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
+                                                                                                                   :subject "Error mimi! "
+                                                                                                                   :content "ups!!!!"})
+                                                                                                   (manifold.deferred/error-deferred e)))))
 
-                                                                        send-mail (p/send mailer {:to (:emailAddress user)
-                                                                                                  :subject "A new automatic payment has been done "
-                                                                                                  :content (format  "Hello %s ! \n A new payment with this ammount %s has been processed into your starbucks card: %s. \n Your current balance is %s . Enjoy it!"
-                                                                                                                    (:firstName user)
-                                                                                                                    (:amount autoreload-profile)
-                                                                                                                    (:cardId card)
-                                                                                                                    (:balance mimi-card-data))})
-                                                                        ]
+                                                                        send-mail (when (and payment-data mimi-card-data)
+                                                                                    (p/send mailer {:to (:emailAddress user)
+                                                                                                    :subject "A new automatic payment has been done "
+                                                                                                    :content (format  "Hello %s ! \n A new payment with this ammount %s has been processed into your starbucks card: %s. \n Your current balance is %s . Enjoy it!"
+                                                                                                                      (:firstName user)
+                                                                                                                      (:amount autoreload-profile)
+                                                                                                                      (:cardId card)
+                                                                                                                      (:balance mimi-card-data))}))]
 
                                                                        (util/>200 ctx {:user user
                                                                                        :mimi-card-data mimi-card-data
@@ -149,10 +170,7 @@
                                                            )
                                                          )
                                              (util/>200 ctx nil)
-                                             )
-
-
-)))}}}
+                                             ))))}}}
 
    (merge (util/common-resource :me/cards))))
 (defn cards [user-store mimi]

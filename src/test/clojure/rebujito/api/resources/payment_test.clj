@@ -429,7 +429,6 @@
             ]
 
         (is (= 200 (-> res :status)))
-
         (is (-> body :card :autoReloadProfile :active))
         (is (= (:cardNumber card) (:card-number body)))
         (is (= card-id (-> body :card :cardId)))
