@@ -20,6 +20,8 @@
     [account :as account]
     [oauth :as oauth]
     [login :as login]]
+   [rebujito.api.resources.card
+    [reload :as card-reload]]
    [clojure.test :refer :all]))
 
 
@@ -317,8 +319,8 @@
     ))
 
 
-(deftest check-reload
-  (testing ::card/check-reload
+(deftest card-check-reload
+  (testing ::card-reload/check
 
     (let [port (-> *system*  :webserver :port)
           r (-> *system* :docsite-router :routes)
@@ -327,7 +329,7 @@
           card-id (:cardId card)
           ]
 
-      (let [path (bidi/path-for r ::card/check-reload :card-number (:cardNumber card))
+      (let [path (bidi/path-for r ::card-reload/check :card-number (:cardNumber card))
             res @(http/get (format "http://localhost:%s%s"  port path)
                            {:throw-exceptions false
                             :body-encoding "UTF-8"
@@ -387,7 +389,7 @@
                       (print-body)
                       :status))))
 
-      (let [path (bidi/path-for r ::card/check-reload :card-number (:cardNumber card))
+      (let [path (bidi/path-for r ::card-reload/check :card-number (:cardNumber card))
             res @(http/get (format "http://localhost:%s%s"  port path)
                            {:throw-exceptions false
                             :body-encoding "UTF-8"
@@ -419,7 +421,7 @@
                       :status))))
 
 
-      (let [path (bidi/path-for r ::card/check-reload :card-number (:cardNumber card))
+      (let [path (bidi/path-for r ::card-reload/check :card-number (:cardNumber card))
             res @(http/get (format "http://localhost:%s%s"  port path)
                            {:throw-exceptions false
                             :body-encoding "UTF-8"

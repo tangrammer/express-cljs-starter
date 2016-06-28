@@ -41,7 +41,7 @@
                                                  balances (when (some? card-number)
                                                             (p/balances mimi card-number))
                                                  rewards (rewards/rewards-response balances card-number)
-                                                 card (card/get-card* user-store user-id balances)
+                                                 card (card/>get-card user-store user-id balances)
                                                  payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
                                                                       (map payment/adapt-mongo-to-spec))]
 

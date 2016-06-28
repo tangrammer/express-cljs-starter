@@ -21,7 +21,9 @@
      [profile :as profile]
      [rewards :as rewards]
      [social-profile :as social-profile]
-     ]))
+     ]
+    [rebujito.api.resources.card
+     [reload :as card-reload]]))
 
 (defn- rewrite-methods [resource]
  (let [delete (-> resource :methods :delete)]
@@ -39,8 +41,8 @@
            app-config
            counter-store]
 
-  [""  [[["/checkReload/" :card-number]  (-> (card/check-reload user-store mimi payment-gateway app-config mailer)
-                                                (assoc :id ::card/check-reload))]
+  [""  [[["/checkReload/" :card-number]  (-> (card-reload/check user-store mimi payment-gateway app-config mailer)
+                                                (assoc :id ::card-reload/check))]
         ["/health"  (-> {:id :health
                          :methods
                                  {:get {:consumes [{:media-type #{"application/json"}
