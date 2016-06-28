@@ -88,60 +88,64 @@
 
                                             {:keys [user card]} (p/get-user-and-card user-store card-number)
 
-                                            balances (when (:cardNumber card)
-                                                       (p/balances mimi (:cardNumber card)))
-
-                                            current-balance (->> (-> balances :programs)
-                                                                 (filter (fn [{:keys [code]}]
-                                                                           (= "SGC001" code)))
-                                                                 first
-                                                                 :balance)
-
                                             autoreload-profile (-> card :autoReloadProfile )
 
-                                            payment-method-data (first (filter (fn [{:keys [paymentMethodId]}]
-                                                                                 (= paymentMethodId (:paymentMethodId autoreload-profile)))
-                                                                               (:paymentMethods user)))
-
-                                            payment-data (p/execute-payment
-                                                          payment-gateway
-                                                          (merge (select-keys user [:emailAddress :lastName :firstName])
-                                                                 {:amount  (long (:amount autoreload-profile))
-                                                                  :currency (:currency-code app-config)
-                                                                  :cvn "123" ;; TODO how can i find this value?
-                                                                  :routingNumber (-> payment-method-data :routingNumber)
-                                                                  :transactionId "12345" ;; todo how can I find this value?
-                                                                  }))
-
-                                            autoreload-threshold-amount (:amount autoreload-profile)
-
-                                            mimi-card-data (when payment-data
-                                                             (p/load-card mimi card-number (:amount autoreload-profile)))
-
-
                                             enabled? (:status autoreload-profile)
+                                            ]
+                                           (log/info "autoreload-profike" card autoreload-profile (type (:status autoreload-profile)))
+                                           (if enabled?
+                                             (d/let-flow [balances (when (:cardNumber card)
+                                                                     (p/balances mimi (:cardNumber card)))
 
-                                            send-mail (p/send mailer {:to (:emailAddress user)
-                                                                      :subject "Rebujito: a new automatic payment has been done "
-                                                                      :content (format  "Hello %s ! \n A new payment with this ammount %s has been processed into your starbucks card: %s. \n Your current balance is %s . Enjoy it!"
-                                                                                        (:firstName user)
-                                                                                        (:amount autoreload-profile)
-                                                                                        (:cardId card)
-                                                                                        (:balance mimi-card-data))})]
+                                                          current-balance (->> (-> balances :programs)
+                                                                               (filter (fn [{:keys [code]}]
+                                                                                         (= "SGC001" code)))
+                                                                               first
+                                                                               :balance)
+
+                                                          payment-method-data (first (filter (fn [{:keys [paymentMethodId]}]
+                                                                                               (= paymentMethodId (:paymentMethodId autoreload-profile)))
+                                                                                             (:paymentMethods user)))
+
+                                                          payment-data (p/execute-payment
+                                                                        payment-gateway
+                                                                        (merge (select-keys user [:emailAddress :lastName :firstName])
+                                                                               {:amount  (long (:amount autoreload-profile))
+                                                                                :currency (:currency-code app-config)
+                                                                                :cvn "123" ;; TODO how can i find this value?
+                                                                                :routingNumber (-> payment-method-data :routingNumber)
+                                                                                :transactionId "12345" ;; todo how can I find this value?
+                                                                                }))
+
+                                                          autoreload-threshold-amount (:amount autoreload-profile)
+
+                                                          mimi-card-data (when payment-data
+                                                                           (p/load-card mimi card-number (:amount autoreload-profile)))
+
+                                                          send-mail (p/send mailer {:to (:emailAddress user)
+                                                                                    :subject "Rebujito: a new automatic payment has been done "
+                                                                                    :content (format  "Hello %s ! \n A new payment with this ammount %s has been processed into your starbucks card: %s. \n Your current balance is %s . Enjoy it!"
+                                                                                                      (:firstName user)
+                                                                                                      (:amount autoreload-profile)
+                                                                                                      (:cardId card)
+                                                                                                      (:balance mimi-card-data))})]
+                                                         (util/>200 ctx {:user user
+                                                                         :mimi-card-data mimi-card-data
+                                                                         :send-mail send-mail
+                                                                         :enabled? enabled?
+                                                                         :balances (:body balances)
+                                                                         :current-balance current-balance
+                                                                         :balance-below-auto-reload-threshold (< current-balance autoreload-threshold-amount)
+                                                                         :auto-reload-threshold-amount autoreload-threshold-amount
+                                                                         :card-number card-number
+                                                                         :card card
+                                                                         :payment-data payment-data})
+                                                         )
+                                             (util/>200 ctx "false")
+                                             )
 
 
-
-                                           (util/>200 ctx {:user user
-                                                           :mimi-card-data mimi-card-data
-                                                           :send-mail send-mail
-                                                           :enabled? enabled?
-                                                           :balances (:body balances)
-                                                           :current-balance current-balance
-                                                           :balance-below-auto-reload-threshold (< current-balance autoreload-threshold-amount)
-                                                           :auto-reload-threshold-amount autoreload-threshold-amount
-                                                           :card-number card-number
-                                                           :card card
-                                                           :payment-data payment-data}))))}}}
+)))}}}
 
    (merge (util/common-resource :me/cards))))
 (defn cards [user-store mimi]

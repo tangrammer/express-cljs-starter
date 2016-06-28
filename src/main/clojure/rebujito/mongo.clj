@@ -48,9 +48,12 @@
   (str (BigInteger. s 16)))
 
 (defmulti db-find "dispatch on data meaning"
-  (fn [mutable-storage data] (type data)))
+  (fn [mutable-storage data]
+    (log/info "db-find::" data (type data))
+    (type data)))
 
 (defmethod db-find :default [_ data]
+  (log/info "inside error db-find::" data (type data))
   (throw (IllegalArgumentException.
           (str "Not ready to db-find using: " (if (nil? data) "nil" (type data))))))
 
@@ -141,38 +144,34 @@
 
   protocols/UserStore
   (add-autoreload-profile-card [this oid autoreload-profile-card]
-    (try
-      (let [uuid (str (UUID/randomUUID))
-            autoreload-profile-card (assoc autoreload-profile-card
-                        :autoReloadId  uuid
-                        :active true)
-            user (protocols/find this oid)
-            cards (:cards user)
-            others (filter #(not= (:cardId %) (:cardId autoreload-profile-card)) cards)
-            card  (-> (first (filter #(= (:cardId %) (:cardId autoreload-profile-card)) cards))
-                      (assoc :autoReloadProfile autoreload-profile-card))
-            new-cards (conj others card)
-            ]
-        (log/debug   ">>>>" oid autoreload-profile-card)
-        (s/validate AutoReloadMongo autoreload-profile-card)
-        (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
-                           {$set {:cards  new-cards}})]
-          (if (pos? (.getN t))
-            {:autoReloadId uuid}
-            (d/error-deferred (ex-info (str "Store ERROR!")
-                                       {:type :store
-                                        :status 500
-                                        :body "add-auto-reload transaction fails"
-                                        :message "add-auto-reload transaction fails"
-                                        }))
-            )))
+    (let [try-type :store
+          try-id ::add-autoreload-profile-card
+          try-context '[oid autoreload-profile-card]]
+      (util/dtry
+       (do
+         (let [uuid (str (UUID/randomUUID))
+               autoreload-profile-card (assoc autoreload-profile-card
+                                              :autoReloadId  uuid
+                                              :active true)
+               user (or (protocols/find this oid)
+                        (util/error* 500 [500 ::user-not-found]))
+               cards (:cards user)
 
-      (catch Exception e (d/error-deferred (ex-info (str "Store ERROR!")
-                                                    {:type :store
-                                                     :status 500
-                                                     :body (.getMessage e)
-                                                     :message (.getMessage e)
-                                                     })))))
+               others (filter #(not= (:cardId %) (:cardId autoreload-profile-card)) cards)
+
+               card  (-> (or (first (filter #(= (:cardId %) (:cardId autoreload-profile-card)) cards))
+                             (util/error* 500 [500 ::card-not-found]))
+                         (assoc :autoReloadProfile autoreload-profile-card))
+
+               new-cards (conj others card)
+               ]
+           (log/debug   ">>>>" oid autoreload-profile-card)
+           (s/validate AutoReloadMongo autoreload-profile-card)
+           (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)}
+                              {$set {:cards  new-cards}})]
+             (if (pos? (.getN t))
+               {:autoReloadId uuid}
+               (util/error* 500 [500 ::transaction-failed]))))))))
   (disable-auto-reload [this oid card-id]
     (try
       (do
