@@ -123,7 +123,7 @@
                                                                            (p/load-card mimi card-number (:amount autoreload-profile)))
 
                                                           send-mail (p/send mailer {:to (:emailAddress user)
-                                                                                    :subject "Rebujito: a new automatic payment has been done "
+                                                                                    :subject "A new automatic payment has been done "
                                                                                     :content (format  "Hello %s ! \n A new payment with this ammount %s has been processed into your starbucks card: %s. \n Your current balance is %s . Enjoy it!"
                                                                                                       (:firstName user)
                                                                                                       (:amount autoreload-profile)

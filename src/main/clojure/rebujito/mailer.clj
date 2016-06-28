@@ -10,7 +10,6 @@
    [rebujito.protocols :as protocols]
    [com.stuartsierra.component  :as component]))
 
-
 (def Mail {:subject String
            :to String
            :from String
@@ -46,19 +45,16 @@
             true
             (error* 500 [500 (-> res :body bs/to-string (json/parse-string true))]))))))))
 
-
-(defrecord MockMailer []
+(defrecord MockMailer [config]
   component/Lifecycle
   (start [this]
-    this)
+    (assoc this :mails (atom [])))
   (stop [this] this)
   protocols/MailService
   (send [this data]
-    (log/info "MOCK : sending mail with this data" data)
+    (log/info "MockMailer: sending mail with this data" data)
+    (swap! (:mails this) conj data)
     true))
-
-
-
 
 (defn new-sendgrid-mailer [config]
   (map->SendGridMailer {:config config}))

@@ -23,7 +23,7 @@
    [clojure.test :refer :all]))
 
 
-(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
+(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
 
 (deftest payment-resource
   (testing ::payment/methods
@@ -338,11 +338,8 @@
                                         ;          (is (= nil body))
         (is (= 200 (-> res :status)))
         (is (= false body))
-        ;; (is (-> body :card :autoReloadProfile :active))
-        ;; (is (= (:cardNumber card) (:card-number body)))
-        ;; (is (= card-id (-> body :card :cardId)))
-        ;; (is (-> body :payment-data))
-        )
+        (let [mails @(:mails (:mailer *system*))]
+          (is (= 0 (count mails)))))
 
       (let [path (get-path ::payment/methods)
             {:keys [status body] :as all}
@@ -373,7 +370,6 @@
         )
 
       (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
-        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path card-id))
         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                   {:throw-exceptions false
                                    :body-encoding "UTF-8"
@@ -406,12 +402,7 @@
         (is (= (:cardNumber card) (:card-number body)))
         (is (= card-id (-> body :card :cardId)))
         (is (-> body :payment-data))
-        )
-
-      )
-
-
-
-
-
+        (let [mails @(:mails (:mailer *system*))]
+          (is (= 1 (count mails)))
+          (= (select-keys (first mails) [:subject]) {:subject "A new automatic payment has been done "}))))
     ))

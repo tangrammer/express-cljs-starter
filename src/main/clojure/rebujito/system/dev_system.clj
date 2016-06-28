@@ -6,6 +6,7 @@
    [rebujito.config :refer (config)]
    [rebujito.store :refer (new-mock-store)]
    [rebujito.mimi :refer (new-mock-mimi)]
+   [rebujito.mailer :refer (new-mock-mailer)]
    [rebujito.system :refer (new-system-map new-dependency-map)]))
 
 
@@ -18,6 +19,12 @@
       (fn [system-map]
         (-> system-map
             (assoc :store (new-mock-store)))))
+    :+mock-mailer
+    (fn [config]
+      (println "using :+mock-mailer profile in dev-system")
+      (fn [system-map]
+        (-> system-map
+            (assoc :mailer (new-mock-mailer {})))))
     :+ephemeral-db
     (fn [config]
       (println "using :+ephemeral-db to start mongo with no data inside")
@@ -52,13 +59,13 @@
     :+mock-payment-gateway (fn [config]
                     (fn [dependency-map]
   ;                      (println "using :mock-payment-gateway  in dependency dev-system")
-                        dependency-map))}})
+                      dependency-map))}})
 
 
 
 (defn new-dev-system
   "Create a development system"
-  ([] (new-dev-system #{:+mock-mimi :+mock-store :+ephemeral-db}))
+  ([] (new-dev-system #{:+mock-mimi :+mock-store :+ephemeral-db :+mock-mailer}))
   ([opts]  (new-dev-system opts (config :dev)))
   ([opts config]
    (component/system-using
