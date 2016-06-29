@@ -53,11 +53,11 @@
 
 (defmulti get-token
   "OAuth Token methods: dispatch on grant_type"
-  (fn [ctx store token-store user-store authenticator authorizer crypto api-client-store]
+  (fn [ctx token-store user-store authenticator authorizer crypto api-client-store]
     (keyword (-> ctx :parameters :body :grant_type))))
 
 (defmethod get-token :client_credentials ; docs -> http://bit.ly/1sLcJZO
-  [ctx store token-store user-store authenticator authorizer crypto api-client-store]
+  [ctx token-store user-store authenticator authorizer crypto api-client-store]
   (d/let-flow [api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
                                    (get-in ctx [:parameters :body :client_secret]))
@@ -70,7 +70,7 @@
 )
 
 (defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
-  [ctx store token-store user-store authenticator authorizer crypto api-client-store]
+  [ctx token-store user-store authenticator authorizer crypto api-client-store]
   (d/let-flow [
                api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
@@ -96,7 +96,7 @@
 (defmethod get-token :refresh_token ; docs -> http://bit.ly/1sLcWfw
   ; TODO verify refresh token #39
   ; https://github.com/naartjie/rebujito/issues/39
-  [ctx store token-store user-store authenticator authorizer crypto api-client-store]
+  [ctx token-store user-store authenticator authorizer crypto api-client-store]
   (d/let-flow [
                api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
@@ -122,7 +122,7 @@
   (let [map (clojure.walk/keywordize-keys map)]
     (= ((keyword key) map) value)))
 
-(defn token-resource-owner [store token-store user-store authenticator authorizer crypto api-client-store]
+(defn token-resource-owner [token-store user-store authenticator authorizer crypto api-client-store]
   (-> {:methods
        {:post {:parameters {:query {:sig String
                                     (s/optional-key :platform) String}
@@ -139,6 +139,6 @@
 
                :response (fn [ctx]
                            (dcatch ctx
-                                   (get-token ctx store token-store user-store authenticator authorizer crypto api-client-store)))}}}
+                                   (get-token ctx token-store user-store authenticator authorizer crypto api-client-store)))}}}
 
       (merge (common-resource :oauth))))
