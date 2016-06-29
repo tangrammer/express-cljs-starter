@@ -491,7 +491,7 @@
     (clojure.walk/keywordize-keys (if (= data "w8tnxd8h2wns43cfdgmt793j")
                                               {"_id" "w8tnxd8h2wns43cfdgmt793j", "secret" "KDRSRVqKHp5TkKvJJhN7RYkE", "who" "mediamonks"}
                                               (find-map-by-id mutable-storage (org.bson.types.ObjectId. data))))
-    (catch Exception e (d/error-deferred (ex-info (.getMessage e) {:message (.getMessage e)}))))
+    (catch Exception e  (ex-info (.getMessage e) {:message (.getMessage e)})))
 )
 
 (defmethod db-find org.bson.types.ObjectId
