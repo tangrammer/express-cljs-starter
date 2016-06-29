@@ -46,7 +46,7 @@
                                                                                first
                                                                                :balance)
 
-                                                          autoreload-threshold-amount (:amount autoreload-profile)
+                                                          autoreload-threshold-amount (:triggerAmount autoreload-profile)
 
                                                           balance-below-auto-reload-threshold (<= current-balance autoreload-threshold-amount)]
 
