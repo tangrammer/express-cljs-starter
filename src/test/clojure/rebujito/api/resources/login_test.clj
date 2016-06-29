@@ -11,7 +11,7 @@
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
    [rebujito.api-test :refer (print-body create-digital-card* parse-body)]
-   [rebujito.base-test :refer (system-fixture *system* *user-account-data* *app-access-token* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
+   [rebujito.base-test :refer (generate-mail system-fixture *system* *user-account-data* *app-access-token* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
     [payment :as payment]
@@ -91,6 +91,7 @@
 
   )
 
+
 (deftest reset-pw
 
   (testing ::login/forgot-password
@@ -114,6 +115,31 @@
           (is (.contains (:subject (first mails)) "sending forgot-password")  )
           (is (p/read-token (:authenticator *system*) (:content (first mails)))  )
           (is (p/verify (:authorizer *system*) (:content (first mails)) rebujito.scopes/reset-password))))))
+
+(deftest change-username  ;; => emailAddress
+
+  (testing ::login/change-username
+    (let [port (-> *system*  :webserver :port)
+          address-id (atom "")]
+
+      (let [path (get-path ::login/change-username)
+            new-username (generate-mail "juanantonioruz+%s@gmail.com")
+            http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string
+                                             (assoc (g/generate (:put (:change-username login/schema)))
+                                                    :new-username new-username))
+                                      :content-type :json})
+;            body (parse-body http-response)
+            ]
+        (is (= 200 (-> http-response :status)))
+        (is (= "" (-> http-response :body bs/to-string)))
+        (let [user-by-email (first (p/find (-> *system* :user-store) {:emailAddress new-username}))]
+          (is (=  (-> *user-account-data*
+                      (dissoc  :_id :password)
+                      (assoc  :emailAddress new-username))
+                  (dissoc user-by-email :_id :password))))))))
 
 
 
@@ -139,7 +165,7 @@
       (is (-> *system* :mailer :mails deref first :content))
 
       (let [path (get-path ::login/change-password)
-            data (g/generate (:post (:change-password login/schema)))
+            data (g/generate (:put (:change-password login/schema)))
             http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path (-> *system* :mailer :mails deref first :content))
                                      {:throw-exceptions false
                                       :body-encoding "UTF-8"
@@ -150,7 +176,9 @@
         (let [user-by-email (first (p/find (-> *system* :user-store) {:emailAddress (:emailAddress *user-account-data*)}))]
           (is (=  (p/check (:crypto *system*)
                            (:new-password data)
-                           (:password user-by-email)))))
+                           (:password user-by-email))))
+          ;(is (= nil user-by-email))
+          )
 
 )
 

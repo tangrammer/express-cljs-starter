@@ -33,6 +33,9 @@
       )
   )
 
+(defn generate-mail [format-pattern]
+  (format format-pattern (generate-random 6)))
+
 (defn new-account-sb []
   {
    :countrySubdivision "aa",
@@ -40,7 +43,7 @@
    :addressLine1 "zz",
    :addressLine2 "yy",
    :password "real-secret",
-   :emailAddress (format  "juanantonioruz+%s@gmail.com" (generate-random 6)),
+   :emailAddress (generate-mail "juanantonioruz+%s@gmail.com")
    :city "Sevilla",
    :firstName (format  "Juan-%s" (generate-random 6))
    :birthDay "13",

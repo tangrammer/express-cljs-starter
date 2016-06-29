@@ -93,6 +93,9 @@
                ["/login/validate-password" (-> (login/validate-password user-store crypto authenticator)
                                                (assoc :id ::login/validate-password
                                                       :oauth {:post scopes/user}))]
+               ["/login/change-username" (-> (login/change-username user-store crypto)
+                                             (assoc :id ::login/change-username
+                                                    :oauth {:put scopes/user}))]
                ["/profile"  (-> (profile/profile store mimi user-store app-config)
                                 (assoc :id ::profile/me
                                        :oauth {:get scopes/user}))]

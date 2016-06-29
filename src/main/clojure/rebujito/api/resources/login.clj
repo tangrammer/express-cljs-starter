@@ -11,24 +11,39 @@
    [yada.resource :refer [resource]]))
 
 
-(def schema {:change-password {:post {:new-password String}}
+(def schema {:change-username {:put {:new-username String}}
+             :change-password {:put {:new-password String}}
              :forgot-password {:post {:userName String
                                       :emailAddress String}}
              :validate-password {:post {(s/optional-key :encoded) Boolean
                                         :password String}}})
 
-(comment
 
-  (defn validate-token [authorizer])
 
-  (defn change-password [user-store authorizer])
+(defn change-username [user-store crypto]
+  (-> {:methods
+       {:put {:parameters {:query {:access_token String}
+                            :body (-> schema :change-username :put)}
+               :response (fn [ctx]
+                           (dcatch ctx
+                                   (do
+                                     (d/let-flow [user-id (util/authenticated-user-id ctx)
+                                                  new-username (get-in ctx [:parameters :body :new-username])
+                                                  current (p/find user-store user-id )
+                                                  updated? (p/update-by-id! user-store user-id (merge current {:emailAddress new-username}))]
+                                                 (if (pos? (.getN updated?))
+                                                   (util/>200 ctx nil)
+                                                   (util/>400 ctx (str "transaction failed"))
+                                                   )))
+                                   ))}}}
 
-  )
+
+      (merge (util/common-resource :login))))
 
 (defn change-password [user-store crypto]
   (-> {:methods
        {:put {:parameters {:query {:access_token String}
-                            :body (-> schema :change-password :post)}
+                            :body (-> schema :change-password :put)}
                :response (fn [ctx]
                            (dcatch ctx
                                    (let [token (get-in ctx [:parameters :query :access_token])]
@@ -36,7 +51,10 @@
                                        (d/let-flow [new-password (get-in ctx [:parameters :body :new-password])
                                                     user-id (util/authenticated-user-id ctx)
                                                     updated? (p/update-by-id! user-store user-id {:password (p/sign crypto new-password)})]
-                                                   (util/>200 ctx updated?)))
+                                                   (if (pos? (.getN updated?))
+                                                   (util/>200 ctx nil)
+                                                   (util/>400 ctx (str "transaction failed"))
+                                                   )))
                                      )))}}}
 
 
