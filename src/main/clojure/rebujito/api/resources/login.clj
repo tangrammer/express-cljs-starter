@@ -27,7 +27,7 @@
 
 (defn change-password [user-store crypto]
   (-> {:methods
-       {:post {:parameters {:query {:access_token String}
+       {:put {:parameters {:query {:access_token String}
                             :body (-> schema :change-password :post)}
                :response (fn [ctx]
                            (dcatch ctx

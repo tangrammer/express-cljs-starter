@@ -140,7 +140,7 @@
 
       (let [path (get-path ::login/change-password)
             data (g/generate (:post (:change-password login/schema)))
-            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path (-> *system* :mailer :mails deref first :content))
+            http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path (-> *system* :mailer :mails deref first :content))
                                      {:throw-exceptions false
                                       :body-encoding "UTF-8"
                                       :body (json/generate-string data)

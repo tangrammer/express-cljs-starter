@@ -69,7 +69,7 @@
                                              :oauth {:post scopes/application}))]
         ["/login/change-password" (-> (login/change-password user-store crypto)
                                       (assoc :id ::login/change-password
-                                             :oauth {:post scopes/reset-password}))]
+                                             :oauth {:put scopes/reset-password}))]
         ["/devices/register" (-> (devices/register store)
                                  (assoc :id ::devices/register))]
         ["/me"[
