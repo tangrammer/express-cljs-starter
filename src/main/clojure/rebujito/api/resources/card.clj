@@ -20,8 +20,8 @@
                                  :pin String}
 
              :autoreload {:post {:status (s/enum "active" "disabled")
-                                 :autoReloadType (s/enum "Date" "Amount")
-                                 :day s/Num
+                                 :autoReloadType (s/enum "Amount")
+                                 (s/optional-key :day) (s/enum nil "")
                                  :triggerAmount s/Num
                                  :amount s/Num
                                  :paymentMethodId String}}})
@@ -246,16 +246,9 @@
 
                              (util/validate* (-> schema :autoreload :post :paymentMethodId)  (-> ctx :parameters :body :paymentMethodId) [400 "Please supply a payment method id." "Missing payment method identifier attribute is required"])
 
-                             (util/validate* (-> schema :autoreload :post :autoReloadType)  (-> ctx :parameters :body :autoReloadType) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."])
+                             (util/validate* (-> schema :autoreload :post :autoReloadType)  (-> ctx :parameters :body :autoReloadType) [400 "autoReloadType must be set to 'Amount'."])
 
-
-                             (util/validate* (-> schema :autoreload :post :day)  (-> ctx :parameters :body :day) [400 "Please supply an auto reload type." "Missing or invalid auto reload type attribute is required. Type must be set to either 'date' or 'amount'."](fn [v]
-                                                                                                                                                                                                                                                                               (if (= "Date" (-> ctx :parameters :body :autoReloadType))
-                                                                                                                                                                                                                                                                                   (let [v1  (-> ctx :parameters :body :day)]
-                                                                                                                                                                                                                                                                                     (and (> v1 0) (< v1 32)))
-                                                                                                                                                                                                                                                                                   true)))
-
-                             (util/validate* (-> schema :autoreload :post :amount)  (-> ctx :parameters :body :amount) [400 "Please supply a trigger amount." "For auto reload of type “Amount”, a valid trigger amount attribute is required."])
+                             (util/validate* (-> schema :autoreload :post :triggerAmount)  (-> ctx :parameters :body :triggerAmount) [400 "Please supply a trigger amount." "For auto reload of type 'Amount', a valid trigger amount attribute is required."])
 
                              (util/validate* (-> schema :autoreload :post :amount)  (-> ctx :parameters :body :amount) [400 "Please supply an auto reload amount." "Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1000"] (fn [v] (if (= "Amount" (-> ctx :parameters :body :autoReloadType))
                                                                                                                                                                                                                                                                                  (let [v1  (-> ctx :parameters :body :amount)]
