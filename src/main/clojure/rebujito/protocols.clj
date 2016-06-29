@@ -22,9 +22,9 @@
 
 (defprotocol Authorizer
   (grant [this data scopes])
-  (verify [this token scope])
-  (scopes [this token])
-  (invalidate [this user-id]))
+  (invalidate [this user-id])
+  (protected-data [this refresh-token])
+  )
 
 (defprotocol Authenticator
   (read-token [this token])

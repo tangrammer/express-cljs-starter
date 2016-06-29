@@ -190,4 +190,5 @@
   (assert-test 'rebujito.api.resources.rewards-test)
 
 
+  (assert-test 'rebujito.security.jwt-test)
   )

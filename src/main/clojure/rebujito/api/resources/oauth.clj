@@ -1,6 +1,7 @@
 (ns rebujito.api.resources.oauth
   (:refer-clojure :exclude [methods])
   (:require
+   [rebujito.security :as sec]
    [taoensso.timbre :as log]
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
@@ -66,7 +67,8 @@
                    (get-in ctx [:parameters :body :client_id])
                    (get-in ctx [:parameters :body :client_secret]))]
               (log/debug api-client c)
-              (>201 ctx (p/grant authorizer {} #{scopes/application})))
+              (>201 ctx (-> (p/grant authorizer {} #{scopes/application})
+                            (sec/jwt))))
 )
 
 (defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
@@ -83,11 +85,11 @@
               ;; "force evaluation of signature check :::: signature checked?:" c
               (assert c)
               (if-let [user (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
-                                                     :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
-                                 first
-                                 (dissoc :password))]
+                                                    :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
+                                 first)]
 
-                (>201 ctx (p/grant authorizer (select-keys user [:_id :firstName :lastName :emailAddress]) #{scopes/application scopes/user}))
+                (>201 ctx (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})
+                              (sec/jwt)))
 
                 (>400 ctx {:error "invalid_grant"
                            :description "Resource owner credentials could not be validated."})
@@ -107,16 +109,15 @@
                    (get-in ctx [:parameters :body :client_secret]))
 
                refresh-token (get-in ctx [:parameters :body :refresh_token])
-               data-refresh-token (p/read-token authenticator refresh-token)
-               mongo-token (first  (p/find token-store {:refresh-token refresh-token}))]
-              ;;    (log/info "*refresh_token>>>" mongo-token)
+               protected-data (p/protected-data authorizer refresh-token)]
+
               (assert c)
-    (if (:valid mongo-token)
-      (let [user (-> (p/find user-store (:user-id mongo-token))
-                     (dissoc :password))]
-        (>201 ctx (p/grant authorizer (select-keys user [:_id :firstName :lastName :emailAddress]) #{scopes/application scopes/user})))
+    (if (sec/valid? protected-data)
+      (let [user (p/find user-store (:user-id protected-data))]
+        (>201 ctx  (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})
+                       (sec/jwt))))
       (>400 ctx {:error 400
-                 :message "token expired"}))))
+                 :message "token expired!"}))))
 
 (defn check-value [map key value]
   (let [map (clojure.walk/keywordize-keys map)]

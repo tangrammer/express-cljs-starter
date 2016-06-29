@@ -70,7 +70,6 @@
             body (-> (bs/to-string body)
                      (json/parse-string true))]
 
-
         (is  (:paymentMethodId body))
         (reset! payment-method-id (:paymentMethodId body))
         )
@@ -96,7 +95,7 @@
                           :fullName String
                           (s/optional-key :accountNumber) String
                           :expirationMonth Long}
-                         (payment/adapt-mongo-to-spec (first (:paymentMethods (p/find (:user-store *system*) (:_id (p/read-token  (-> *system* :authenticator) *user-access-token*)))))))
+                         (payment/adapt-mongo-to-spec (first (:paymentMethods (p/find (:user-store *system*) (:user-id (p/read-token  (-> *system* :authenticator) *user-access-token*)))))))
 
              (catch Exception e (is (nil? e)))))
 
@@ -307,7 +306,7 @@
 
 
 
-        (let [ar (-> (p/find (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*) ))
+        (let [ar (-> (p/find (-> *system* :user-store) (:user-id (p/read-token (-> *system* :authenticator) *user-access-token*) ))
                      :cards first :autoReloadProfile
                      )]
           (is (false? (:active ar)))))

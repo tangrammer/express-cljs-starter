@@ -116,7 +116,7 @@
                                    :content-type :json
                                    :body (-> addresses/schema :put g/generate (assoc :firstName "poes" :lastName "doos" :addressId "CosMediaMonkeysSuckAtThisGame") json/generate-string)})
 
-         address-in-db (p/get-address (-> *system* :user-store) (:_id (p/read-token (-> *system* :authenticator) *user-access-token*)) @address-id)
+         address-in-db (p/get-address (-> *system* :user-store) (:user-id (p/read-token (-> *system* :authenticator) *user-access-token*)) @address-id)
          body (parse-body http-response)]
 
      (is (= 200 (-> http-response :status)))

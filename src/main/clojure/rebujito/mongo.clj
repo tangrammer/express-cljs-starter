@@ -259,7 +259,7 @@
           (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})]
             (if (pos? (.getN t))
                 {:paymentMethodId uuid}
-                (util/error* 400 ['xxx ::transaction-failed])))))))
+                (util/error* 400 ['xxx (str t (protocols/find this oid))])))))))
 
     )
   (get-payment-method [this oid payment-method-id]

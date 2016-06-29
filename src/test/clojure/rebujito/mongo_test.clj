@@ -19,7 +19,7 @@
 
 (deftest test-auto-reload-profile
   (testing :test-auto-reload-profile
-    (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))
+    (let [user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
           user (p/find (:user-store *system*) user-id)
           card (create-digital-card*)
           card-id (:cardId card)
@@ -34,7 +34,7 @@
 
 (deftest user-store
   (testing :add-auto-reload
-    (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))
+    (let [user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
           card (create-digital-card*)
           card-id (:cardId card)
           ]
@@ -50,7 +50,7 @@
               :cards first :autoReloadProfile :active))))
 
   (testing :add-payment-method
-    (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))]
+    (let [user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))]
       (is (nil? (:paymentMethods (p/find (:user-store *system*) user-id))))
 
       (is (p/add-new-payment-method (:user-store *system*) user-id {:expirationYear 25, :paymentMethodId "X", :default "0o*%Y", :paymentType "", :accountNumberLastFour "'7BG\\T0a}M", :nickName [], :routingNumber "M\\T>vm)=8", :expirationMonth -351}))
@@ -61,7 +61,7 @@
       ))
 
   (testing :disable-auto-reload
-    (let [user-id (:_id (p/read-token (:authenticator *system*) *user-access-token*))
+    (let [user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
           card (-> (p/find (:user-store *system*) user-id)
               :cards first )
           ]
@@ -84,33 +84,34 @@
 
 (deftest mongo-tests
   (let [api-config (:api (:monks (config :test)))]
-   (testing "ApiClient p/login"
-     (->
-      (p/login (:api-client-store *system*) "XXXX" (:secret api-config))
-      (d/chain
-       (fn [a]
-         (is false)))
-      (d/catch clojure.lang.ExceptionInfo (fn [e]
+    (testing "ApiClient p/login"
+      (with-bindings   {#'rebujito.util/*send-bugsnag* false}
+        (->
+         (p/login (:api-client-store *system*) "XXXX" (:secret api-config))
+         (d/chain
+          (fn [a]
+            (is false)))
+         (d/catch clojure.lang.ExceptionInfo (fn [e]
 
-                                            (is (re-find #"invalid_client api client-id" (:body (ex-data e))) ))))
+                                               (is (re-find #"invalid_client api client-id" (:body (ex-data e))) ))))
 
 
 
-     (->
-      (p/login (:api-client-store *system*) (p/generate-id (:api-client-store *system*) "123") (:secret api-config))
-      (d/chain
-       (fn [a]
-         (is false)))
-      (d/catch clojure.lang.ExceptionInfo (fn [e]
+        (->
+         (p/login (:api-client-store *system*) (p/generate-id (:api-client-store *system*) "123") (:secret api-config))
+         (d/chain
+          (fn [a]
+            (is false)))
+         (d/catch clojure.lang.ExceptionInfo (fn [e]
 
-                                            (is (re-find #"invalid_client api client-id" (:body (ex-data e))) ))))
+                                               (is (re-find #"invalid_client api client-id" (:body (ex-data e))) ))))
 
-     (->
-      (p/login (:api-client-store *system*) (:key api-config) (:secret api-config))
-      (d/chain
-       (fn [a]
-         (is true)))
-      (d/catch clojure.lang.ExceptionInfo (fn [e] (is false))))))
+        (->
+         (p/login (:api-client-store *system*) (:key api-config) (:secret api-config))
+         (d/chain
+          (fn [a]
+            (is true)))
+         (d/catch clojure.lang.ExceptionInfo (fn [e] (is false)))))))
 
 
   (testing "ids"

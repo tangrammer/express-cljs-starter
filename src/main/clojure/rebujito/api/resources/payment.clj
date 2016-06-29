@@ -75,7 +75,7 @@
                         :path {:payment-method-id String}}
            :response (fn [ctx]
                        (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                        payment-method (p/get-payment-method user-store (:_id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))]
+                                        payment-method (p/get-payment-method user-store (:user-id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))]
                                        (util/>200 ctx (detail-adapt-mongo-to-spec payment-method)))
                            (d/catch clojure.lang.ExceptionInfo
                                (fn [exception-info]
@@ -86,10 +86,10 @@
               :response (fn [ctx]
                           ;; TODO Review this logic
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                           payment-method (p/get-payment-method user-store (:_id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
+                                           payment-method (p/get-payment-method user-store (:user-id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
                                            res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})
                                            res-mongo (when res-delete
-                                                       (p/remove-payment-method user-store (:_id auth-user) payment-method))]
+                                                       (p/remove-payment-method user-store (:user-id auth-user) payment-method))]
 
 
                                        (util/>200 ctx ["OK" "Success" res-mongo]))
@@ -103,13 +103,13 @@
            :response (fn [ctx]
                        (let [request (get-in ctx [:parameters :body])]
                          (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                          payment-method (p/get-payment-method user-store (:_id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
+                                          payment-method (p/get-payment-method user-store (:user-id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
                                           card-token-res (p/create-card-token payment-gateway
                                                                                            {:cardNumber (-> request :accountNumber)
                                                                                             :expirationMonth (-> request :expirationMonth)
                                                                                             :expirationYear (-> request :expirationYear)
                                                                                             :cvn (-> request :cvn)})
-                                          updated-payment-method (p/update-payment-method user-store (:_id auth-user)
+                                          updated-payment-method (p/update-payment-method user-store (:user-id auth-user)
                                                                                               {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])
                                                                                                :nickName (-> request :nickName)
                                                                                                :paymentType (-> request :paymentType)
@@ -164,7 +164,7 @@
        {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
               :response (fn [ctx]
                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                           payment-methods (->> (p/get-payment-methods user-store (:_id auth-user))
+                                           payment-methods (->> (p/get-payment-methods user-store (:user-id auth-user))
                                                                 (map adapt-mongo-to-spec))]
                                           (log/info  "paymentMethods GET" payment-methods)
                                           (util/>200 ctx payment-methods))
@@ -186,7 +186,7 @@
 
                                             new-payment-method (p/add-new-payment-method
                                                                 user-store
-                                                                (:_id auth-user)
+                                                                (:user-id auth-user)
                                                                 (merge {
                                                                         :accountNumberLastFour (take-last* (-> request :accountNumber) 4)
 

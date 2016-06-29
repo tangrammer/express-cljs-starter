@@ -102,6 +102,7 @@
                             body (-> r :body bs/to-string (json/parse-string true))
                                         ;                          _ (println body)
                             ]
+;                        (clojure.pprint/pprint body)
                         (reset! access_token (:access_token body))
                         r)
                       :status)))
@@ -160,7 +161,8 @@
                             :content-type :json})]
        res
        (is (= 201 (:status res) ))
-       (json/parse-string (bs/to-string (:body res)) true)
+       (println "test account _________________________")
+       (clojure.pprint/pprint (json/parse-string (bs/to-string (:body res)) true))
        )
      ))
   )

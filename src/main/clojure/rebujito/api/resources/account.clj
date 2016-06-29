@@ -105,7 +105,7 @@
                                                    mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
 
 
-                                                  (log/error "mongo-account!!" mongo-account)
+                                                  (log/info "mongo-account!!" mongo-account)
                                                   (util/>201 ctx (dissoc  mongo-account :password))))
                                         ))}}}
       (merge (util/common-resource :account))))

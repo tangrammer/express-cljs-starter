@@ -21,6 +21,8 @@
 
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
 
+
+
 (deftest access-token-application*
   "access resource protected with application role"
   (testing ::account/create
@@ -39,7 +41,7 @@
                       ;;                        print-body
                       :status)))
       ;; wrong access-token
-      (is (= 401  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path "wrong_access_token" 1234)
+      #_(is (= 401  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path "wrong_access_token" 1234)
                                   {:throw-exceptions false
                                    :form-params new-account
                                    :body-encoding "UTF-8"
@@ -156,6 +158,8 @@
                                              :body-encoding "UTF-8"
                                              :content-type :application/x-www-form-urlencoded})
                               body (-> r :body bs/to-string (json/parse-string true))
+   _                           (println "-*-" body)
+    _                          (clojure.pprint/pprint body)
           ;                    _ (println "*******>>>***" r)
 
                               ]
