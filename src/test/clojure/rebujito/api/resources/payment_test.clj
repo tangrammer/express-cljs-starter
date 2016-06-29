@@ -436,7 +436,9 @@
         (is (-> body :payment-data))
         (let [mails @(:mails (:mailer *system*))]
           (is (= 1 (count mails)))
-          (= (select-keys (first mails) [:subject]) {:subject "A new automatic payment has been done "}))))
+          (is (= (select-keys (first mails) [:subject]) {:subject "A new automatic payment has been done "}))
+          )
+))
 
 
     ))
