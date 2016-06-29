@@ -381,7 +381,7 @@
                                            :day 0,
                                            :paymentMethodId @payment-method-id
                                            :status "active",
-                                           :triggerAmount 10.00,
+                                           :triggerAmount 149.00,
                                            }
                                           )
                                    :content-type :json})
@@ -412,7 +412,7 @@
                                            :day 0,
                                            :paymentMethodId @payment-method-id
                                            :status "active",
-                                           :triggerAmount 10.00,
+                                           :triggerAmount 151.00,
                                            }
                                           )
                                    :content-type :json})
