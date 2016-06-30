@@ -36,7 +36,7 @@
                              :paygatePassword "test"
                              :url "https://secure.paygate.co.za/payhost/process.trans"}}
 
- :mailer {:from "info@swarm.rebujito.com"
-          :api {:url "https://api.sendgrid.com/v3/mail/send/beta"
+ :mailer {:from "info@swarmloyalty.co.za"
+          :api {:url "https://api.sendgrid.com/v3/mail/send"
                 :token "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"}}
  }

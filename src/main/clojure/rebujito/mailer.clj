@@ -43,13 +43,13 @@
          (let [res @(http/post (-> config :api :url)
                               {:throw-exceptions false
                                :body-encoding "UTF-8"
-                               :headers {"Authorization" (format "Bearer %s" (-> config :api :token))}
+                               :headers {"Authorization" (format "Bearer %s" (-> config :api :token))
+                                         "Content-Type" "application/json"}
                                :body (json/generate-string
                                       {:personalizations [{:to (generate-to (:to data))}],
                                        :from {:email (:from data)},
                                        :subject (:subject data)
-                                       :content [{:type "text/plain", :value (:content data)}]})
-                               :content-type :json})]
+                                       :content [{:type "text/plain", :value (:content data)}]})})]
           (if (= 202 (:status res))
             true
             (error* 500 [500 (-> res :body bs/to-string )]))))))))
