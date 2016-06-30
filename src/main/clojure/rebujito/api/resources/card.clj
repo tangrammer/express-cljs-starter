@@ -76,7 +76,9 @@
                balance (get-points-for balances)]
     (when card-data
       (merge
-        (select-keys mocks/card [:imageUrls])
+       (if (= "Green" (util/get-tier-name balances))
+         mocks/greenImageUrls
+         mocks/goldImageUrls)
         (blank-card-data)
         card-data
         {:balance balance}))))

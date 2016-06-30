@@ -4,7 +4,7 @@
    [rebujito.protocols :as p]
    [rebujito.scopes :as scopes]
    [rebujito.api.time :as t]
-   [rebujito.api.util :refer :all]
+   [rebujito.api.util :as util]
    [rebujito.util :refer (dtry error*)]
    [rebujito.api.resources :refer (domain-exception)]
    [cheshire.core :as json]
@@ -62,8 +62,10 @@
   :expirationDate (or (:validUntilDate mimi-coupon) "2099-12-31T00:00:00.0000000Z")
   })
 
+
+
 (defn translate-mimi-rewards [rewards-response]
-  (let [tier-name (or (-> rewards-response :tier :name) "Green")
+  (let [tier-name (util/get-tier-name rewards-response)
         tier-date (or (-> rewards-response :tier :date ) (t/today))
         points-balance (or (-> rewards-response :tier :balance) 0)
         coupons (or (-> rewards-response :coupons) [])]
@@ -102,7 +104,7 @@
                                   (s/optional-key :select) String
                                   (s/optional-key :ignore) String}}
              :response (fn [ctx]
-                         (-> (d/let-flow [user-id (:user-id (authenticated-data ctx))
+                         (-> (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
                                           user-data (p/find user-store user-id)
                                           card-number (-> user-data :cards first :cardNumber)
                                           ; can test with:
@@ -111,9 +113,9 @@
                                           balances (when card-number
                                                      (p/balances mimi card-number))
                                           rewards (rewards-response balances card-number) #_rebujito.store.mocks/me-rewards]
-                                         (>200 ctx rewards #_rebujito.store.mocks/me-rewards))
+                                         (util/>200 ctx rewards #_rebujito.store.mocks/me-rewards))
                              (d/catch clojure.lang.ExceptionInfo
                                  (fn [exception-info]
                                    (domain-exception ctx (ex-data exception-info))))))}}}
 
-     (merge (common-resource :profile))))
+     (merge (util/common-resource :profile))))
