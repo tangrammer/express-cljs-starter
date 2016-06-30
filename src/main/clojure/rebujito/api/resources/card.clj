@@ -134,10 +134,10 @@
                                          card (new-physical-card {:cardNumber card-number})
                                          card-id (p/insert-card! user-store user-id card)]
                                         increment-balance ;; force evaluation of this value
-                              (util/>200 ctx (merge
-                                              (select-keys mocks/card [:imageUrls])
-                                              (blank-card-data)
-                                              (assoc card :cardId card-id))))
+                                        (util/>200 ctx (merge
+                                                        mocks/greenImageUrls
+                                                        (blank-card-data)
+                                                        (assoc card :cardId card-id))))
 
                             (d/catch clojure.lang.ExceptionInfo
                                 (fn [exception-info]
@@ -161,8 +161,8 @@
                                              card (new-digital-card {:cardNumber card-number})
                                              card-id (p/insert-card! user-store user-id card)]
                                              increment-balance ;; force evaluation of this value
-                                            (util/>200 ctx (merge
-                                                            (select-keys mocks/card [:imageUrls])
+                                             (util/>200 ctx (merge
+                                                             mocks/greenImageUrls
                                                             (blank-card-data)
                                                             (assoc card :cardId card-id))))))}}}
 
