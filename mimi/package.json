@@ -6,7 +6,7 @@
     "body-parser": "1.15.1",
     "express": "4.13.4",
     "express-jwt": "3.4.0",
-    "micros": "git+ssh://git@github.com:naartjie/micros-api.git#731d7b7",
+    "micros": "git+ssh://git@github.com:naartjie/micros-api.git#d0be2e6",
     "moment": "2.13.0",
     "morgan": "1.7.0"
   },

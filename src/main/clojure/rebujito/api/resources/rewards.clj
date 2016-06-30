@@ -11,7 +11,8 @@
    [rebujito.store.mocks :as m]
    [manifold.deferred :as d]
    [schema.core :as s]
-   [yada.resource :refer [resource]]))
+   [yada.resource :refer [resource]])
+  (:import [java.time Instant]))
 
 (def reward-every-x-points 100)
 (def gold-threshold 300)
@@ -44,25 +45,19 @@
 
 (defn mimi-to-rebujito-coupons-tr [mimi-coupon]
  {:couponCode "EFD" ;; earned free drink, or "BFB" birthday, "T3W" tier-3 welcome "WB3" welcome back to tier-3
-  :name (:description mimi-coupon)
+  :name (:name mimi-coupon)
   :posCouponCode (:number mimi-coupon)
   :allowedRedemptionCount 1
   :voucherType "MSRPromotionalCoupon"
-  :status "Available"
+  :status (if (:redeemed mimi-coupon) "Redeemed" "Available")
   :redemptionCount 0
   :deliveryMethod "Email"
   :source "Unknown"
 
-  ;; TODO ask Brandon about these dates
-  ; :issueDate nil
-  ; :expirationDate nil
-  ; :startDate nil
-  ; :lastRedemptionDate nil
-
-  :issueDate "2015-11-11T00:00:00.0000000Z"
-  :expirationDate "2020-11-09T08:54:55.0000000Z"
-  :startDate "2015-11-11T00:00:00.0000000Z"
   :lastRedemptionDate "1904-01-01T00:00:00.0000000Z"
+  :startDate (or (:validFromDate mimi-coupon) "")
+  :issueDate (-> (Instant/now) .toString) ;; TODO ???
+  :expirationDate (or (:validUntilDate mimi-coupon) "2099-12-31T00:00:00.0000000Z") ;; TODO ???
   })
 
 (defn translate-mimi-rewards [rewards-response]
@@ -72,7 +67,7 @@
         coupons (-> rewards-response :coupons (or []))]
 
     {:currentLevel tier-name
-     :dateRetrieved (.toString (java.time.Instant/now))
+     :dateRetrieved (-> (Instant/now) .toString)
      :pointsTotal points-balance
      :pointsNeededForNextLevel (-> rewards-response :tier :pointsUntilNextTier (or 300))
      :nextLevel (if (= tier-name "Green") "Gold" nil)
@@ -81,6 +76,8 @@
      :pointsNeededForReevaluation (points-needed-for-reevaluation points-balance)
      :pointsEarnedTowardNextFreeReward (points-earned-toward-next-free-reward points-balance)
 
+     ;; TODO we might need to only output redeemed coupons
+    ;  :coupons (map mimi-to-rebujito-coupons-tr (filter #(not (:redeemed %)) coupons))
      :coupons (map mimi-to-rebujito-coupons-tr coupons)
 
      ;; TODO the unknowns
