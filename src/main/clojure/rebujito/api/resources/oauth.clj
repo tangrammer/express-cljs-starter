@@ -68,7 +68,7 @@
                    (get-in ctx [:parameters :body :client_secret]))]
               (log/debug api-client c)
               (>201 ctx (-> (p/grant authorizer {} #{scopes/application})
-                            (sec/jwt))))
+                            (sec/jwt authenticator))))
 )
 
 (defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
@@ -89,7 +89,7 @@
                                  first)]
 
                 (>201 ctx (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})
-                              (sec/jwt)))
+                              (sec/jwt authenticator)))
 
                 (>400 ctx {:error "invalid_grant"
                            :description "Resource owner credentials could not be validated."})
@@ -115,7 +115,7 @@
     (if (sec/valid? protected-data)
       (let [user (p/find user-store (:user-id protected-data))]
         (>201 ctx  (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})
-                       (sec/jwt))))
+                       (sec/jwt authenticator))))
       (>400 ctx {:error 400
                  :message "token expired!"}))))
 

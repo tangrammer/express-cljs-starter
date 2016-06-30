@@ -120,11 +120,31 @@
 
   (testing ::login/change-username
     (let [port (-> *system*  :webserver :port)
-          address-id (atom "")]
+          send-token (atom "")]
+
+      (let [path (get-path ::login/reset-username)
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string
+                                             (assoc (g/generate (:post (:reset-username login/schema)))
+                                                    :password  (:password *user-account-data*)))
+                                      :content-type :json})
+;            body (parse-body http-response)
+            ]
+
+        (is (= 200 (-> http-response :status)))
+        (is (= "" (-> http-response :body bs/to-string)))
+
+        (is (-> *system* :mailer :mails deref first :content))
+
+        (reset! send-token (-> *system* :mailer :mails deref first :content))
+        )
+
 
       (let [path (get-path ::login/change-username)
             new-username (generate-mail "juanantonioruz+%s@gmail.com")
-            http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+            http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path @send-token)
                                      {:throw-exceptions false
                                       :body-encoding "UTF-8"
                                       :body (json/generate-string
@@ -133,6 +153,7 @@
                                       :content-type :json})
 ;            body (parse-body http-response)
             ]
+
         (is (= 200 (-> http-response :status)))
         (is (= "" (-> http-response :body bs/to-string)))
         (let [user-by-email (first (p/find (-> *system* :user-store) {:emailAddress new-username}))]

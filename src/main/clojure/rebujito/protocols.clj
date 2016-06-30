@@ -22,7 +22,7 @@
 
 (defprotocol Authorizer
   (grant [this data scopes])
-  (invalidate [this user-id])
+  (invalidate! [this user-id])
   (protected-data [this refresh-token])
   )
 
