@@ -5,7 +5,7 @@
    [rebujito.protocols :as p]
    [schema-generators.generators :as g]
    [rebujito.api.util :as util]
-   [rebujito.api-test :refer (print-body)]
+   [rebujito.api-test :refer (print-body parse-body)]
    [rebujito.api.resources.account :as account]
    [rebujito.api.resources.card :as card]
    [rebujito.base-test :refer (system-fixture *app-access-token* *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]

@@ -127,8 +127,11 @@
                                          user-id (:user-id auth-data)
                                          mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                   :customerId (id>mimi-id user-id)})
+                                         increment-balance (when mimi-res
+                                                             (p/increment-balance! mimi card-number 50 :loyalty))
                                          card (new-physical-card {:cardNumber card-number})
                                          card-id (p/insert-card! user-store user-id card)]
+                                        increment-balance ;; force evaluation of this value
                               (util/>200 ctx (merge
                                               (select-keys mocks/card [:imageUrls])
                                               (blank-card-data)
@@ -151,8 +154,11 @@
                                              user-id (:user-id auth-data)
                                              mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                       :customerId  (id>mimi-id user-id)})
+                                             increment-balance (when mimi-res
+                                                                 (p/increment-balance! mimi card-number 50 :loyalty))
                                              card (new-digital-card {:cardNumber card-number})
                                              card-id (p/insert-card! user-store user-id card)]
+                                             increment-balance ;; force evaluation of this value
                                             (util/>200 ctx (merge
                                                             (select-keys mocks/card [:imageUrls])
                                                             (blank-card-data)

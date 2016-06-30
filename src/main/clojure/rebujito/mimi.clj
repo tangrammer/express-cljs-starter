@@ -166,7 +166,7 @@
         (ddtry d* (do
                     (log/info "loading" card-number "with" amount (format "%s/account/%s/" base-url card-number card-type-code))
                     (let [{:keys [status body]}
-                          (http-c/post (format "%s/account/%s/" base-url card-number card-type-code)
+                          (http-c/post (format "%s/account/%s/%s" base-url card-number card-type-code)
                                        {:insecure? true
                                         :headers {"Authorization" (format "Bearer %s" token)}
                                         :form-params {:amount amount}
