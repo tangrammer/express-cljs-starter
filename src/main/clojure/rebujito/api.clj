@@ -90,6 +90,10 @@
                                (assoc :id ::login/logout
                                       :oauth {:get scopes/user}))]
 
+               ["/logout/"  (-> (login/logout authorizer)
+                                (assoc :id ::login/logout
+                                       :oauth {:get scopes/user}))]
+
                ["/login/validate-password" (-> (login/validate-password user-store crypto authenticator)
                                                (assoc :id ::login/validate-password
                                                       :oauth {:post scopes/user}))]
