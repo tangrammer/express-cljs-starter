@@ -41,7 +41,7 @@
            app-config
            counter-store]
 
-  [""  [[["/checkReload/" :card-number]  (-> (card-reload/check user-store mimi payment-gateway app-config mailer)
+  [""  [[["/check-reload/" :card-number]  (-> (card-reload/check user-store mimi payment-gateway app-config mailer)
                                                 (assoc :id ::card-reload/check))]
         ["/health"  (-> {:id :health
                          :methods
