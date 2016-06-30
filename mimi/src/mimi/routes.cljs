@@ -110,7 +110,7 @@
   (fn [req res]
     (let [card-number (-> req .-params .-cardNumber)
           p0 (get-balances card-number)
-          p1 (.listCoupons micros card-number)
+          p1 (.getCoupons micros card-number)
           p2 (.all promise #js [p0 p1])]
       (log/info "getting balances and coupons for" card-number)
       (.then p2
@@ -170,7 +170,7 @@
     [req res]
     "get coupons"
     (let [card-number (-> req .-params .-cardNumber)
-          p0 (.listCoupons micros card-number)]
+          p0 (.getCoupons micros card-number)]
       (doto p0
         (.then
           (fn [result]
