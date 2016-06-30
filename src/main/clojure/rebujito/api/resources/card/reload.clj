@@ -84,9 +84,9 @@
                                                                         send-mail (when (and payment-data mimi-card-data)
                                                                                     (p/send mailer {:to (:emailAddress user)
                                                                                                     :subject "Auto-Reload: your card has been topped up."
-                                                                                                    :content (format  "Hello %s ! \n Your Starbucks card %s has been topped up with R %s.\n Your current balance is %s . Enjoy it!"
+                                                                                                    :content (format  "Hello %s!\nYour Starbucks card %s has been topped up with R %s.\nYour current balance is R %s. Enjoy it!"
                                                                                                                       (:firstName user)
-                                                                                                                      (:cardId card)
+                                                                                                                      (:cardNumber card)
                                                                                                                       (:amount autoreload-profile)
                                                                                                                       (:balance mimi-card-data))}))]
 
