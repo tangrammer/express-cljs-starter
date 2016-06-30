@@ -102,7 +102,7 @@
                                   (s/optional-key :select) String
                                   (s/optional-key :ignore) String}}
              :response (fn [ctx]
-                         (-> (d/let-flow [user-id (:user-id (authenticated-user ctx))
+                         (-> (d/let-flow [user-id (:user-id (authenticated-data ctx))
                                           user-data (p/find user-store user-id)
                                           card-number (-> user-data :cards first :cardNumber)
                                           ; can test with:

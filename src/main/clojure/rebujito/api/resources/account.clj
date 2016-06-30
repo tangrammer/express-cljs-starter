@@ -116,7 +116,7 @@
                                    (s/optional-key :select) String
                                    (s/optional-key :ignore) String}}
               :response (fn [ctx]
-                          (let [auth-user (util/authenticated-user ctx)]
-                            (util/>201 ctx (util/generate-user-data auth-user (:sub-market app-config)))))}}}
+                          (let [auth-data (util/authenticated-data ctx)]
+                            (util/>201 ctx (util/generate-user-data auth-data (:sub-market app-config)))))}}}
 
       (merge (util/common-resource :account))))

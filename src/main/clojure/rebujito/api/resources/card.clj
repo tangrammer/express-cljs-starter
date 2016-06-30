@@ -90,7 +90,7 @@
            :response (fn [ctx]
                        (dcatch
                         ctx
-                        (d/let-flow [user-id (:user-id (util/authenticated-user ctx))
+                        (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
                                      card-data (get-card-data user-store user-id)
                                      balances (when (:cardNumber card-data)
                                                 (p/balances mimi (:cardNumber card-data)))
@@ -107,7 +107,7 @@
            :response (fn [ctx]
                        (dcatch ctx
                                (do
-                                 (d/let-flow [user-id (:user-id (util/authenticated-user ctx))
+                                 (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
                                               card-data (get-card-data user-store user-id)
                                               balances (when (:cardNumber card-data)
                                                         (p/balances mimi (:cardNumber card-data)))
@@ -123,8 +123,8 @@
                          :body (-> schema :register-physical :post)}
             :response (fn [ctx]
                         (-> (d/let-flow [card-number (-> ctx :parameters :body :cardNumber)
-                                         auth-user (util/authenticated-user ctx)
-                                         user-id (:user-id auth-user)
+                                         auth-data (util/authenticated-data ctx)
+                                         user-id (:user-id auth-data)
                                          mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                   :customerId (id>mimi-id user-id)})
                                          card (new-physical-card {:cardNumber card-number})
@@ -147,8 +147,8 @@
             :response (fn [ctx]
                         (dcatch ctx
                                 (d/let-flow [card-number (str (p/increment! counter-store :digital-card-number))
-                                             auth-user (util/authenticated-user ctx)
-                                             user-id (:user-id auth-user)
+                                             auth-data (util/authenticated-data ctx)
+                                             user-id (:user-id auth-data)
                                              mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                       :customerId  (id>mimi-id user-id)})
                                              card (new-digital-card {:cardNumber card-number})
@@ -209,7 +209,7 @@
                                 (s/optional-key :offset) String
                                 }}
            :response (fn [ctx]
-                      (-> (d/let-flow [user-id (:user-id (util/authenticated-user ctx))
+                      (-> (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
                                        card-data (:cards (p/find user-store user-id))
                                        card-number (-> card-data first :cardNumber)
                                        ; some numbers to test history
@@ -257,12 +257,12 @@
 
                              ;; TODO: 400	121033	Invalid operation for card market.
                              ;;       400	121034	Card resource not found to fulfill action.
-                             (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                              payment-method-data (p/get-payment-method user-store (:user-id auth-user) (-> ctx :parameters :body :paymentMethodId))
+                             (-> (d/let-flow [auth-data (util/authenticated-data ctx)
+                                              payment-method-data (p/get-payment-method user-store (:user-id auth-data) (-> ctx :parameters :body :paymentMethodId))
                                               body (-> ctx :parameters :body)
                                               body (if (= (-> body :status ) "enabled") (assoc body :status "active") body)
                                               auto-reload-data (when payment-method-data
-                                                                 (p/add-autoreload-profile-card user-store (:user-id auth-user)
+                                                                 (p/add-autoreload-profile-card user-store (:user-id auth-data)
                                                                                                 (-> (select-keys body (keys AutoReloadMongo))
                                                                                                     (assoc  :cardId (-> ctx :parameters :path :card-id)))))]
 
@@ -291,8 +291,8 @@
        {:put {:parameters {:query {:access_token String}
                            :path {:card-id String}}
                :response (fn [ctx]
-                           (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                            disable-reload-data (p/disable-auto-reload user-store (:user-id auth-user) (-> ctx :parameters :path :card-id) )]
+                           (-> (d/let-flow [auth-data (util/authenticated-data ctx)
+                                            disable-reload-data (p/disable-auto-reload user-store (:user-id auth-data) (-> ctx :parameters :path :card-id) )]
 
                                            (util/>200 ctx nil))
                                (d/catch clojure.lang.ExceptionInfo
@@ -306,7 +306,7 @@
        {:get {:parameters {:query {:access_token String}
                            :path {:card-id String}}
               :response (fn [ctx]
-                          (d/let-flow [user-id (:user-id (util/authenticated-user ctx))
+                          (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
                                        card-data (get-card-data user-store user-id)
                                        balances (when (:cardNumber card-data)
                                                    (p/balances mimi (:cardNumber card-data)))

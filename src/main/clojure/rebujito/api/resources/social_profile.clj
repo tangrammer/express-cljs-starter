@@ -16,7 +16,7 @@
     {:put {:parameters {:query {:access_token String}
                         :body (-> schema :put)}
            :response (fn [ctx]
-                        (-> (d/let-flow [user-id (:user-id (authenticated-user ctx))
+                        (-> (d/let-flow [user-id (:user-id (authenticated-data ctx))
                                          image-url (-> ctx :parameters :body :accountImageUrl)
                                          _ (p/update-by-id! user-store user-id {$set {"socialProfile.account.accountImageUrl" image-url}})]
                               (>200 ctx nil))))}}}

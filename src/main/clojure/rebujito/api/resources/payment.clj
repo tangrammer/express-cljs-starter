@@ -74,8 +74,8 @@
     {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}
                         :path {:payment-method-id String}}
            :response (fn [ctx]
-                       (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                        payment-method (p/get-payment-method user-store (:user-id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))]
+                       (-> (d/let-flow [auth-data (util/authenticated-data ctx)
+                                        payment-method (p/get-payment-method user-store (:user-id auth-data)  (get-in ctx [:parameters :path :payment-method-id]))]
                                        (util/>200 ctx (detail-adapt-mongo-to-spec payment-method)))
                            (d/catch clojure.lang.ExceptionInfo
                                (fn [exception-info]
@@ -85,11 +85,11 @@
                            :path {:payment-method-id String}}
               :response (fn [ctx]
                           ;; TODO Review this logic
-                          (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                           payment-method (p/get-payment-method user-store (:user-id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
+                          (-> (d/let-flow [auth-data (util/authenticated-data ctx)
+                                           payment-method (p/get-payment-method user-store (:user-id auth-data)  (get-in ctx [:parameters :path :payment-method-id]))
                                            res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})
                                            res-mongo (when res-delete
-                                                       (p/remove-payment-method user-store (:user-id auth-user) payment-method))]
+                                                       (p/remove-payment-method user-store (:user-id auth-data) payment-method))]
 
 
                                        (util/>200 ctx ["OK" "Success" res-mongo]))
@@ -102,14 +102,14 @@
                         :body (-> schema :method-detail :put)}
            :response (fn [ctx]
                        (let [request (get-in ctx [:parameters :body])]
-                         (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                          payment-method (p/get-payment-method user-store (:user-id auth-user)  (get-in ctx [:parameters :path :payment-method-id]))
+                         (-> (d/let-flow [auth-data (util/authenticated-data ctx)
+                                          payment-method (p/get-payment-method user-store (:user-id auth-data)  (get-in ctx [:parameters :path :payment-method-id]))
                                           card-token-res (p/create-card-token payment-gateway
                                                                                            {:cardNumber (-> request :accountNumber)
                                                                                             :expirationMonth (-> request :expirationMonth)
                                                                                             :expirationYear (-> request :expirationYear)
                                                                                             :cvn (-> request :cvn)})
-                                          updated-payment-method (p/update-payment-method user-store (:user-id auth-user)
+                                          updated-payment-method (p/update-payment-method user-store (:user-id auth-data)
                                                                                               {:paymentMethodId (get-in ctx [:parameters :path :payment-method-id])
                                                                                                :nickName (-> request :nickName)
                                                                                                :paymentType (-> request :paymentType)
@@ -163,8 +163,8 @@
   (-> {:methods
        {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}}
               :response (fn [ctx]
-                          (-> (d/let-flow [auth-user (util/authenticated-user ctx)
-                                           payment-methods (->> (p/get-payment-methods user-store (:user-id auth-user))
+                          (-> (d/let-flow [auth-data (util/authenticated-data ctx)
+                                           payment-methods (->> (p/get-payment-methods user-store (:user-id auth-data))
                                                                 (map adapt-mongo-to-spec))]
                                           (log/info  "paymentMethods GET" payment-methods)
                                           (util/>200 ctx payment-methods))
@@ -176,7 +176,7 @@
                             :body (-> schema :methods :post)}
                :response (fn [ctx]
                            (dcatch ctx (d/let-flow [request (get-in ctx [:parameters :body])
-                                            auth-user (util/authenticated-user ctx)
+                                            auth-data (util/authenticated-data ctx)
                                             card-token (p/create-card-token payment-gateway
                                                                             {:cardNumber (-> request :accountNumber)
                                                                              :expirationMonth (-> request :expirationMonth)
@@ -186,7 +186,7 @@
 
                                             new-payment-method (p/add-new-payment-method
                                                                 user-store
-                                                                (:user-id auth-user)
+                                                                (:user-id auth-data)
                                                                 (merge {
                                                                         :accountNumberLastFour (take-last* (-> request :accountNumber) 4)
 

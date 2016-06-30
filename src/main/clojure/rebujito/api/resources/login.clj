@@ -25,14 +25,15 @@
         valid-pw? (p/check crypto pw (:password user))]
     valid-pw?))
 
-(defn change-username [authorizer authenticator user-store ]
+(defn change-username [authorizer authenticator user-store token-store]
+  ;; todo validate that token still is valid
   (-> {:methods
        {:put {:parameters {:query {:access_token String}
                             :body (-> schema :change-username :put)}
               :response (fn [ctx]
                            (dcatch ctx
-                                   (d/let-flow [user (util/authenticated-user ctx)
-                                                user-id (:user-id user)
+                                   (d/let-flow [authenticated-data (util/authenticated-data ctx)
+                                                user-id (:user-id authenticated-data)
                                                 new-username (get-in ctx [:parameters :body :new-username])
                                                 current (p/find user-store user-id)
                                                 updated? (p/update-by-id! user-store user-id (merge current {:emailAddress new-username}))]
@@ -55,14 +56,14 @@
                                    (if (valid-pw? authenticator user-store crypto
                                                   (get-in ctx [:parameters :query :access_token])
                                                   (get-in ctx [:parameters :body :password]))
-                                     (d/let-flow [user (util/authenticated-user ctx)
-                                                  data (assoc (select-keys [:emailAddress] user)
-                                                              :_id (:user-id user)
+                                     (d/let-flow [authenticated-data (util/authenticated-data ctx)
+                                                  data (assoc (select-keys [:emailAddress] authenticated-data)
+                                                              :_id (:user-id authenticated-data)
                                                               )
                                                   access-token  (p/grant authorizer data #{scopes/reset-username})
 
                                                   send (p/send mailer {:subject (format "sending OTP to reset email" )
-                                                                       :to (:emailAddress user)
+                                                                       :to (:emailAddress authenticated-data)
                                                                        :content access-token})]
                                                  (if send
                                                    (util/>200 ctx nil)

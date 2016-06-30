@@ -30,9 +30,9 @@
                           (let [try-id ::profile
                                 try-type :api]
                             (dcatch ctx
-                                    (d/let-flow [auth-user (util/authenticated-user ctx)
-                                                 user-id (:user-id auth-user)
-                                                 user-data (util/generate-user-data auth-user (:sub-market app-config))
+                                    (d/let-flow [auth-data (util/authenticated-data ctx)
+                                                 user-id (:user-id auth-data)
+                                                 user-data (util/generate-user-data auth-data (:sub-market app-config))
                                                  real-user-data (p/find user-store user-id)
                                                  card-number  (let [try-context '[user-data real-user-data]]
                                                                 (or (-> real-user-data :cards first :cardNumber)
@@ -42,7 +42,7 @@
                                                             (p/balances mimi card-number))
                                                  rewards (rewards/rewards-response balances card-number)
                                                  card (card/>get-card user-store user-id balances)
-                                                 payment-methods (->> (p/get-payment-methods user-store (:user-id auth-user))
+                                                 payment-methods (->> (p/get-payment-methods user-store (:user-id auth-data))
                                                                       (map payment/adapt-mongo-to-spec))]
 
                                                 (util/>200 ctx (-> response-defaults

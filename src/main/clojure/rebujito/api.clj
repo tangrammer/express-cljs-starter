@@ -71,7 +71,7 @@
                                       (assoc :id ::login/change-password
                                              :oauth {:put scopes/reset-password}))]
 
-        ["/login/change-username" (-> (login/change-username authorizer authenticator user-store)
+        ["/login/change-username" (-> (login/change-username authorizer authenticator user-store token-store)
                                       (assoc :id ::login/change-username
                                              :oauth {:put scopes/reset-username}))]
         ["/devices/register" (-> (devices/register store)
