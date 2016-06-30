@@ -67,14 +67,15 @@
 
           token-stored (do
                          (when (:user-id data)
+                           ;; TODO: filter by scopes!! to not invalidate tokens of diferent types
                            (p/update! token-store (select-keys data [:user-id]) {:valid false}))
                          (p/get-and-insert! token-store data))
 
           access-token (p/generate-token authenticator token-stored 60)]
 ;      (log/info "MONGO_TOKEN >" mongo-token)
 
-      [access-token (:refresh-token token-stored)]))
-  (invalidate [this token]
+      access-token ))
+  (invalidate! [this token]
     (let [user (p/read-token authenticator token)
           user-id (:_id (p/read-token authenticator token))
           try-type :token-store

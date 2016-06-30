@@ -5,3 +5,5 @@
 (def application ::application)
 
 (def reset-password ::reset-password)
+
+(def reset-username ::reset-username)

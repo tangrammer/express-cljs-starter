@@ -70,6 +70,10 @@
         ["/login/change-password" (-> (login/change-password user-store crypto)
                                       (assoc :id ::login/change-password
                                              :oauth {:put scopes/reset-password}))]
+
+        ["/login/change-username" (-> (login/change-username authorizer authenticator user-store)
+                                      (assoc :id ::login/change-username
+                                             :oauth {:put scopes/reset-username}))]
         ["/devices/register" (-> (devices/register store)
                                  (assoc :id ::devices/register))]
         ["/me"[
@@ -97,9 +101,10 @@
                ["/login/validate-password" (-> (login/validate-password user-store crypto authenticator)
                                                (assoc :id ::login/validate-password
                                                       :oauth {:post scopes/user}))]
-               ["/login/change-username" (-> (login/change-username user-store crypto)
-                                             (assoc :id ::login/change-username
-                                                    :oauth {:put scopes/user}))]
+
+               ["/login/reset-username" (-> (login/reset-username authorizer authenticator user-store crypto mailer)
+                                             (assoc :id ::login/reset-username
+                                             :oauth {:post scopes/user}))]
                ["/profile"  (-> (profile/profile store mimi user-store app-config)
                                 (assoc :id ::profile/me
                                        :oauth {:get scopes/user}))]
