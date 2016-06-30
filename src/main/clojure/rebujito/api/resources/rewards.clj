@@ -44,7 +44,9 @@
     0))
 
 (defn mimi-to-rebujito-coupons-tr [mimi-coupon]
- {:couponCode "EFD" ;; earned free drink, or "BFB" birthday, "T3W" tier-3 welcome "WB3" welcome back to tier-3
+ {
+  ;; EFD earned free drink, BFB birthday, T3W tier-3 welcome, WB3 welcome back to tier-3
+  :couponCode (if (re-matches #"(?i).*birthday.*" (:name mimi-coupon)) "BFB" "EFD")
   :name (:name mimi-coupon)
   :posCouponCode (:number mimi-coupon)
   :allowedRedemptionCount 1
