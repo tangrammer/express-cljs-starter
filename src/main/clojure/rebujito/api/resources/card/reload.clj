@@ -68,8 +68,8 @@
                                                                                          (d/catch clojure.lang.ExceptionInfo
                                                                                              (fn [e]
                                                                                                (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
-                                                                                                               :subject "Error payment! "
-                                                                                                               :content "ups!!!!"})
+                                                                                                               :subject "Payment Error"
+                                                                                                               :content "There was a problem processing the payment for your Starbucks Auto-Reload."})
                                                                                                (manifold.deferred/error-deferred e))))
 
                                                                         mimi-card-data (when payment-data
@@ -77,17 +77,17 @@
                                                                                              (d/catch clojure.lang.ExceptionInfo
                                                                                                  (fn [e]
                                                                                                    (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
-                                                                                                                   :subject "Error mimi! "
-                                                                                                                   :content "ups!!!!"})
+                                                                                                                   :subject "Reload Error"
+                                                                                                                   :content "There was a problem reloading your Starbucks Stored Value Card."})
                                                                                                    (manifold.deferred/error-deferred e)))))
 
                                                                         send-mail (when (and payment-data mimi-card-data)
                                                                                     (p/send mailer {:to (:emailAddress user)
-                                                                                                    :subject "A new automatic payment has been done "
-                                                                                                    :content (format  "Hello %s ! \n A new payment with this ammount %s has been processed into your starbucks card: %s. \n Your current balance is %s . Enjoy it!"
+                                                                                                    :subject "Auto-Reload: your card has been topped up."
+                                                                                                    :content (format  "Hello %s ! \n Your Starbucks card %s has been topped up with R %s.\n Your current balance is %s . Enjoy it!"
                                                                                                                       (:firstName user)
-                                                                                                                      (:amount autoreload-profile)
                                                                                                                       (:cardId card)
+                                                                                                                      (:amount autoreload-profile)
                                                                                                                       (:balance mimi-card-data))}))]
 
                                                                        (util/>200 ctx {:user user
