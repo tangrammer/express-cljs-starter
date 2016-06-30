@@ -73,7 +73,7 @@
                                                                                                (manifold.deferred/error-deferred e))))
 
                                                                         mimi-card-data (when payment-data
-                                                                                         (-> (p/load-card mimi card-number (:amount autoreload-profile))
+                                                                                         (-> (p/increment-balance! mimi card-number (:amount autoreload-profile) :stored-value)
                                                                                              (d/catch clojure.lang.ExceptionInfo
                                                                                                  (fn [e]
                                                                                                    (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
@@ -141,7 +141,7 @@
                                                                  :routingNumber (-> payment-method-data :routingNumber)
                                                                  :transactionId "12345"}))
                                            _ (log/info ">>>> payment-data::::" payment-data)
-                                           mimi-card-data (p/load-card mimi card-number amount)
+                                           mimi-card-data (p/increment-balance! mimi card-number amount :stored-value)
                                            _ (log/info "mimi response" mimi-card-data)]
 
                                           (util/>200 ctx {:balance (:balance mimi-card-data)

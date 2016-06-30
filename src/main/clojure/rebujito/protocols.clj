@@ -11,7 +11,7 @@
 (defprotocol Mimi
   (create-account [this data])
   (register-physical-card [this data])
-  (load-card [this card-number amount])
+  (increment-balance! [this card-number amount type])
   (balances [this data])
   (get-history [this card-number])
   )

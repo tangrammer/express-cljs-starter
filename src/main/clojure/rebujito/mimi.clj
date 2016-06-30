@@ -93,6 +93,14 @@
    })
 
 
+(defn- get-code [type]
+  (condp = type
+    :stored-value "SGC001"
+    :loyalty "MSR001"
+    (throw (ex-info ("MIMI: There's no code for this type %s" type) {}))
+    )
+  )
+
 
 (defrecord ProdMimi [base-url token]
   component/Lifecycle
@@ -148,16 +156,17 @@
                       (conj :prod-mimi))))))
       d*))
 
-  (load-card [this card-number amount]
+  (increment-balance! [this card-number amount type]
     (let [d* (d/deferred)
+          card-type-code (get-code type)
           try-id ::load-card
           try-type :mimi
-          try-context '[card-number amount]]
+          try-context '[card-number amount card-type-code type]]
       (d/future
         (ddtry d* (do
-                    (log/info "loading" card-number "with" amount (format "%s/account/%s/SGC001" base-url card-number))
+                    (log/info "loading" card-number "with" amount (format "%s/account/%s/" base-url card-number card-type-code))
                     (let [{:keys [status body]}
-                          (http-c/post (format "%s/account/%s/SGC001" base-url card-number)
+                          (http-c/post (format "%s/account/%s/" base-url card-number card-type-code)
                                        {:insecure? true
                                         :headers {"Authorization" (format "Bearer %s" token)}
                                         :form-params {:amount amount}
@@ -244,10 +253,9 @@
         (d/success! d* (-> [:success]
                            (conj :prod-mimi))))
       d*))
-  (load-card [this card-number amount]
+  (increment-balance! [this card-number amount type]
     (let [d* (d/deferred)]
-      (if-let [mimi-card-data (assoc mocks/mimi-card :target-environment :dev) #_(p/load-card mimi {:cardId (-> card-data :cardNumber)
-                                      :amount (-> payment-data :amount)})]
+      (if-let [mimi-card-data (assoc mocks/mimi-card :target-environment :dev) #_(p/increment-balance! mimi {:cardId (-> card-data :cardNumber) :amount (-> payment-data :amount)} :stored-value)]
         (d/success! d* mimi-card-data)
         (d/error! d* (ex-info (str "API MIMI ERROR")
                               {:type :mimi
