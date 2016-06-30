@@ -1,6 +1,7 @@
 (ns rebujito.api.util
   (:require [clj-bugsnag.core :as bugsnag]
             [rebujito.config :as config]
+
             [manifold.deferred :as d]
             [rebujito.schemas :refer (UserProfileData)]
             [rebujito.protocols :as p]
@@ -90,7 +91,6 @@
 
 
 
-
 ;; TODO: returns this kind of result to match starbucks doc
 ;; (>403 ctx ["Unauthorized" "access-token doens't have grants for this resource"])
 ;; (>404 ctx ["Not Found" "Account Profile with given userId was not found."])
@@ -115,7 +115,7 @@
     ))
 
 
-(defn access-control* [authenticator authorizer authorization]
+(defn access-control* [authenticator authorizer authorization persistent? token-store]
   ;; authorization is something like
   ;;  {:get    :admin
   ;;   :post   :admin
@@ -124,7 +124,13 @@
 
   {:access-control (merge {:scheme :jwt
                            :verify (fn [token]
-                                     (p/read-token authenticator token))}
+                                     (let [data (p/read-token authenticator token)]
+                                       (if persistent?
+                                         (try
+                                           (when (:valid (p/find token-store (:_id data)))
+                                             data)
+                                           (catch Exception e nil))
+                                         data)))}
                           {:authorization {:scheme :rebujito
                                            :methods  authorization}})})
 

@@ -1,6 +1,6 @@
 (ns rebujito.api-test
   (:require
-
+   [plumbing.core :refer (?>)]
    [aleph.http :as http]
    [bidi.bidi :as bidi]
    [byte-streams :as bs]
@@ -48,8 +48,11 @@
   c)
 
 
-(defn parse-body [c]
-  (-> c :body bs/to-string (json/parse-string true)))
+(defn parse-body
+  ([c]
+   (parse-body c true))
+  ([c to-json?]
+   (-> c :body bs/to-string (?> to-json?  (json/parse-string true)))))
 
 (defn oauth-login-data []
   (let [{:keys [key secret]} (api-config)]

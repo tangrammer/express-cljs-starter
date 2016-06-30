@@ -69,11 +69,13 @@
                                              :oauth {:post scopes/application}))]
         ["/login/change-password" (-> (login/change-password user-store crypto)
                                       (assoc :id ::login/change-password
-                                             :oauth {:put scopes/reset-password}))]
+                                             :oauth {:put scopes/reset-password}
+                                             :check-valid-token-store true))]
 
         ["/login/change-username" (-> (login/change-username authorizer authenticator user-store token-store)
                                       (assoc :id ::login/change-username
-                                             :oauth {:put scopes/reset-username}))]
+                                             :oauth {:put scopes/reset-username}
+                                             :check-valid-token-store true))]
         ["/devices/register" (-> (devices/register store)
                                  (assoc :id ::devices/register))]
         ["/me"[
@@ -182,7 +184,7 @@
                ]]]]
   )
 
-(defn dynamic-resource [d authenticator authorizer]
+(defn dynamic-resource [d authenticator authorizer token-store]
   (clojure.walk/postwalk
    #(if (:swagger/tags %)
       (do  (log/debug ">> extending resource" (:swagger/tags %))
@@ -190,7 +192,7 @@
                            data (-> data
                                     (?> (:oauth data)
                                         (->
-                                         (merge (util/access-control* authenticator authorizer (:oauth data)))
+                                         (merge (util/access-control* authenticator authorizer (:oauth data) (:check-valid-token-store data)  token-store))
                                          (dissoc :oauth)))
                                     (?> (nil? (:consumes data))
                                         (assoc  :consumes [{:media-type #{"application/json"} :charset "UTF-8"}]))
@@ -200,6 +202,7 @@
                                         (update-in [:methods :put :parameters :body] merge util/optional-risk))
                                     (?> (-> data :methods :delete :parameters :body)
                                         (update-in [:methods :delete :parameters :body] merge util/optional-risk))
+                                    (dissoc :check-valid-token-store)
 
                                     )]
                        data)))
@@ -208,7 +211,7 @@
 (s/defrecord ApiComponent [app-config store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (dynamic-resource (api store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store) authenticator authorizer)))
+    (assoc component :routes (dynamic-resource (api store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store) authenticator authorizer token-store)))
   (stop [component]
         component))
 
