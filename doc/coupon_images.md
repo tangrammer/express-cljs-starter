@@ -19,10 +19,6 @@ Gold
           "imageType" : "ImageLarge"
         },
         {
-          "uri" : null,
-          "imageType" : "ImageStrip"
-        },
-        {
           "uri" : "https://globalassets.starbucks.com/images/mobilev3/card_goldt3_thumb_82.png",
           "imageType" : "iosThumb"
         },
@@ -37,14 +33,6 @@ Gold
         {
           "uri" : "https://globalassets.starbucks.com/images/mobilev3/card_goldt3_270@2x.png",
           "imageType" : "iosLargeHighRes"
-        },
-        {
-          "uri" : null,
-          "imageType" : "iosImageStripMedium"
-        },
-        {
-          "uri" : null,
-          "imageType" : "iosImageStripLarge"
         },
         {
           "uri" : "http://globalassets.starbucks.com/images/mobilev3/card_goldt3_androidFull_Mdpi.png",
