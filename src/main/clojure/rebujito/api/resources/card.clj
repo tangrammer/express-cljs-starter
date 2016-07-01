@@ -178,18 +178,23 @@
     "44921" "Head Office - Test Store"
     ""))
 
-(defn- mimi-to-rebujito-tx [mimi-tx]
+(defn- mimi-earn-to-rebujito-tx [mimi-tx]
   {:historyId (:id mimi-tx)
    :historyType "SvcTransactionWithPoints"
-   :cardId "a5ede6d4-a4ae-4ec3-bded-758c863a9874"
+   :cardId nil
    :isoDate (:date mimi-tx)
    :modifiedDate nil
    :currency "ZAR"
    :localCurrency "ZAR"
    :totalAmount (:amount mimi-tx)
    :localTotalAmount 0
-   :points []
-   :coupon nil
+   :points [{
+     :pointType "Default"
+     :promotionName "Default"
+     :pointsEarned (int (/ (-> mimi-tx :amount Math/abs) 5))
+     :localAmount 0.0,
+     :localCurrency 0.0,
+   }]
    :svcTransaction {
       :checkId (:check mimi-tx)
       :transactionType "Redemption"
@@ -206,8 +211,49 @@
       :newBalance (:balance mimi-tx)
       :description nil
       :tipInfo {}
-   }
-  })
+   }})
+
+(defn- mimi-reload-to-rebujito-tx [mimi-tx]
+  {:historyId (:id mimi-tx)
+   :historyType "SvcTransaction"
+   :cardId nil
+   :isoDate (:date mimi-tx)
+   :modifiedDate nil
+   :currency "ZAR"
+   :localCurrency "ZAR"
+   :totalAmount (:amount mimi-tx)
+   :localTotalAmount 0
+   :points nil
+   :coupon nil
+   :svcTransaction {
+     :checkId (:check mimi-tx)
+     :transactionType "Reload"
+     :isVoid false
+     :localizedStoreName (-> mimi-tx :location location-tr)
+     :storeId nil
+     :storeType "Starbucks.co.za"
+     :localDate nil
+     :currency "ZAR"
+     :localCurrency "ZAR"
+     :transactionAmount (:amount mimi-tx)
+     :localTransactionAmount (:amount mimi-tx)
+     :tax nil
+     :newBalance (:balance mimi-tx)
+     :description nil
+     :tipInfo {}
+   }})
+
+
+(defn- earn-predicate [mimi-tx]
+  (and
+    (= (:program mimi-tx) "39200")
+    (> (count (:items mimi-tx)) 0)))
+
+(defn- reload-predicate [mimi-tx]
+  (and
+    (= (:program mimi-tx) "39200")
+    (= (count (:items mimi-tx)) 0)
+    (> (:amount mimi-tx) 0)))
 
 (defn history [user-store mimi]
   (->
@@ -228,12 +274,16 @@
                                       ;  card-number "9623570900007"
                                       ;  card-number "9623570900010"
                                        history-data (p/get-history mimi card-number)
-                                       transactions (->> history-data :transactions reverse (take 50))]
-                             (util/>200 ctx {:paging {:total (count transactions)
-                                                      :returned (count transactions)
+                                       txs (->> history-data :transactions reverse)
+                                       txs (filter #(or (earn-predicate %) (reload-predicate %)) txs)
+                                       txs (map #(if (earn-predicate %) (mimi-earn-to-rebujito-tx %) (mimi-reload-to-rebujito-tx %)) txs)
+                                       txs (take 50 txs)]
+                             (util/>200 ctx {:paging {:total (count txs)
+                                                      :returned (count txs)
                                                       :offset 0
                                                       :limit 50}
-                                             :historyItems (map mimi-to-rebujito-tx transactions)})
+                                             :historyItems txs
+                                             })
                           )
                           (d/catch clojure.lang.ExceptionInfo
                               (fn [exception-info]
