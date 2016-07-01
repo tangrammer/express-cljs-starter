@@ -186,7 +186,7 @@
    :modifiedDate nil
    :currency "ZAR"
    :localCurrency "ZAR"
-   :totalAmount (:amount mimi-tx)
+   :totalAmount (-> mimi-tx :amount Math/abs)
    :localTotalAmount 0
    :points [{
      :pointType "Default"
