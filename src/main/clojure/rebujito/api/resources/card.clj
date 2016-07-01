@@ -124,7 +124,7 @@
     {:post {:parameters {:query {:access_token String}
                          :body (-> schema :register-physical :post)}
             :response (fn [ctx]
-                        (-> (d/let-flow [card-number (-> ctx :parameters :body :cardNumber)
+                        (dcatch  ctx (d/let-flow [card-number (-> ctx :parameters :body :cardNumber)
                                          auth-data (util/authenticated-data ctx)
                                          user-id (:user-id auth-data)
                                          mimi-res (p/register-physical-card mimi {:cardNumber card-number
@@ -137,11 +137,7 @@
                                         (util/>200 ctx (merge
                                                         mocks/greenImageUrls
                                                         (blank-card-data)
-                                                        (assoc card :cardId card-id))))
-
-                            (d/catch clojure.lang.ExceptionInfo
-                                (fn [exception-info]
-                                  (domain-exception ctx (ex-data  exception-info))))))}}}
+                                                        (assoc card :cardId card-id))))))}}}
 
    (merge (util/common-resource :me/cards))))
 
