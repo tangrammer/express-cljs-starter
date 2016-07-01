@@ -122,7 +122,7 @@
                            (let [card-id (-> ctx :parameters :path :card-id)
                                  amount (-> ctx :parameters :body :amount)]
                              (dcatch ctx
-                              (d/let-flow [profile-data (util/user-profile-data ctx user-store (:sub-market app-config))
+                                     (d/let-flow [profile-data (dtry (util/user-profile-data ctx user-store (:sub-market app-config)))
                                            user-id (:user-id (util/authenticated-data ctx))
                                            cards (:cards (p/find user-store user-id))
                                            card-data (first (filter #(= (:cardId %) card-id) cards))
