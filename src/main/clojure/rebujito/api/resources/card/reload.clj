@@ -67,7 +67,7 @@
                                                                                                   }))
                                                                                          (d/catch clojure.lang.ExceptionInfo
                                                                                              (fn [e]
-                                                                                               (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
+                                                                                               (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
                                                                                                                :subject "Payment Error"
                                                                                                                :content "There was a problem processing the payment for your Starbucks Auto-Reload."})
                                                                                                (manifold.deferred/error-deferred e))))
@@ -76,13 +76,13 @@
                                                                                          (-> (p/increment-balance! mimi card-number (:amount autoreload-profile) :stored-value)
                                                                                              (d/catch clojure.lang.ExceptionInfo
                                                                                                  (fn [e]
-                                                                                                   (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
+                                                                                                   (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
                                                                                                                    :subject "Reload Error"
                                                                                                                    :content "There was a problem reloading your Starbucks Stored Value Card."})
                                                                                                    (manifold.deferred/error-deferred e)))))
 
                                                                         send-mail (when (and payment-data mimi-card-data)
-                                                                                    (p/send mailer {:to (:emailAddress user)
+                                                                                    (p/send mailer {:to #_(:emailAddress user) "marcin@jekot.net"
                                                                                                     :subject "Auto-Reload: your card has been topped up."
                                                                                                     :content (format  "Hello %s!\nYour Starbucks card %s has been topped up with R %s.\nYour current balance is R %s. Enjoy it!"
                                                                                                                       (:firstName user)
