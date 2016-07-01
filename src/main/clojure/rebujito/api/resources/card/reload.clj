@@ -22,91 +22,97 @@
                              (s/optional-key :expirationMonth) Long
                              (s/optional-key :sessionId) String}}})
 
-(defn check [user-store mimi payment-gateway app-config mailer]
+(defn check [user-store mimi payment-gateway app-config mailer webhook-store]
   (->
    {:methods
     {:get {:parameters {:path {:card-number String}}
            :response (fn [ctx]
-                       (dcatch ctx
-                               (d/let-flow [card-number (-> ctx :parameters :path :card-number)
+                       (let [webhook-uuid (p/webhook-uuid webhook-store ::check)]
+                         (if (= "error" (:state (p/current webhook-store webhook-uuid)))
+                                 (util/>200 ctx nil)
+                                 (dcatch ctx
+                                         (d/let-flow [
+                                                      card-number (-> ctx :parameters :path :card-number)
 
-                                            {:keys [user card]} (p/get-user-and-card user-store card-number)
+                                                      {:keys [user card]} (p/get-user-and-card user-store card-number)
 
-                                            autoreload-profile (-> card :autoReloadProfile )
+                                                      autoreload-profile (-> card :autoReloadProfile )
 
-                                            enabled? (:status autoreload-profile)]
+                                                      enabled? (:status autoreload-profile)]
 
-                                           (if enabled?
-                                             (d/let-flow [balances (when (:cardNumber card)
-                                                                     (p/balances mimi (:cardNumber card)))
+                                                     (if enabled?
+                                                       (d/let-flow [balances (when (:cardNumber card)
+                                                                               (p/balances mimi (:cardNumber card)))
 
-                                                          current-balance (->> (-> balances :programs)
-                                                                               (filter (fn [{:keys [code]}]
-                                                                                         (= "SGC001" code)))
-                                                                               first
-                                                                               :balance)
+                                                                    current-balance (->> (-> balances :programs)
+                                                                                         (filter (fn [{:keys [code]}]
+                                                                                                   (= "SGC001" code)))
+                                                                                         first
+                                                                                         :balance)
 
-                                                          autoreload-threshold-amount (:triggerAmount autoreload-profile)
+                                                                    autoreload-threshold-amount (:triggerAmount autoreload-profile)
 
-                                                          balance-below-auto-reload-threshold (<= current-balance autoreload-threshold-amount)]
+                                                                    balance-below-auto-reload-threshold (<= current-balance autoreload-threshold-amount)]
 
-                                                         (if balance-below-auto-reload-threshold
+                                                                   (if balance-below-auto-reload-threshold
 
-                                                           (d/let-flow [payment-method-data (first (filter (fn [{:keys [paymentMethodId]}]
-                                                                                                             (= paymentMethodId (:paymentMethodId autoreload-profile)))
-                                                                                                           (:paymentMethods user)))
+                                                                     (d/let-flow [payment-method-data (first (filter (fn [{:keys [paymentMethodId]}]
+                                                                                                                       (= paymentMethodId (:paymentMethodId autoreload-profile)))
+                                                                                                                     (:paymentMethods user)))
 
-                                                                        payment-data (-> (p/execute-payment
-                                                                                          payment-gateway
-                                                                                          (merge (select-keys user [:emailAddress :lastName :firstName])
-                                                                                                 {:amount  (long (:amount autoreload-profile))
-                                                                                                  :currency (:currency-code app-config)
-                                                                                                  :cvn "123" ;; TODO how can i find this value?
-                                                                                                  :routingNumber (-> payment-method-data :routingNumber)
-                                                                                                  :transactionId "12345" ;; todo how can I find this value?
-                                                                                                  }))
-                                                                                         (d/catch clojure.lang.ExceptionInfo
-                                                                                             (fn [e]
-                                                                                               (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
-                                                                                                               :subject "Payment Error"
-                                                                                                               :content "There was a problem processing the payment for your Starbucks Auto-Reload."})
-                                                                                               (manifold.deferred/error-deferred e))))
+                                                                                  payment-data (-> (p/execute-payment
+                                                                                                    payment-gateway
+                                                                                                    (merge (select-keys user [:emailAddress :lastName :firstName])
+                                                                                                           {:amount  (long (:amount autoreload-profile))
+                                                                                                            :currency (:currency-code app-config)
+                                                                                                            :cvn "123" ;; TODO how can i find this value?
+                                                                                                            :routingNumber (-> payment-method-data :routingNumber)
+                                                                                                            :transactionId "12345" ;; todo how can I find this value?
+                                                                                                            }))
+                                                                                                   (d/catch clojure.lang.ExceptionInfo
+                                                                                                       (fn [e]
+                                                                                                         (p/change-state webhook-store webhook-uuid :error)
+                                                                                                         (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
+                                                                                                                         :subject "Payment Error"
+                                                                                                                         :content "There was a problem processing the payment for your Starbucks Auto-Reload."})
+                                                                                                         (manifold.deferred/error-deferred e))))
 
-                                                                        mimi-card-data (when payment-data
-                                                                                         (-> (p/increment-balance! mimi card-number (:amount autoreload-profile) :stored-value)
-                                                                                             (d/catch clojure.lang.ExceptionInfo
-                                                                                                 (fn [e]
-                                                                                                   (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
-                                                                                                                   :subject "Reload Error"
-                                                                                                                   :content "There was a problem reloading your Starbucks Stored Value Card."})
-                                                                                                   (manifold.deferred/error-deferred e)))))
+                                                                                  mimi-card-data (when payment-data
+                                                                                                   (-> (p/increment-balance! mimi card-number (:amount autoreload-profile) :stored-value)
+                                                                                                       (d/catch clojure.lang.ExceptionInfo
+                                                                                                           (fn [e]
+                                                                                                             (p/change-state webhook-store webhook-uuid :error)
+                                                                                                             (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
+                                                                                                                             :subject "Reload Error"
+                                                                                                                             :content "There was a problem reloading your Starbucks Stored Value Card."})
+                                                                                                             (manifold.deferred/error-deferred e)))))
 
-                                                                        send-mail (when (and payment-data mimi-card-data)
-                                                                                    (p/send mailer {:to #_(:emailAddress user) "marcin@jekot.net"
-                                                                                                    :subject "Auto-Reload: your card has been topped up."
-                                                                                                    :content (format  "Hello %s!\nYour Starbucks card %s has been topped up with R %s.\nYour current balance is R %s. Enjoy it!"
-                                                                                                                      (:firstName user)
-                                                                                                                      (:cardNumber card)
-                                                                                                                      (:amount autoreload-profile)
-                                                                                                                      (:balance mimi-card-data))}))]
+                                                                                  send-mail (when (and payment-data mimi-card-data)
+                                                                                              (p/send mailer {:to #_(:emailAddress user) "marcin@jekot.net"
+                                                                                                              :subject "Auto-Reload: your card has been topped up."
+                                                                                                              :content (format  "Hello %s!\nYour Starbucks card %s has been topped up with R %s.\nYour current balance is R %s. Enjoy it!"
+                                                                                                                                (:firstName user)
+                                                                                                                                (:cardNumber card)
+                                                                                                                                (:amount autoreload-profile)
+                                                                                                                                (:balance mimi-card-data))}))]
 
-                                                                       (util/>200 ctx {:user user
-                                                                                       :mimi-card-data mimi-card-data
-                                                                                       :send-mail send-mail
-                                                                                       :enabled? enabled?
-                                                                                       :balances (:body balances)
-                                                                                       :current-balance current-balance
-                                                                                       :balance-below-auto-reload-threshold balance-below-auto-reload-threshold
-                                                                                       :auto-reload-threshold-amount autoreload-threshold-amount
-                                                                                       :card-number card-number
-                                                                                       :card card
-                                                                                       :payment-data payment-data}))
+                                                                                 (util/>200 ctx {:user user
+                                                                                                 :mimi-card-data mimi-card-data
+                                                                                                 :send-mail send-mail
+                                                                                                 :enabled? enabled?
+                                                                                                 :balances (:body balances)
+                                                                                                 :current-balance current-balance
+                                                                                                 :balance-below-auto-reload-threshold balance-below-auto-reload-threshold
+                                                                                                 :auto-reload-threshold-amount autoreload-threshold-amount
+                                                                                                 :card-number card-number
+                                                                                                 :card card
+                                                                                                 :payment-data payment-data}))
 
-                                                           (util/>200 ctx nil)
-                                                           )
-                                                         )
-                                             (util/>200 ctx nil)
-                                             ))))}}}
+                                                                     (util/>200 ctx nil)
+                                                                     )
+                                                                   )
+                                                       (util/>200 ctx nil)
+                                                       ))))))}}}
 
    (merge (util/common-resource :me/cards))))
 

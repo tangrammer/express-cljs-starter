@@ -52,6 +52,12 @@
     "sync, the result is the new document")
   (update-by-id! [this id data]))
 
+(defprotocol WebhookStore
+  (webhook-uuid [this action])
+  (get-current [this webhook-uuid])
+  (change-state [this webhook-uuid state])
+  (current [this webhook-uuid]))
+
 (defprotocol UserStore
   (add-autoreload-profile-card [this oid autoreload-profile-card])
   (disable-auto-reload [this oid card-id])

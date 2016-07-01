@@ -2,22 +2,23 @@
   "Components and their dependency reationships"
   (:refer-clojure :exclude (read))
   (:require
-   [rebujito.payment-gateway :as payment-gateway]
    [com.stuartsierra.component :refer [system-map system-using using] :as component]
    [modular.aleph :refer [new-webserver]]
-   [modular.mongo :refer [new-mongo-database new-mongo-connection]]
    [modular.bidi :refer [new-router new-web-resources new-redirect]]
+   [modular.mongo :refer [new-mongo-database new-mongo-connection]]
    [rebujito.api :as api]
+   [rebujito.config :refer [config]]
+   [rebujito.mailer :refer (new-sendgrid-mailer)]
+   [rebujito.mimi :as mimi]
+   [rebujito.mongo :refer (new-user-store new-api-key-store new-counter-store new-token-store new-webhook-store)]
+   [rebujito.payment-gateway :as payment-gateway]
    [rebujito.security.auth :as oauth ]
    [rebujito.security.encrypt :as encrypt]
    [rebujito.security.jwt :as jwt ]
-   [rebujito.config :refer [config]]
-   [rebujito.webserver.handler :as wh]
    [rebujito.store :as store]
-   [rebujito.mongo :refer (new-user-store new-api-key-store new-counter-store new-token-store)]
-   [rebujito.mailer :refer (new-sendgrid-mailer)]
-   [rebujito.mimi :as mimi]
-   [taoensso.timbre :as log])
+   [rebujito.webserver.handler :as wh]
+   [taoensso.timbre :as log]
+   )
   (:import [java.util Date]))
 
 (defn swagger-ui-components [system]
@@ -57,6 +58,8 @@
 
                   :user-store (new-user-store (:auth config))
 
+                  :webhook-store (new-webhook-store (:auth config))
+
                   :api-client-store (new-api-key-store (:auth config))
 
                   :mimi (mimi/new-prod-mimi (:mimi config))
@@ -89,11 +92,12 @@
    :db-conn {:database :db}
    :counter-store [:db-conn]
    :token-store [:db-conn]
+   :webhook-store [:db-conn]
    :user-store [:db-conn]
    :api-client-store [:db-conn]
    :authorizer [:authenticator :token-store]
    :store []
-   :api [:store :mimi :token-store :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store]
+   :api [:store :mimi :token-store :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store :webhook-store]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

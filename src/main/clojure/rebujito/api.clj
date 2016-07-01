@@ -39,9 +39,10 @@
            api-client-store
            mailer
            app-config
-           counter-store]
+           counter-store
+           webhook-store]
 
-  [""  [[["/check-reload/" :card-number]  (-> (card-reload/check user-store mimi payment-gateway app-config mailer)
+  [""  [[["/check-reload/" :card-number]  (-> (card-reload/check user-store mimi payment-gateway app-config mailer webhook-store)
                                                 (assoc :id ::card-reload/check))]
         ["/health"  (-> {:id :health
                          :methods
@@ -208,10 +209,10 @@
                        data)))
       %) d))
 
-(s/defrecord ApiComponent [app-config store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store]
+(s/defrecord ApiComponent [app-config store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store webhook-store]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (dynamic-resource (api store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store) authenticator authorizer token-store)))
+    (assoc component :routes (dynamic-resource (api store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store webhook-store) authenticator authorizer token-store)))
   (stop [component]
         component))
 

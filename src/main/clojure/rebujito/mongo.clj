@@ -1,5 +1,7 @@
 (ns rebujito.mongo
   (:require
+   [clj-time.core   :as t]
+   [monger.joda-time :as mjt]
    [schema.core :as s]
    [manifold.deferred :as d]
    [com.stuartsierra.component  :as component]
@@ -33,6 +35,11 @@
 
 (defn to-mongo-id-hex-string [s]
   (format "%024x"  (read-string s)))
+
+(defn fully-k-name
+  "returns the simple or fully qualified name for a keyword"
+  [k]
+  (str (when-let [ns* (namespace k)] (str ns* "/")) (name k)))
 
 (defn to-mongo-object-id [hex]
   (if (string? hex)
@@ -456,6 +463,68 @@
     (update-by-id!* this hex-id data)))
 
 
+(def states [:new ::one :two :done])
+
+(def error-state :error)
+
+(defn- exist-state? [states-v k]
+  (assert (or (contains? (set states-v) k) (= k error-state)))
+  )
+
+(defn- get-index [k states-v]
+  (exist-state? states-v k)
+  (loop [counter 0 f (first states-v) n (next states-v)]
+    (if (= k f)
+      counter
+      (if (nil? n)
+        :not-found!
+        (recur  (inc counter) (first n) (next n)))
+      )
+
+    ))
+
+(defrecord WebhookStorage [db-conn collection secret-key ephemeral?]
+  component/Lifecycle
+  (start [this]
+    (start* this))
+  (stop [this] this)
+
+  protocols/MutableStorage
+  (generate-id [this data]
+    (generate-account-id data))
+  (find [this]
+    (find* this))
+  (find [this data]
+    (find* this data))
+  (get-and-insert! [this data]
+    (get-and-insert!* this data))
+  (insert! [this data]
+    (insert!* this data))
+  (update! [this data-query data-update]
+    (update!* this data-query data-update))
+  (update-by-id! [this hex-id data]
+    (update-by-id!* this hex-id data))
+
+  protocols/WebhookStore
+  (webhook-uuid [this action ]
+    (assert (and (keyword? action)) "action has to be keyword")
+    (fully-k-name action ))
+  (change-state [this webhook-uuid state]
+    ;; ::TODO check that we don't set same state twice ...
+    ;; maybe we should only say next-state instead of change state so externally doens't need to track current state
+    (exist-state? states state)
+    (pos?
+     (.getN
+      (protocols/update-by-id! this (:_id (protocols/current this webhook-uuid)) {:state state  :time (t/now)}))))
+  (current [this webhook-uuid]
+
+    (if-let [current (first (protocols/find this {:uuid webhook-uuid}))]
+      current
+      (protocols/get-and-insert! this {:uuid webhook-uuid :state (first states) :time (t/now)}))))
+
+
+
+
 (defn new-counter-store
   ([auth-data]
    (new-counter-store auth-data false ))
@@ -466,6 +535,14 @@
                          :secret-key (:secret-key auth-data)
                          :ephemeral?  ephemeral?
                          :counters counters})))
+
+(defn new-webhook-store
+  ([auth-data]
+   (new-webhook-store auth-data false))
+  ([auth-data ephemeral?]
+   (map->WebhookStorage {:collection :webhooks
+                         :secret-key (:secret-key auth-data)
+                         :ephemeral?  ephemeral?})))
 
 (defn new-user-store
   ([auth-data]
