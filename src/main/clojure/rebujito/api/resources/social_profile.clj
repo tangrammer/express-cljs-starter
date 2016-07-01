@@ -5,8 +5,7 @@
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [schema.core :as s]
-   [yada.resource :refer [resource]]
-   [monger.operators :refer [$set]]))
+   [yada.resource :refer [resource]]))
 
 (def schema {:put {:accountImageUrl String}})
 
@@ -18,7 +17,7 @@
            :response (fn [ctx]
                         (-> (d/let-flow [user-id (:user-id (authenticated-data ctx))
                                          image-url (-> ctx :parameters :body :accountImageUrl)
-                                         _ (p/update-by-id! user-store user-id {$set {"socialProfile.account.accountImageUrl" image-url}})]
+                                         _ (p/update-by-id! user-store user-id {"socialProfile.account.accountImageUrl" image-url})]
                               (>200 ctx nil))))}}}
 
    (merge (common-resource :me/social-profile))))

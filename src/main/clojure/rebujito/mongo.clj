@@ -35,7 +35,9 @@
   (format "%024x"  (read-string s)))
 
 (defn to-mongo-object-id [hex]
-  (org.bson.types.ObjectId. hex))
+  (if (string? hex)
+    (org.bson.types.ObjectId. hex)
+    hex))
 
 (defn ^org.bson.types.ObjectId generate-account-id [^String s]
   {:pre  [(try (number? (read-string s))
@@ -63,7 +65,15 @@
 
 (defn- update-by-id!* [this hex-id data]
   (let [id (to-mongo-object-id hex-id)]
-    (mc/update-by-id (:db this) (:collection this) id data)))
+    (mc/update-by-id (:db this) (:collection this) id {$set data})))
+
+(defn- update-push-by-id!* [this hex-id data]
+  (let [id (to-mongo-object-id hex-id)]
+    (mc/update-by-id (:db this) (:collection this) id {$push data})))
+
+(defn- update-pull-by-id!* [this hex-id data]
+  (let [id (to-mongo-object-id hex-id)]
+    (mc/update-by-id (:db this) (:collection this) id {$pull data})))
 
 (defn- find*
   ([this]
@@ -205,7 +215,7 @@
   (insert-card! [this user-id card]
     (let [card-id (str (UUID/randomUUID))
           card (assoc card :cardId card-id)]
-      (protocols/update-by-id! this user-id {$push {:cards card}})
+      (update-push-by-id!* this user-id {:cards card})
       card-id))
   (get-user-and-card [this card-number]
     (let [try-type :store
@@ -241,7 +251,7 @@
       (util/dtry
        (do
          (log/debug ">>>>" oid payment-method)
-         (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$pull {:paymentMethods payment-method}})]
+         (let [t (update-pull-by-id!* this  oid  {:paymentMethods payment-method})]
            (if (pos? (.getN t))
              true
              (util/error* 500 ['xxx ::transaction-failed])))))))
@@ -256,7 +266,7 @@
               p (assoc p :paymentMethodId  uuid)]
           (log/debug ">>>>" oid p)
           (s/validate PaymentMethodMongo p)
-          (let [t (mc/update (:db this) (:collection this) {:_id (org.bson.types.ObjectId. oid)} {$push {:paymentMethods p}})]
+          (let [t (update-push-by-id!* this  oid {:paymentMethods p})]
             (if (pos? (.getN t))
                 {:paymentMethodId uuid}
                 (util/error* 400 ['xxx (str t (protocols/find this oid))])))))))
@@ -340,7 +350,7 @@
   (insert-address [this oid address]
     (let [address-id (str (UUID/randomUUID))
           address (assoc address :addressId address-id)]
-      (protocols/update-by-id! this oid {$push {:addresses address}})
+      (update-push-by-id!* this oid  {:addresses address})
       address-id))
 
 

@@ -35,8 +35,7 @@
                                    (d/let-flow [authenticated-data (util/authenticated-data ctx)
                                                 user-id (:user-id authenticated-data)
                                                 new-username (get-in ctx [:parameters :body :new-username])
-                                                current (p/find user-store user-id)
-                                                updated? (p/update-by-id! user-store user-id (merge current {:emailAddress new-username}))]
+                                                updated? (p/update-by-id! user-store user-id  {:emailAddress new-username})]
                                                (if (pos? (.getN updated?))
                                                  (do
                                                    (p/invalidate! authorizer (get-in ctx [:parameters :query :access_token]))
