@@ -61,7 +61,7 @@
   ;; TODO to sort out these silly defaults, we need to speak to Brandon @ Micros
   :startDate (or (:validFromDate mimi-coupon) (-> (Instant/now) .toString))
   :issueDate (-> (Instant/now) .toString)
-  :expirationDate (or (:validUntilDate mimi-coupon) "2099-12-31T00:00:00.0000000Z")
+  :expirationDate (or (:validUntilDate mimi-coupon) "2999-12-31T00:00:00.0000000Z")
   })
 
 
