@@ -31,6 +31,14 @@ create table programs (
   code varchar(128)
 );
 
+-- foreign keys
+
+ALTER TABLE SCV_HUB.dbo.balances
+ADD CONSTRAINT balances_customers_id_fk
+FOREIGN KEY (customer_id) REFERENCES customers (id);
+
+
+
 /*
 create table transactions (
   id integer identity(1,1) PRIMARY KEY ,
