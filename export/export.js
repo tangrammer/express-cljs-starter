@@ -22,20 +22,13 @@ const cols = [
   'signupdate',
 ]
 
-// console.log('starting')
-// getAccounts().then(a => {
-//   console.log('done')
-//   console.log(a)
-//   console.log(a.length)
-// })
-
 sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
 .then(getAccounts)
-// .then(console.log)
 .then(accounts => {
   console.log(`got ${accounts.length} accounts`)
   return Promise.map(accounts, (account) => {
     const accountNumber = account.primaryposref
+    if (!accountNumber) return
     console.log(`starting ${accountNumber}`)
     return exportCustomer(accountNumber)
   }, {concurrency: 1})
@@ -43,14 +36,13 @@ sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
 .catch(err => console.error(err.stack))
 
 function exportCustomer(accountNumber) {
-
   return Promise.all([
     micros.getCustomerDetails(accountNumber, cols),
     micros.transactions({accountNumber}),
     micros.getStarbucksBalances(accountNumber),
   ])
   .then(([customerArr, txs, balances]) => {
-    if (!customerArr || !customerArr[0]) return
+    if (!customerArr || !customerArr[0]) return Promise.resolve()
 
     let customer = customerArr[0]
     return exportCustomerProfile(customer)
@@ -64,12 +56,8 @@ function exportCustomer(accountNumber) {
 }
 
 function getAccounts() {
-  // const accounts = require('./accounts')
-  // return accounts
-  // return micros.get('Customer', {condition: 'primaryposref = ?', values: [{primaryposref: '9623570900002'}], resultCols: ['primaryposref']})
+  console.log('fetching accounts')
   return micros.get('Customer', {condition: '', values: [], resultCols: ['primaryposref']})
-  // return Promise.resolve([ { id: '42406261', primaryposref: '9623570900002' } ])
-  // return Promise.resolve([ { id: '42229452', primaryposref: '9623570900003' }])
 }
 
 function exportCustomerProfile(customer) {
@@ -117,7 +105,7 @@ function exportCustomerProfile(customer) {
           primaryposref: customer.primaryposref,
           'first_name': customer.firstname,
           'last_name': customer.lastname,
-          email: customer.email,
+          email: customer.emailaddress,
           city: customer.city,
           province: customer.region,
           created: moment(customer.signupdate, 'YYYY-MM-DD hh:mm:ss.S').toDate(),
