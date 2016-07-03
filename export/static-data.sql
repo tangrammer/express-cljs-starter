@@ -1,13 +1,9 @@
-insert into locations(id, name) values ('43081', 'Test Store');
-insert into locations(id, name) values ('43362', 'Head Office Training Store');
-insert into locations(id, name) values ('43361', 'Rosebank');
+insert into locations(id, name) values ('42581', 'QSR Restaurant');
+insert into locations(id, name) values ('43081', 'Starbucks Test Store');
+insert into locations(id, name) values ('43361', 'Rosebank - RB');
+insert into locations(id, name) values ('43362', 'Head Office - Training');
 insert into locations(id, name) values ('43541', 'Mall of Africa');
-
-insert into programs(id, code, name) values ('39200', 'SGC001', 'Starbucks Card');
-insert into programs(id, code, name) values ('35622', 'MSR001', 'MSR - Customer');
-insert into programs(id, code, name) values ('37403', 'MSRE001', 'MSR - Employee');
-insert into programs(id, code, name) values ('35628', 'GS001', 'Employee Debit Card');
-insert into programs(id, code, name) values ('38600', 'ECC001', 'Employee Credit Card');
+insert into locations(id, name) values ('44921', 'Head Office - Test Store');
 
 INSERT INTO menu_items(id, major_group, family_group, name) VALUES ('30003007', 'Modifiers', 'Milk Modifiers', 'TL Milk Soy');
 INSERT INTO menu_items(id, major_group, family_group, name) VALUES ('13000023', 'Beverage Other', 'Hot Chocolate', 'TL Sugar Free Vanilla Hot Chocolate');
