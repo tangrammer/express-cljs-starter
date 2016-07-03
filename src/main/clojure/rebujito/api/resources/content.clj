@@ -26,10 +26,10 @@
                                   :menu false}
 
                        :pay {:reload {:enabled true
-                                      :buttonValue1 "50"
-                                      :buttonValue2 "100"
-                                      :buttonValue3 "150"}
+                                      :buttonValue1 "100"
+                                      :buttonValue2 "500"
+                                      :buttonValue3 "1000"}
 
                              :autoreload {:enabled true
-                                          :amounts "50, 100, 150, 200"}}
+                                          :amounts "100, 500, 1000, 1500"}}
                        :locales {:en-ZA {:website "http://www.starbucks.co.za"}}}}}})
