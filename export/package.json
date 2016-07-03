@@ -7,7 +7,8 @@
   },
   "dependencies": {
     "bluebird": "3.4.0",
-    "mssql": "3.3.0",
-    "micros": "git+ssh://git@github.com:naartjie/micros-api.git#14f5614"
+    "micros": "git+ssh://git@github.com:naartjie/micros-api.git#14f5614",
+    "moment": "2.13.0",
+    "mssql": "3.3.0"
   }
 }

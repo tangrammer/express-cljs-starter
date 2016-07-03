@@ -1,9 +1,9 @@
 'use strict'
 
-const
-  Promise = require('bluebird'),
-  sql = require('mssql'),
-  micros = require('micros')
+const Promise = require('bluebird')
+const sql = require('mssql')
+const micros = require('micros')
+const moment = require('moment')
 
 micros.setBrand('starbucks')
 
@@ -19,6 +19,7 @@ const cols = [
   'emailaddress',
   'city',
   'state',
+  'signupdate',
 ]
 
 // console.log('starting')
@@ -89,8 +90,25 @@ function exportCustomerProfile(customer) {
       ps.input('email', sql.VarChar(128))
       ps.input('city', sql.VarChar(128))
       ps.input('province', sql.VarChar(128))
+      ps.input('created', sql.DateTime())
 
-      ps.prepare('insert into customers(id, primaryposref, first_name, last_name, email, city, province) values(@id, @primaryposref, @first_name, @last_name, @email, @city, @province)', err => {
+      ps.prepare(`insert into customers(id,
+                                        primaryposref,
+                                        first_name,
+                                        last_name,
+                                        email,
+                                        city,
+                                        province,
+                                        created
+                                      )
+                              values(@id,
+                                     @primaryposref,
+                                     @first_name,
+                                     @last_name,
+                                     @email,
+                                     @city,
+                                     @province,
+                                     @created)`, err => {
 
         if (err) throw err
 
@@ -102,6 +120,7 @@ function exportCustomerProfile(customer) {
           email: customer.email,
           city: customer.city,
           province: customer.region,
+          created: moment(customer.signupdate, 'YYYY-MM-DD hh:mm:ss.S').toDate(),
         }, (err, recordsets, affected) => {
 
           if (err) return reject(err)
