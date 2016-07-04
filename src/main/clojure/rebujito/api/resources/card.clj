@@ -9,7 +9,6 @@
    [rebujito.util :refer (dtry dcatch error*)]
    [rebujito.mongo :refer [id>mimi-id]]
    [rebujito.store.mocks :as mocks]
-   [monger.operators :refer [$push]]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
