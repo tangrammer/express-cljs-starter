@@ -38,8 +38,8 @@
 
 (defn fully-k-name
   "returns the simple or fully qualified name for a keyword"
-  [k]
-  (str (when-let [ns* (namespace k)] (str ns* "/")) (name k)))
+  [k uuid]
+  (str (when-let [ns* (namespace k)] (str ns* "/")) (name k) "#" uuid))
 
 (defn to-mongo-object-id [hex]
   (if (string? hex)
@@ -506,9 +506,8 @@
     (update-by-id!* this hex-id data))
 
   protocols/WebhookStore
-  (webhook-uuid [this action ]
-    (assert (and (keyword? action)) "action has to be keyword")
-    (fully-k-name action ))
+  (webhook-uuid [this uuid]
+    (str "webhook/card-number#" uuid))
   (change-state [this webhook-uuid state]
     ;; ::TODO check that we don't set same state twice ...
     ;; maybe we should only say next-state instead of change state so externally doens't need to track current state
@@ -517,7 +516,6 @@
      (.getN
       (protocols/update-by-id! this (:_id (protocols/current this webhook-uuid)) {:state state  :time (t/now)}))))
   (current [this webhook-uuid]
-
     (if-let [current (first (protocols/find this {:uuid webhook-uuid}))]
       current
       (protocols/get-and-insert! this {:uuid webhook-uuid :state (first states) :time (t/now)}))))

@@ -118,3 +118,34 @@
     (doseq [seed ["42472395" "42485871"]]
       (let [t (generate-account-id seed)]
         (is (= seed (id>mimi-id (str t))))))))
+
+
+
+
+(deftest webhook-store-tests
+
+  (let [uuid "1234567890"
+        webhook-uuid (str "webhook/card-number#" uuid)]
+    (is (empty? (seq  (p/find (:webhook-store *system*)))))
+
+    (is (=  webhook-uuid  (p/webhook-uuid (:webhook-store *system*) uuid)))
+    (is (empty? (seq  (p/find (:webhook-store *system*)))))
+    (is (=  {:uuid webhook-uuid
+             :state :new}  (select-keys (p/current (:webhook-store *system*) webhook-uuid)
+                                        [:uuid :state])))
+    (is (= 1 (count(seq  (p/find (:webhook-store *system*))))))
+    (is (=  true  (p/change-state (:webhook-store *system*) webhook-uuid :error)))
+    (is (=  {:uuid webhook-uuid
+             :state "error"}  (select-keys (p/current (:webhook-store *system*) webhook-uuid)
+                                           [:uuid :state])))
+
+    (is (=  {:uuid (str webhook-uuid "00")
+             :state :new}  (select-keys (p/current (:webhook-store *system*) (str webhook-uuid "00"))
+                                        [:uuid :state])))
+
+    (is (= 2 (count(seq  (p/find (:webhook-store *system*))))))
+    )
+
+
+
+  )

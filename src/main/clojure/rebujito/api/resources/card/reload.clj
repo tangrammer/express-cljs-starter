@@ -27,7 +27,7 @@
    {:methods
     {:get {:parameters {:path {:card-number String}}
            :response (fn [ctx]
-                       (let [webhook-uuid (p/webhook-uuid webhook-store ::check)]
+                       (let [webhook-uuid (p/webhook-uuid webhook-store (-> ctx :parameters :path :card-number))]
                          (if (= "error" (:state (p/current webhook-store webhook-uuid)))
                                  (util/>200 ctx nil)
                                  (dcatch ctx

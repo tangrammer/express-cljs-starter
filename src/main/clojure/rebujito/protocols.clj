@@ -1,7 +1,6 @@
 (ns rebujito.protocols
   (:refer-clojure :exclude (find send deref)))
 
-
 (defprotocol PaymentGateway
 ;  (ping [this data])
   (create-card-token [this data])
@@ -53,7 +52,7 @@
   (update-by-id! [this id data]))
 
 (defprotocol WebhookStore
-  (webhook-uuid [this action])
+  (webhook-uuid [this uuid])
   (get-current [this webhook-uuid])
   (change-state [this webhook-uuid state])
   (current [this webhook-uuid]))
@@ -80,9 +79,6 @@
   (get-address [this oid address-id])
   (remove-address [this oid address])
   (update-address [this oid address]))
-
-
-
 
 (defprotocol ApiClient
   (login [this id pw]))
