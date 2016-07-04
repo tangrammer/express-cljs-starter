@@ -128,7 +128,7 @@
                            (let [card-id (-> ctx :parameters :path :card-id)
                                  amount (-> ctx :parameters :body :amount)]
                              (dcatch ctx
-                                     (d/let-flow [profile-data (dtry (util/user-profile-data ctx user-store (:sub-market app-config)))
+                                     (d/let-flow [profile-data (dtry (do (util/user-profile-data ctx user-store (:sub-market app-config))))
                                            user-id (:user-id (util/authenticated-data ctx))
                                            cards (:cards (p/find user-store user-id))
                                            card-data (first (filter #(= (:cardId %) card-id) cards))
@@ -147,7 +147,8 @@
                                                                  :routingNumber (-> payment-method-data :routingNumber)
                                                                  :transactionId "12345"}))
                                            _ (log/info ">>>> payment-data::::" payment-data)
-                                           mimi-card-data (p/increment-balance! mimi card-number amount :stored-value)
+                                                  mimi-card-data (when payment-data
+                                                                   (p/increment-balance! mimi card-number amount :stored-value))
                                            _ (log/info "mimi response" mimi-card-data)]
 
                                           (util/>200 ctx {:balance (:balance mimi-card-data)

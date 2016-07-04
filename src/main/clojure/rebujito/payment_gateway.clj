@@ -148,11 +148,15 @@
                                               "TransactionStatusDescription" TransactionStatusDescription
                                               "ResultCode" ResultCode
                                               "ResultDescription" ResultDescription
-                                              )]
+                                              )
+
+                            res-error (vector "ResultDescription" ResultDescription
+                                              )
+                            ]
                         (log/info res-debug)
                         (if (and (not-empty TransactionStatusCode) (= (first TransactionStatusCode)  "1"))
                           res-debug
-                          (derror* d* 500 [500 (str (json/generate-string ["paygate/payment" res-debug]) error "  ::  " status)])
+                          (derror* d* 400 [400  (first ResultDescription) error "  ::  " status])
                           )
                         )))))
          ))
