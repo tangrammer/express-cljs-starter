@@ -14,7 +14,7 @@
    ))
 
 
-(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
+(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
 
 (defn printxml [body] (let [input-xml (java.io.StringReader. body)]
          (pprint (xml/parse input-xml))))

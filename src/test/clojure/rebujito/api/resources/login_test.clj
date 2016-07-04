@@ -111,8 +111,8 @@
         (is (= 200 (-> http-response :status)))
         (is (= nil body)))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 1 (count mails)))
-          (is (.contains (:subject (first mails)) "sending forgot-password")  )
+          (is (= 2 (count mails)))
+          (is (.contains (:subject (last mails)) "sending forgot-password")  )
           (is (p/read-token (:authenticator *system*) (:content (first mails)))  )
           #_(is (p/verify (:authorizer *system*) (:content (first mails)) rebujito.scopes/reset-password))))))
 
@@ -138,7 +138,7 @@
 
         (is (-> *system* :mailer :mails deref first :content))
 
-        (reset! send-token (-> *system* :mailer :mails deref first :content))
+        (reset! send-token (-> *system* :mailer :mails deref last :content))
         )
 
 
@@ -158,9 +158,9 @@
         (is (= "" (-> http-response :body bs/to-string)))
         (let [user-by-email (first (p/find (-> *system* :user-store) {:emailAddress new-username}))]
           (is (=  (-> *user-account-data*
-                      (dissoc  :_id :password)
-                      (assoc  :emailAddress new-username))
-                  (dissoc user-by-email :_id :password))))))))
+                      (dissoc  :_id :password :birthDay :birthMonth)
+                      (assoc  :emailAddress new-username :verifiedEmail false ))
+                  (dissoc user-by-email :_id :password :birthMonth :birthDay))))))))
 
 
 

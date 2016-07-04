@@ -46,9 +46,9 @@
    :emailAddress (generate-mail "juanantonioruz+%s@gmail.com")
    :city "Sevilla",
    :firstName (format  "Juan-%s" (generate-random 6))
-   :birthDay 13,
+   :birthDay (int 13)
    :market "ZA"
-   :birthMonth 6,
+   :birthMonth (int 6)
    :lastName (format  "Ruz-%s" (generate-random 6))
    :receiveStarbucksEmailCommunications true,
    :postalCode "41003",

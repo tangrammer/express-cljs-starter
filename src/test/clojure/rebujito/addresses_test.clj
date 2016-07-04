@@ -7,7 +7,7 @@
    [rebujito.base-test :refer (system-fixture *system*)]
    [rebujito.api.resources.addresses :as addresses]))
 
-(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
+(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
 
 (def payload {:addressLine1 "djdjjd"
               :addressLine2 "address line 2"

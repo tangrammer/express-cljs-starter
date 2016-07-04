@@ -8,7 +8,7 @@
    [rebujito.api.resources.content :as content]
    [clojure.test :refer :all]))
 
-(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db}))
+(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
 
 (deftest test-terms
   (let [port (-> *system*  :webserver :port)

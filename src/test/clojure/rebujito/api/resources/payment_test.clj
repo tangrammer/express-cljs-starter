@@ -339,7 +339,7 @@
         (is (= 200 (-> res :status)))
         (is (= nil body))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 0 (count mails)))))
+          (is (= 1 (count mails)))))
 
       (let [path (get-path ::payment/methods)
             {:keys [status body] :as all}
@@ -396,9 +396,9 @@
             body (parse-body res)
             ]
         (is (= 200 (-> res :status)))
-        (is (= nil body))
+;        (is (= nil body))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 0 (count mails)))))
+          (is (= 2 (count mails)))))
 
       (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -434,8 +434,9 @@
         (is (= card-id (-> body :card :cardId)))
         (is (-> body :payment-data))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 1 (count mails)))
-          (is (= (select-keys (first mails) [:subject]) {:subject "Auto-Reload: your card has been topped up."}))
+
+          (is (= 3 (count mails)))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Auto-Reload: your card has been topped up."}))
           )
 ))
 
