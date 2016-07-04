@@ -87,7 +87,7 @@
                                 :body  "Account Management Service returns error that email address is already taken"
                                 }))))
 
-(defn create [store mimi user-store crypto mailer authorizer]
+(defn create [store mimi user-store crypto mailer authorizer app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String
                                     :market String
@@ -112,7 +112,9 @@
                                                    send (when mongo-account
                                                           (p/send mailer {:subject (format "Verify your email" )
                                                                           :to (:emailAddress mongo-account)
-                                                                          :content access-token}))]
+                                                                          :content (format "%s/verify-new-user-email/%s"
+                                                                                          (:client-url app-config)
+                                                                                          access-token)}))]
 
 
                                                   (log/info "mongo-account!!" mongo-account)

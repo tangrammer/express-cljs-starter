@@ -113,7 +113,11 @@
         (let [mails @(:mails (:mailer *system*))]
           (is (= 2 (count mails)))
           (is (.contains (:subject (last mails)) "sending forgot-password")  )
-          (is (p/read-token (:authenticator *system*) (:content (first mails)))  )
+          (is (p/read-token (:authenticator *system*)
+
+                            (last (clojure.string/split
+                                   (-> mails first :content) #"/"))
+                            )  )
           #_(is (p/verify (:authorizer *system*) (:content (first mails)) rebujito.scopes/reset-password))))))
 
 (deftest change-username  ;; => emailAddress
@@ -140,7 +144,8 @@
 
         (is (-> *system* :mailer :mails deref first :content))
 
-        (reset! send-token (-> *system* :mailer :mails deref last :content))
+        (reset! send-token (last (clojure.string/split
+                                   (-> *system* :mailer :mails deref last :content) #"/")))
         )
 
 

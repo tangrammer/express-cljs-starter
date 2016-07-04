@@ -55,7 +55,7 @@
 
 
 
-(defn me-change-email [user-store crypto authenticator authorizer mailer]
+(defn me-change-email [user-store crypto authenticator authorizer mailer app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body (-> schema :change-email :post)}
@@ -73,7 +73,9 @@
                                                 send (when (and valid-data access-token)
                                                        (p/send mailer {:subject (format "Verify your new-email" )
                                                                        :to (-> ctx :parameters :body :new-email)
-                                                                       :content access-token}))
+                                                                       :content (format "%s/change-email/%s"
+                                                                                          (:client-url app-config)
+                                                                                          access-token)}))
 
                                                 ]
 
