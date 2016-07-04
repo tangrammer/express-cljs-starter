@@ -67,6 +67,7 @@
     :postalCode String
     :receiveStarbucksEmailCommunications Boolean
     :registrationSource String
+    (s/optional-key :verifiedEmail) Boolean
     }))
 
 

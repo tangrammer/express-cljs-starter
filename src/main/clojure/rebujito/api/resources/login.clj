@@ -120,7 +120,23 @@
 
       (merge (util/common-resource :login))))
 
+(defn verify-email [authorizer  user-store ]
+  (-> {:methods
+       {:put {:parameters {:query {:access_token String}}
+              :response (fn [ctx]
+                           (dcatch ctx
+                                   (d/let-flow [authenticated-data (util/authenticated-data ctx)
+                                                user-id (:user-id authenticated-data)
+                                                updated? (p/update-by-id! user-store user-id {:verifiedEmail true})]
+                                               (if (pos? (.getN updated?))
+                                                 (do
+                                                   (log/info "invalidating!!!"  (p/invalidate! authorizer (get-in ctx [:parameters :query :access_token])))
+                                                   (util/>200 ctx nil))
+                                                 (util/>400 ctx (str "transaction failed"))
+                                                 ))))}}}
 
+
+      (merge (util/common-resource :login))))
 
 (defn validate-password [user-store crypto authenticator ]
   (-> {:methods

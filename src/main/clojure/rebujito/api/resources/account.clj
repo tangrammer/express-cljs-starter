@@ -63,6 +63,7 @@
         mongo-account-data (-> data-account
                                (assoc :_id mongo-id)
                                (assoc :password (p/sign crypto (:password data-account)))
+                               (assoc :verifiedEmail false)
                                (dissoc :createDigitalCard :risk :reputation))
         try-id ::create-account-mongo
         try-type :store
@@ -84,7 +85,7 @@
                                 :body  "Account Management Service returns error that email address is already taken"
                                 }))))
 
-(defn create [store mimi user-store crypto]
+(defn create [store mimi user-store crypto mailer authorizer]
   (-> {:methods
        {:post {:parameters {:query {:access_token String
                                     :market String
@@ -102,10 +103,18 @@
                                                                  (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
                                                                  (fn [b]
                                                                    (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))))
-                                                   mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)]
+                                                   mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account  user-store crypto)
+
+                                                   access-token  (p/grant authorizer (select-keys mongo-account [:emailAddress :_id]) #{scopes/verify-email})
+
+                                                   send (when mongo-account
+                                                          (p/send mailer {:subject (format "Verify your email" )
+                                                                          :to (:emailAddress mongo-account)
+                                                                          :content access-token}))]
 
 
                                                   (log/info "mongo-account!!" mongo-account)
+                                                  (log/info "send!!" send)
                                                   (util/>201 ctx (dissoc  mongo-account :password))))
                                         ))}}}
       (merge (util/common-resource :account))))

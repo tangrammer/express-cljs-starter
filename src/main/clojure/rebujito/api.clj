@@ -60,11 +60,18 @@
 
         [["/settings/" :platform "/" :version "/" :market] (yada/handler content/settings-json)]
 
-        ["/account/create" (-> (account/create store mimi user-store crypto)
+        ["/account/create" (-> (account/create store mimi user-store crypto mailer authorizer)
                                (assoc :id ::account/create
                                       :oauth {:post scopes/application}))]
         ["/oauth/token" (->  (oauth/token-resource-owner token-store user-store authenticator authorizer crypto api-client-store)
                              (assoc :id ::oauth/token-resource-owner))]
+
+        ["/login/verify-email" (-> (login/verify-email authorizer user-store)
+                                   (assoc :id ::login/verify-email
+                                          :oauth {:put scopes/verify-email}
+                                          :check-valid-token-store true
+                                          ))]
+
         ["/login/forgot-password" (-> (login/forgot-password user-store mailer authenticator)
                                       (assoc :id ::login/forgot-password
                                              :oauth {:post scopes/application}))]

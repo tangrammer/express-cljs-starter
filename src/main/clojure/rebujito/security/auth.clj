@@ -76,14 +76,15 @@
 
       access-token ))
   (invalidate! [this token]
-    (let [user (p/read-token authenticator token)
-          user-id (:_id (p/read-token authenticator token))
+    (let [data (p/read-token authenticator token)
+          id (:_id data)
+          user-id (:user-id data )
           try-type :token-store
           try-id ::invalidate
           try-context '[user-id]]
       (log/info "invalidate token for" user-id)
       (util/dtry
-       (p/update! token-store {:user-id user-id} {:valid false}))))
+       (do(p/update-by-id! token-store (:_id data) {:valid false})))))
   (protected-data [this refresh-token]
     (let [refreshable? (p/read-token authenticator refresh-token) ;; checking origin and expiry time
           token-stored (first (p/find token-store {:refresh-token refresh-token}))] ;; checking that exists in db]
