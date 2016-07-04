@@ -56,9 +56,9 @@
    {
     (s/optional-key :_id) org.bson.types.ObjectId
     :addressLine1 String
-    :addressLine2 String
-    :birthDay (s/conditional number? Integer :else String)
-    :birthMonth (s/conditional number? Integer :else String)
+    (s/optional-key :addressLine2) String
+    :birthDay Integer
+    :birthMonth Integer
     :city String
     :market String
     :country String

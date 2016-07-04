@@ -15,7 +15,7 @@
    [yada.resource :refer [resource]]))
 
 (def schema {:post {:addressLine1 String
-                    :addressLine2 String
+                    (s/optional-key :addressLine2) String
                     :birthDay (s/conditional number? Integer :else String)
                     :birthMonth (s/conditional number? Integer :else String)
                     :city String
@@ -30,7 +30,7 @@
                     :registrationSource String
                     (s/optional-key :createDigitalCard) Boolean
                     (s/optional-key :market) String
-                    (s/optional-key :reputation) {(s/optional-key :IPAddress) String
+                    (s/optional-key :reputation) {(s/optional-key :ipAddress) String
                                                   (s/optional-key :deviceFingerprint) String}
                     }})
 
@@ -64,6 +64,8 @@
                                (assoc :_id mongo-id)
                                (assoc :password (p/sign crypto (:password data-account)))
                                (assoc :verifiedEmail false)
+                               (assoc :birthDay (-> data-account :birthDay Integer.))
+                               (assoc :birthMonth (-> data-account :birthMonth Integer.))
                                (dissoc :createDigitalCard :risk :reputation))
         try-id ::create-account-mongo
         try-type :store
