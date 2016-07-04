@@ -15,6 +15,9 @@
              :change-email {:post {:new-email String
                                    :password String}}
 
+             :me-change-password {:post {:password String
+                                         :new-password String}}
+
              :change-password {:put {:new-password String}}
 
              :forgot-password {:post {:userName String
@@ -83,27 +86,22 @@
 
       (merge (util/common-resource :login))))
 
-(defn reset-username [authorizer authenticator user-store crypto mailer]
+(defn me-change-password [authorizer authenticator user-store crypto mailer]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
-                            :body (-> schema :reset-username :post)}
+                            :body (-> schema :me-change-password :post)}
               :response (fn [ctx]
                            (dcatch ctx
                                    (if (valid-pw? authenticator user-store crypto
                                                   (get-in ctx [:parameters :query :access_token])
                                                   (get-in ctx [:parameters :body :password]))
                                      (d/let-flow [authenticated-data (util/authenticated-data ctx)
-                                                  data (assoc (select-keys [:emailAddress] authenticated-data)
-                                                              :_id (:user-id authenticated-data)
-                                                              )
-                                                  access-token  (p/grant authorizer data #{scopes/change-email})
-
-                                                  send (p/send mailer {:subject (format "sending OTP to reset email" )
-                                                                       :to (:emailAddress authenticated-data)
-                                                                       :content access-token})]
-                                                 (if send
+                                                  user-id (:user-id authenticated-data)
+                                                  new-password (get-in ctx [:parameters :body :new-password])
+                                                  updated? (p/update-by-id! user-store user-id {:password (p/sign crypto new-password)})]
+                                                 (if (pos? (.getN updated?))
                                                    (util/>200 ctx nil)
-                                                   (util/>400 ctx send)))
+                                                   (util/>400 ctx (str "transaction failed"))))
                                      (util/>403 ctx {:message (str "Forbidden: " "password doesn't match")}))))}}}
       (merge (util/common-resource :login))))
 

@@ -174,6 +174,74 @@
 
 
 
+(deftest me-change-password
+  (testing ::login/me-change-password
+    (let [port (-> *system*  :webserver :port)
+          password (:password *user-account-data*)
+          new-password "new-one:-)"]
+
+
+      (let [path (get-path ::login/me-change-password)
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string
+                                             (assoc (g/generate (:post (:me-change-password login/schema)))
+                                                    :password password
+                                                    :new-password new-password)
+
+                                         )
+                                      :content-type :json})
+            body (parse-body http-response)
+            ]
+        (is (= 200 (-> http-response :status)))
+        (is (= nil body)))
+
+
+
+      (let [path (get-path ::login/validate-password)
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string
+                                             (assoc (g/generate (:post (:validate-password login/schema)))
+                                                    :password new-password)
+
+                                         )
+                                      :content-type :json})
+            body (parse-body http-response)
+            ]
+        (is (= 200 (-> http-response :status)))
+        (is (= nil body)))
+
+
+      (let [path (get-path ::login/me-change-password)
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string
+                                             (assoc (g/generate (:post (:me-change-password login/schema)))
+                                                    :password "xxx"
+                                                    :new-password new-password)
+
+                                         )
+                                      :content-type :json})
+            body (parse-body http-response)
+            ]
+        (is (= 403 (-> http-response :status)))
+        (is (= {:message "Forbidden: password doesn't match"} body)))
+
+
+
+
+      ))
+
+
+
+
+  )
+
+
 
 (deftest change-pw
 

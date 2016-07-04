@@ -75,6 +75,8 @@
         ["/login/forgot-password" (-> (login/forgot-password user-store mailer authenticator)
                                       (assoc :id ::login/forgot-password
                                              :oauth {:post scopes/application}))]
+
+        ;; TODO review!
         ["/login/change-password" (-> (login/change-password user-store crypto)
                                       (assoc :id ::login/change-password
                                              :oauth {:put scopes/reset-password}
@@ -114,9 +116,13 @@
                                                (assoc :id ::login/validate-password
                                                       :oauth {:post scopes/user}))]
 
+               ["/login/change-password" (-> (login/me-change-password authorizer authenticator user-store crypto mailer)
+                                             (assoc :id ::login/me-change-password
+                                             :oauth {:post scopes/user}))]
+
                ;; deprecacted
                ;; TODO check with Marcing if we can remove "login/reset-usernamex"
-               ["/login/reset-username" (-> (login/reset-username authorizer authenticator user-store crypto mailer)
+               #_["/login/reset-username" (-> (login/reset-username authorizer authenticator user-store crypto mailer)
                                              (assoc :id ::login/reset-username
                                              :oauth {:post scopes/user}))]
                ["/profile"  (-> (profile/profile store mimi user-store app-config)
