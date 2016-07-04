@@ -142,6 +142,8 @@
 
 
 (defn generate-user-data [readed-jwt sub-market]
+  (log/info (select-keys readed-jwt [:firstName :lastName :emailAddress]))
+  (log/info (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress])))
   (merge (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress]))
          {:subMarket sub-market
           :exId nil
@@ -150,7 +152,9 @@
 
 (defn user-profile-data [ctx user-store submarket]
   (let [auth-user-id (authenticated-user-id ctx)
+        _     (log/info "auth-user-id"  auth-user-id (authenticated-data ctx))
         mongo-user (p/find user-store auth-user-id)]
+    (log/info "mongo-user" mongo-user)
     (generate-user-data mongo-user submarket)))
 
 

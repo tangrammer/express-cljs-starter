@@ -66,7 +66,7 @@
       (let [api-id ::card-reload/reload
             path (bidi/path-for r api-id :card-id 123)]
         ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
-        (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+        (is (= 400(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                   {:throw-exceptions false
                                    :body-encoding "UTF-8"
                                    :body (json/generate-string
