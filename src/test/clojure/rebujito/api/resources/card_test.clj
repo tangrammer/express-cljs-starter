@@ -101,6 +101,20 @@
                       (print-body)
                       :status)))))
 
+    ;; TODO: tried to do a test for transfer card, but not sure how to tackle it
+    #_(testing ::card/transfer
+      (let [api-id ::card/transfer
+            path (bidi/path-for r api-id)
+            {:keys [status body]}
+            (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                        {:throw-exceptions false
+                                         :body-encoding "UTF-8"
+                                         :body (json/generate-string
+                                                {:cardNumber "???"
+                                                 :cardPin "???"})
+                                         :content-type :json}))]
+       (is (= 200 status))))
+
     )
 
 )
