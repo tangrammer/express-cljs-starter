@@ -188,7 +188,7 @@
                                       :body (json/generate-string
                                              (assoc (g/generate (:post (:me-change-password login/schema)))
                                                     :password password
-                                                    :new-password new-password)
+                                                    :new_password new-password)
 
                                          )
                                       :content-type :json})
@@ -222,7 +222,7 @@
                                       :body (json/generate-string
                                              (assoc (g/generate (:post (:me-change-password login/schema)))
                                                     :password "xxx"
-                                                    :new-password new-password)
+                                                    :new_password new-password)
 
                                          )
                                       :content-type :json})
@@ -234,20 +234,15 @@
 
 
 
-      ))
-
-
-
-
-  )
+      )))
 
 
 
 (deftest change-pw
 
-  (testing ::login/change-password
+  (testing ::login/set-new-password
     (let [port (-> *system*  :webserver :port)
-          address-id (atom "")]
+          new-password "12345"]
 
       (let [path (get-path ::login/forgot-password)
             http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *app-access-token*)
@@ -258,29 +253,48 @@
                                                     :emailAddress (:emailAddress *user-account-data*)))
                                       :content-type :json})
             body (parse-body http-response)
-            ])
+            ]
 
+        (is (= 200 (:status http-response)))
+        )
 
       (is (-> *system* :mailer :mails deref first :content))
 
-      (let [path (get-path ::login/change-password)
-            data (g/generate (:put (:change-password login/schema)))
+      (let [path (get-path ::login/set-new-password)
+            data (assoc (g/generate (:put (:set-new-password login/schema)))
+                        :new_password new-password)
+            http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path
+                                             (last (butlast (clojure.string/split
+                                                             (-> *system* :mailer :mails deref last :content) #"/"))))
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string data)
+                                      :content-type :json})
+            body (parse-body http-response)]
+        (is (= 200 (:status http-response))))
+
+      (let [path (get-path ::login/set-new-password)
+            data (g/generate (:put (:set-new-password login/schema)))
             http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path (-> *system* :mailer :mails deref first :content))
                                      {:throw-exceptions false
                                       :body-encoding "UTF-8"
                                       :body (json/generate-string data)
                                       :content-type :json})
             body (parse-body http-response)]
-        ;; checking that password for user is the new but encrypted :)
-        (let [user-by-email (first (p/find (-> *system* :user-store) {:emailAddress (:emailAddress *user-account-data*)}))]
-          (is (=  (p/check (:crypto *system*)
-                           (:new-password data)
-                           (:password user-by-email))))
-          ;(is (= nil user-by-email))
-          )
+        (is (= 401 (:status http-response))))
 
-)
+      (let [path (get-path ::login/validate-password)
+            http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :body (json/generate-string
+                                             (assoc (g/generate (:post (:validate-password login/schema)))
+                                                    :password new-password)
 
-
-
+                                         )
+                                      :content-type :json})
+            body (parse-body http-response)
+            ]
+        (is (= 200 (-> http-response :status)))
+        (is (= nil body)))
  )))

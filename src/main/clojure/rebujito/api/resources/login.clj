@@ -16,9 +16,9 @@
                                    :password String}}
 
              :me-change-password {:post {:password String
-                                         :new-password String}}
+                                         :new_password String}}
 
-             :change-password {:put {:new-password String}}
+             :set-new-password {:put {:new_password String}}
 
              :forgot-password {:post {:userName String
                                       :emailAddress String}}
@@ -97,7 +97,7 @@
                                                   (get-in ctx [:parameters :body :password]))
                                      (d/let-flow [authenticated-data (util/authenticated-data ctx)
                                                   user-id (:user-id authenticated-data)
-                                                  new-password (get-in ctx [:parameters :body :new-password])
+                                                  new-password (get-in ctx [:parameters :body :new_password])
                                                   updated? (p/update-by-id! user-store user-id {:password (p/sign crypto new-password)})]
                                                  (if (pos? (.getN updated?))
                                                    (util/>200 ctx nil)
@@ -105,19 +105,24 @@
                                      (util/>403 ctx {:message (str "Forbidden: " "password doesn't match")}))))}}}
       (merge (util/common-resource :login))))
 
-(defn change-password [user-store crypto]
+(defn set-new-password [user-store crypto authorizer]
   (-> {:methods
        {:put {:parameters {:query {:access_token String}
-                            :body (-> schema :change-password :put)}
+                           :body (-> schema :set-new-password :put)}
                :response (fn [ctx]
                            (dcatch ctx
                                    (let [token (get-in ctx [:parameters :query :access_token])]
                                      (do
-                                       (d/let-flow [new-password (get-in ctx [:parameters :body :new-password])
-                                                    user-id (util/authenticated-user-id ctx)
+                                       (d/let-flow [new-password (get-in ctx [:parameters :body :new_password])
+                                                    auth-data (util/authenticated-data ctx)
+                                                    _ (log/info "JODER::: " auth-data)
+                                                    user-id (:user-id auth-data)
+                                                    _ (log/info "JODER::: " user-id (p/find user-store user-id))
                                                     updated? (p/update-by-id! user-store user-id {:password (p/sign crypto new-password)})]
                                                    (if (pos? (.getN updated?))
-                                                   (util/>200 ctx nil)
+                                                     (do
+                                                       (p/invalidate! authorizer auth-data)
+                                                       (util/>200 ctx nil))
                                                    (util/>400 ctx (str "transaction failed"))
                                                    )))
                                      )))}}}
@@ -125,7 +130,7 @@
 
       (merge (util/common-resource :login))))
 
-(defn forgot-password [user-store mailer authenticator]
+(defn forgot-password [user-store mailer authenticator authorizer app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String
                                     (s/optional-key :locale) String}
@@ -135,17 +140,19 @@
                                    (let [token (get-in ctx [:parameters :query :access_token])]
                                      (do
                                        (d/let-flow [params (get-in ctx [:parameters :body])
+                                                    email (get-in ctx [:parameters :body :emailAddress])
                                                     user (or (first (p/find user-store {:emailAddress (get-in ctx [:parameters :body :emailAddress])}))
                                                              (error* 400 [400 (format "user %s doesn't exist" (:emailAddress params))]))
                                                     _ (log/info user)
-                                                    data (merge (select-keys [:emailAddress :_id] user)
-                                                                {:scope #{scopes/reset-password}})
-                                                    access-token (p/generate-token authenticator data 60)
-                                                    _ (log/info access-token)
+                                                    data {:_id (str (:_id user))}
+                                                    access-token (p/grant authorizer data  #{scopes/reset-password})
+                                                    _ (log/info "JOLIN::: "(p/read-token  authenticator access-token ))
                                                     send (p/send mailer {:subject (format "sending forgot-password to %s" (get-in ctx [:parameters :body :userName]))
                                                                          :to (:emailAddress user)
 
-                                                                         :content access-token
+                                                                         :content (format "%s/reset-password/%s/%s"
+                                                                                          (:client-url app-config)
+                                                                                          access-token email)
                                                                          })
                                                     _ (log/info send)
                                                     ]

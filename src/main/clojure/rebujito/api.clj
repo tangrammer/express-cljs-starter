@@ -72,15 +72,15 @@
                                           :check-valid-token-store true
                                           ))]
 
-        ["/login/forgot-password" (-> (login/forgot-password user-store mailer authenticator)
+        ["/login/forgot-password" (-> (login/forgot-password user-store mailer authenticator authorizer app-config)
                                       (assoc :id ::login/forgot-password
                                              :oauth {:post scopes/application}))]
 
-        ;; TODO review!
-        ["/login/change-password" (-> (login/change-password user-store crypto)
-                                      (assoc :id ::login/change-password
-                                             :oauth {:put scopes/reset-password}
-                                             :check-valid-token-store true))]
+        ;; this is the call after we try reset-password and click in link-token from email
+        ["/login/set-new-password" (-> (login/set-new-password user-store crypto authorizer)
+                                       (assoc :id ::login/set-new-password
+                                              :oauth {:put scopes/reset-password}
+                                              :check-valid-token-store true))]
 
         ["/login/change-email" (-> (login/change-email authorizer authenticator user-store token-store)
                                       (assoc :id ::login/change-email
