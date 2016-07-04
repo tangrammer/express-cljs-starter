@@ -63,8 +63,6 @@
         mongo-account-data (-> data-account
                                (assoc :_id mongo-id)
                                (assoc :password (p/sign crypto (:password data-account)))
-                               (assoc :birthDay (-> data-account :birthDay Integer.))
-                               (assoc :birthMonth (-> data-account :birthMonth Integer.))
                                (dissoc :createDigitalCard :risk :reputation))
         try-id ::create-account-mongo
         try-type :store
