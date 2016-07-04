@@ -229,6 +229,33 @@
                                                     :body (.getMessage e)})))
         ))
       d*))
+
+  (transfer [this from to]
+    (log/info "transferring card balances from" from "to" to)
+    (let [d* (d/deferred)]
+    (d/future
+     (try
+      (let [{:keys [status body]} (http-c/post (format "%s/account/transfer" base-url)
+                                               {:headers {"Authorization" (format "Bearer %s" token)}
+                                                :insecure? true
+                                                :content-type :json
+                                                :accept :json
+                                                :as :json
+                                                :throw-exceptions true
+                                                :form-params {:from from :to to}})]
+        (log/info body)
+        (d/success! d* body))
+      (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
+                                            (d/error! d* (ex-info (str "error!!!" (:status ex))
+                                                                  {:type :mimi
+                                                                    :status (:status ex)
+                                                                    :body (:body ex)}))))
+      (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
+                                                 {:type :mimi
+                                                  :status 500
+                                                  :body (.getMessage e)})))
+      ))
+    d*))
   )
 
 (defrecord MockMimi [base-url token]

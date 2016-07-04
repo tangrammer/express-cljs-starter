@@ -148,6 +148,10 @@
                                           (assoc :id ::card/register-digital-cards
                                                  :oauth {:post scopes/user}))]
 
+                 ["/transfer/from" (-> (card/transfer user-store mimi)
+                                       (assoc :id ::card/transfer
+                                              :oauth {:post scopes/user}))]
+
                  ["/" [
                        [
                         ["" :card-id] [

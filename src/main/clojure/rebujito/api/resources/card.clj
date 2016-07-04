@@ -371,3 +371,23 @@
                                            :balanceCurrencyCode (:currency-code app-config)})))
              }}}
    (merge (util/common-resource :me/cards))))
+
+(defn transfer [user-store mimi]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :body {:cardNumber String
+                                   :cardPin String}}
+               :response (fn [ctx]
+                           (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
+                                        card-data (get-card-data user-store user-id)
+                                        to (:cardNumber card-data)
+                                        from (-> ctx :parameters :body :cardNumber)
+                                        fromPin (-> ctx :parameters :body :cardPin)
+                                        ;; TODO verify pin
+                                        success? (when (and to from fromPin) (p/transfer mimi from to))]
+                            (if success?
+                              (util/>200 ctx {:status "ok"})
+                              (util/>500 ctx {:status "error"}))
+                              ))}}}
+
+   (merge (util/common-resource :me/cards))))
