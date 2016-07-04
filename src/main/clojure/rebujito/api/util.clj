@@ -150,7 +150,7 @@
 
 (defn user-profile-data [ctx user-store submarket]
   (let [auth-user-id (authenticated-user-id ctx)
-        mongo-user (p/find user-store (:user-id auth-user-id))]
+        mongo-user (p/find user-store auth-user-id)]
     (generate-user-data mongo-user submarket)))
 
 
