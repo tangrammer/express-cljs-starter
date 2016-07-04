@@ -80,9 +80,9 @@
                                              :oauth {:put scopes/reset-password}
                                              :check-valid-token-store true))]
 
-        ["/login/change-username" (-> (login/change-username authorizer authenticator user-store token-store)
-                                      (assoc :id ::login/change-username
-                                             :oauth {:put scopes/reset-username}
+        ["/login/change-email" (-> (login/change-email authorizer authenticator user-store token-store)
+                                      (assoc :id ::login/change-email
+                                             :oauth {:put scopes/change-email}
                                              :check-valid-token-store true))]
         ["/devices/register" (-> (devices/register store)
                                  (assoc :id ::devices/register))]
@@ -107,11 +107,15 @@
                ["/logout/"  (-> (login/logout authorizer)
                                 (assoc :id ::login/logout
                                        :oauth {:get scopes/user}))]
-
+               ["/login/change-email" (-> (login/me-change-email user-store crypto authenticator authorizer mailer)
+                                          (assoc :id ::login/me-change-email
+                                                 :oauth {:post scopes/user}))]
                ["/login/validate-password" (-> (login/validate-password user-store crypto authenticator)
                                                (assoc :id ::login/validate-password
                                                       :oauth {:post scopes/user}))]
 
+               ;; deprecacted
+               ;; TODO check with Marcing if we can remove "login/reset-usernamex"
                ["/login/reset-username" (-> (login/reset-username authorizer authenticator user-store crypto mailer)
                                              (assoc :id ::login/reset-username
                                              :oauth {:post scopes/user}))]

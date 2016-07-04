@@ -12,8 +12,11 @@
 
 
 (def schema {:reset-username {:post {:password String}}
-             :change-username {:put {:new-username String}}
+             :change-email {:post {:new-email String
+                                   :password String}}
+
              :change-password {:put {:new-password String}}
+
              :forgot-password {:post {:userName String
                                       :emailAddress String}}
              :validate-password {:post {(s/optional-key :encoded) Boolean
@@ -23,25 +26,59 @@
   (let [user (p/read-token authenticator token)
         user (p/find user-store (:user-id user))
         valid-pw? (p/check crypto pw (:password user))]
-    valid-pw?))
+    (if valid-pw?
+      user
+      nil)))
 
-(defn change-username [authorizer authenticator user-store token-store]
-  ;; todo validate that token still is valid
+(defn change-email [authorizer authenticator user-store token-store]
   (-> {:methods
-       {:put {:parameters {:query {:access_token String}
-                            :body (-> schema :change-username :put)}
+       {:put {:parameters {:query {:access_token String}}
               :response (fn [ctx]
                            (dcatch ctx
                                    (d/let-flow [authenticated-data (util/authenticated-data ctx)
                                                 user-id (:user-id authenticated-data)
-                                                new-username (get-in ctx [:parameters :body :new-username])
-                                                updated? (p/update-by-id! user-store user-id  {:emailAddress new-username})]
+                                                new-email (:new-email authenticated-data)
+                                                updated? (p/update-by-id! user-store user-id {:emailAddress new-email
+                                                                                              :verifiedEmail true})]
                                                (if (pos? (.getN updated?))
                                                  (do
                                                    (p/invalidate! authorizer (get-in ctx [:parameters :query :access_token]))
                                                    (util/>200 ctx nil))
                                                  (util/>400 ctx (str "transaction failed"))
                                                  ))))}}}
+
+
+      (merge (util/common-resource :login))))
+
+
+
+(defn me-change-email [user-store crypto authenticator authorizer mailer]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :body (-> schema :change-email :post)}
+               :response (fn [ctx]
+                           (dcatch ctx
+                                   (d/let-flow [valid-data (valid-pw? authenticator user-store crypto
+                                                                      (get-in ctx [:parameters :query :access_token])
+                                                                      (get-in ctx [:parameters :body :password]))
+                                                access-token  (p/grant authorizer
+                                                                       (merge (select-keys valid-data [:_id])
+                                                                              (select-keys (-> ctx :parameters :body)
+                                                                                           [:new-email]))
+                                                                       #{scopes/change-email})
+
+                                                send (when (and valid-data access-token)
+                                                       (p/send mailer {:subject (format "Verify your new-email" )
+                                                                       :to (-> ctx :parameters :body :new-email)
+                                                                       :content access-token}))
+
+                                                ]
+
+                                               (if valid-data
+                                                 (if (and access-token send)
+                                                   (util/>200 ctx nil)
+                                                   (util/>400 ctx (str "transaction failed")))
+                                                 (util/>403 ctx {:message (str "Forbidden: " "password doesn't match")})))))}}}
 
 
       (merge (util/common-resource :login))))
@@ -59,7 +96,7 @@
                                                   data (assoc (select-keys [:emailAddress] authenticated-data)
                                                               :_id (:user-id authenticated-data)
                                                               )
-                                                  access-token  (p/grant authorizer data #{scopes/reset-username})
+                                                  access-token  (p/grant authorizer data #{scopes/change-email})
 
                                                   send (p/send mailer {:subject (format "sending OTP to reset email" )
                                                                        :to (:emailAddress authenticated-data)

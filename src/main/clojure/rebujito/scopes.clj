@@ -8,4 +8,4 @@
 
 (def reset-password ::reset-password)
 
-(def reset-username ::reset-username)
+(def change-email ::change-email)

@@ -118,17 +118,19 @@
 
 (deftest change-username  ;; => emailAddress
 
-  (testing ::login/change-username
+  (testing ::login/me-change-email
     (let [port (-> *system*  :webserver :port)
-          send-token (atom "")]
+          send-token (atom "")
+          new-email (generate-mail "juanantonioruz+%s@gmail.com")]
 
-      (let [path (get-path ::login/reset-username)
+      (let [path (get-path ::login/me-change-email)
             http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                      {:throw-exceptions false
                                       :body-encoding "UTF-8"
                                       :body (json/generate-string
-                                             (assoc (g/generate (:post (:reset-username login/schema)))
-                                                    :password  (:password *user-account-data*)))
+                                             (assoc (g/generate (:post (:change-email login/schema)))
+                                                    :password  (:password *user-account-data*)
+                                                    :new-email new-email))
                                       :content-type :json})
 ;            body (parse-body http-response)
             ]
@@ -142,25 +144,33 @@
         )
 
 
-      (let [path (get-path ::login/change-username)
-            new-username (generate-mail "juanantonioruz+%s@gmail.com")
+      (let [path (get-path ::login/change-email)
+
             http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path @send-token)
                                      {:throw-exceptions false
                                       :body-encoding "UTF-8"
-                                      :body (json/generate-string
-                                             (assoc (g/generate (:put (:change-username login/schema)))
-                                                    :new-username new-username))
-                                      :content-type :json})
-;            body (parse-body http-response)
-            ]
+                                      :content-type :json})]
 
         (is (= 200 (-> http-response :status)))
         (is (= "" (-> http-response :body bs/to-string)))
-        (let [user-by-email (first (p/find (-> *system* :user-store) {:emailAddress new-username}))]
+        (let [user-by-email (first (p/find (-> *system* :user-store) {:emailAddress new-email}))]
           (is (=  (-> *user-account-data*
                       (dissoc  :_id :password :birthDay :birthMonth)
-                      (assoc  :emailAddress new-username :verifiedEmail false ))
-                  (dissoc user-by-email :_id :password :birthMonth :birthDay))))))))
+                      (assoc  :emailAddress new-email :verifiedEmail true ))
+                  (dissoc user-by-email :_id :password :birthMonth :birthDay)))))
+
+
+      ;; OPT checks
+      (let [path (get-path ::login/change-email)
+
+            http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path @send-token)
+                                     {:throw-exceptions false
+                                      :body-encoding "UTF-8"
+                                      :content-type :json})]
+
+        (is (= 401 (-> http-response :status))))
+
+      )))
 
 
 
