@@ -178,4 +178,36 @@
         (.catch
           (fn [err]
             (log/error "getting coupons" err)
-            (.json (.status res 500))))))))
+            (.json (.status res 500) #js {:error (.toString err)})))))))
+
+
+(.post app "/mimi/starbucks/account/:cardNumber/verify-pin"
+  (fn
+    [req res]
+    "verify pin"
+    (let [card-number (-> req .-params .-cardNumber)
+          pin (-> req .-body .-pin)
+          p0 (.getPin micros card-number)]
+      (.then p0
+        (fn [real-pin]
+          (.json res #js {:result (= real-pin pin)})))
+      (.catch p0
+        (fn [err]
+          (log/error "verifying pin" err)
+          (.json (.status res 500) #js {:error (.toString err)}))))))
+
+(.post app "/mimi/starbucks/account/transfer"
+  (fn
+    [req res]
+    "transfer card balances"
+    (let [from (-> req .-body .-from)
+          to (-> req .-body .-to)
+          replace (-> req .-body .-replace)
+          p0 (.transfer micros from to replace)]
+      (.then p0
+        (fn []
+          (.json res #js {:success true})))
+      (.catch p0
+        (fn [err]
+          (.status res 500)
+          (.json res #js {:error (.toString err)}))))))
