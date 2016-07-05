@@ -148,9 +148,13 @@
                                           (assoc :id ::card/register-digital-cards
                                                  :oauth {:post scopes/user}))]
 
-                 ["/transfer/from" (-> (card/transfer user-store mimi)
+                 ["/transfer/from" (-> (card/transfer-from user-store mimi)
                                        (assoc :id ::card/transfer
                                               :oauth {:post scopes/user}))]
+
+                 ["/transfer/to" (-> (card/transfer-to user-store mimi)
+                                     (assoc :id ::card/transfer
+                                            :oauth {:post scopes/user}))]
 
                  ["/" [
                        [

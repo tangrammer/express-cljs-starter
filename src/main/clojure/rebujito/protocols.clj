@@ -81,6 +81,9 @@
   (remove-address [this oid address])
   (update-address [this oid address]))
 
+(defprotocol UserCardStore
+  (update-card-number [this oid old-card-number new-card-number]))
+
 (defprotocol ApiClient
   (login [this id pw]))
 

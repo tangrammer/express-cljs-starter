@@ -360,6 +360,9 @@
       (update-push-by-id!* this oid  {:addresses address})
       address-id))
 
+  protocols/UserCardStore
+  (update-card-number [this oid old-card-number new-card-number]
+    (update!* this {:_id (ObjectId. oid) "cards.cardNumber" old-card-number} {"cards.$.cardNumber" new-card-number}))
 
   protocols/MutableStorage
   (generate-id [this data]
