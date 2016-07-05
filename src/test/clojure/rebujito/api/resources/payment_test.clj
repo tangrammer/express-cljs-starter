@@ -436,7 +436,7 @@
         (let [mails @(:mails (:mailer *system*))]
 
           (is (= 3 (count mails)))
-          (is (= (select-keys (last mails) [:subject]) {:subject "Auto-Reload: your card has been topped up."}))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
 ))
 
