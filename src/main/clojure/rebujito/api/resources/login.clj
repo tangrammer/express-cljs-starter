@@ -148,13 +148,12 @@
                                                     _ (log/info user)
                                                     data {:_id (str (:_id user))}
                                                     access-token (p/grant authorizer data  #{scopes/reset-password})
+                                                    link (format "%s/reset-password/%s/%s" (:client-url app-config) access-token email)
                                                     _ (log/info "JOLIN::: "(p/read-token  authenticator access-token ))
-                                                    send (p/send mailer {:subject (format "sending forgot-password to %s" (get-in ctx [:parameters :body :userName]))
+                                                    send (p/send mailer {:subject "Reset your Starbucks Rewards Password"
                                                                          :to (:emailAddress user)
-
-                                                                         :content (format "%s/reset-password/%s/%s"
-                                                                                          (:client-url app-config)
-                                                                                          access-token email)
+                                                                         :content-type "text/html"
+                                                                         :content (format "Please click <a href=\"%s\">here</a> to reset your password." link)
                                                                          })
                                                     _ (log/info send)
                                                     ]
