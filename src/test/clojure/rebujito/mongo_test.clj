@@ -131,7 +131,7 @@
     (is (=  webhook-uuid  (p/webhook-uuid (:webhook-store *system*) uuid)))
     (is (empty? (seq  (p/find (:webhook-store *system*)))))
     (is (=  {:uuid webhook-uuid
-             :state :new}  (select-keys (p/current (:webhook-store *system*) webhook-uuid)
+             :state "ready"}  (select-keys (p/current (:webhook-store *system*) webhook-uuid)
                                         [:uuid :state])))
     (is (= 1 (count(seq  (p/find (:webhook-store *system*))))))
     (is (=  true  (p/change-state (:webhook-store *system*) webhook-uuid :error)))
@@ -140,7 +140,7 @@
                                            [:uuid :state])))
 
     (is (=  {:uuid (str webhook-uuid "00")
-             :state :new}  (select-keys (p/current (:webhook-store *system*) (str webhook-uuid "00"))
+             :state "ready"}  (select-keys (p/current (:webhook-store *system*) (str webhook-uuid "00"))
                                         [:uuid :state])))
 
     (is (= 2 (count(seq  (p/find (:webhook-store *system*))))))

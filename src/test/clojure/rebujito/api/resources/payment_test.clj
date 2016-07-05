@@ -396,7 +396,6 @@
             body (parse-body res)
             ]
         (is (= 200 (-> res :status)))
-;        (is (= nil body))
         (let [mails @(:mails (:mailer *system*))]
           (is (= 2 (count mails)))))
 
@@ -441,4 +440,166 @@
 ))
 
 
+    ))
+
+
+
+(deftest card-check-error
+  (testing ::card-reload/check
+
+    (let [port (-> *system*  :webserver :port)
+          r (-> *system* :docsite-router :routes)
+          payment-method-id (atom "")
+          card (create-digital-card*)
+          card-id (:cardId card)
+          webhook-uuid (p/webhook-uuid (-> *system*  :webhook-store) (:cardNumber card))
+          ]
+
+      (let [path (get-path ::payment/methods)
+            {:keys [status body] :as all}
+            (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                            {:throw-exceptions false
+                             :body-encoding "UTF-8"
+                             :body (json/generate-string
+                                    {
+                                     :billingAddressId "string"
+                                     :accountNumber "4000000000000002"
+                                     :default "false"
+                                     :nickname "string"
+                                     :paymentType "visa"
+                                     :cvn "12345"
+                                     :fullName "string"
+                                     :expirationMonth 11
+                                     :expirationYear 2018
+                                     }
+                                    )
+                             :content-type :json}))
+                    _ (is (= status 200))
+            body (-> (bs/to-string body)
+                     (json/parse-string true))]
+
+
+        (is  (:paymentMethodId body))
+        (reset! payment-method-id (:paymentMethodId body))
+        )
+
+      (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
+        (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :body (json/generate-string
+                                          {
+                                           :amount 149.00,
+                                           :autoReloadType "Amount",
+                                           :day 0,
+                                           :paymentMethodId @payment-method-id
+                                           :status "active",
+                                           :triggerAmount 149.00,
+                                           }
+                                          )
+                                   :content-type :json})
+                      (print-body)
+                      :status))))
+
+
+      (let [path (bidi/path-for r ::card-reload/check :card-number (:cardNumber card))
+            res @(http/get (format "http://localhost:%s%s"  port path)
+                           {:throw-exceptions false
+                            :body-encoding "UTF-8"
+
+                            :content-type :json})
+            body (parse-body res)
+            ]
+        (is (= 200 (-> res :status)))
+;        (is (= nil body))
+        (let [mails @(:mails (:mailer *system*))]
+
+          (is (= 2 (count mails)))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
+          ))
+
+      (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
+        (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :body (json/generate-string
+                                          {
+                                           :amount 151.00,
+                                           :autoReloadType "Amount",
+                                           :day 0,
+                                           :paymentMethodId @payment-method-id
+                                           :status "active",
+                                           :triggerAmount 151.00,
+                                           }
+                                          )
+                                   :content-type :json})
+                      (print-body)
+                      :status))))
+
+      (let [path (bidi/path-for r ::card-reload/check :card-number (:cardNumber card))
+            res @(http/get (format "http://localhost:%s%s"  port path)
+                           {:throw-exceptions false
+                            :body-encoding "UTF-8"
+
+                            :content-type :json})
+            body (parse-body res)
+            ]
+
+        (is (= 200 (-> res :status)))
+        (is (-> body :card :autoReloadProfile :active))
+        (is (= (:cardNumber card) (:card-number body)))
+        (is (= card-id (-> body :card :cardId)))
+        (is (-> body :payment-data))
+        (let [mails @(:mails (:mailer *system*))]
+
+          (is (= 3 (count mails)))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
+          )
+        )
+
+      (p/change-state (-> *system* :webhook-store) webhook-uuid :error)
+
+      (let [path (bidi/path-for r ::card-reload/check :card-number (:cardNumber card))
+            res @(http/get (format "http://localhost:%s%s"  port path)
+                           {:throw-exceptions false
+                            :body-encoding "UTF-8"
+
+                            :content-type :json})
+            body (parse-body res)
+            ]
+
+        (is (= 200 (-> res :status)))
+        (is (nil? body ))
+        (let [mails @(:mails (:mailer *system*))]
+          (is (= 3 (count mails)))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
+          )
+        )
+
+      (is (= "error" (:state (p/current (-> *system* :webhook-store) webhook-uuid))))
+      (p/change-state (-> *system* :webhook-store) webhook-uuid :ready)
+
+      (let [path (bidi/path-for r ::card-reload/check :card-number (:cardNumber card))
+            res @(http/get (format "http://localhost:%s%s"  port path)
+                           {:throw-exceptions false
+                            :body-encoding "UTF-8"
+
+                            :content-type :json})
+            body (parse-body res)
+            ]
+
+        (is (= 200 (-> res :status)))
+        (is (-> body :card :autoReloadProfile :active))
+        (is (= (:cardNumber card) (:card-number body)))
+        (is (= card-id (-> body :card :cardId)))
+        (is (-> body :payment-data))
+        (let [mails @(:mails (:mailer *system*))]
+
+          (is (= 4 (count mails)))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
+          )
+        )
+      (is (= "done" (:state (p/current (-> *system* :webhook-store) webhook-uuid))))
+
+      )
     ))
