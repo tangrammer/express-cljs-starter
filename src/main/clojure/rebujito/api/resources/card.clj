@@ -183,6 +183,8 @@
     "44921" "Head Office - Test Store"
     ""))
 
+(def points-per-star 5)
+
 (defn- mimi-earn-to-rebujito-tx [mimi-tx]
   {:historyId (:id mimi-tx)
    :historyType "SvcTransactionWithPoints"
@@ -196,7 +198,7 @@
    :points [{
      :pointType "Default"
      :promotionName "Default"
-     :pointsEarned (int (/ (-> mimi-tx :amount Math/abs) 5))
+     :pointsEarned (int (/ (-> mimi-tx :amount Math/abs) points-per-star))
      :localAmount 0.0,
      :localCurrency 0.0,
    }]
