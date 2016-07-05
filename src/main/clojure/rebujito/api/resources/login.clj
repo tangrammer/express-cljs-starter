@@ -72,18 +72,20 @@
                                                                        #{scopes/change-email})
 
                                                 send (when (and valid-data access-token)
-                                                       (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
-                                                                       :to (-> ctx :parameters :body :new-email)
-                                                                       :content-type "text/html"
-                                                                       :content (template/render-file
-                                                                                  "templates/email/verify_email.html"
-                                                                                  (merge
-                                                                                    ; TODO don't have user yet - removed from template
-                                                                                    ; (select-keys user [:firstName :lastName])
-                                                                                    {:link (format "%s/change-email/%s"
-                                                                                                       (:client-url app-config)
-                                                                                                       access-token)}))
-                                                                                          }))
+                                                       (let [link (format "%s/change-email/%s"
+                                                                          (:client-url app-config)
+                                                                          access-token)]
+                                                         (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
+                                                                         :to (-> ctx :parameters :body :new-email)
+                                                                         :content-type "text/html"
+                                                                         :hidden link
+                                                                         :content (template/render-file
+                                                                                   "templates/email/verify_email.html"
+                                                                                   (merge
+                                        ; TODO don't have user yet - removed from template
+                                        ; (select-keys user [:firstName :lastName])
+                                                                                    {:link link}))
+                                                                         })))
 
                                                 ]
 
@@ -160,6 +162,7 @@
                                                     _ (log/info "JOLIN::: "(p/read-token  authenticator access-token ))
                                                     send (p/send mailer {:subject "Reset your Starbucks Rewards Password"
                                                                          :to (:emailAddress user)
+                                                                         :hidden link
                                                                          :content-type "text/html"
                                                                          :content (template/render-file
                                                                                     "templates/email/reset_password.html"
