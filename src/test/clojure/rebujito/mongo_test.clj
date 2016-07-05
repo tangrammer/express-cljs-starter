@@ -1,5 +1,7 @@
 (ns rebujito.mongo-test
   (:require
+   [taoensso.timbre :as log]
+   [rebujito.logging :as log-levels]
    [schema-generators.generators :as g]
    [rebujito.config :refer (config)]
    [rebujito.schemas :as rs]
@@ -15,7 +17,10 @@
 
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
 
-
+(log/set-config! (-> log-levels/timbre-info-config
+                     (assoc  :level :debug)
+                     (update-in [:ns-blacklist] (fn [c]
+                                                  (conj c "org.mongodb.driver.cluster" "org.mongodb.driver.connection" "org.mongodb.driver.protocol.*" "io.netty.buffer.PoolThreadCache"))) ))
 
 (deftest test-auto-reload-profile
   (testing :test-auto-reload-profile

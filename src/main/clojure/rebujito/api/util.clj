@@ -60,7 +60,9 @@
       (catch Exception e
         (log/error "CALL NO BS!>>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters))
         ))
-    (log/info "CALL >>  "  (:response ctx) " :: " (-> ctx :request :uri) " :::: " (-> ctx :parameters))))
+    (do
+      (log/info "HTTP CALL >>" (clojure.string/upper-case (-> ctx :request :request-method)) " " (-> ctx :request :uri) " => " (:status (:response ctx))  )
+      (log/debug "HTTP PARAMS >> "  (-> ctx :parameters)))))
 
 
 (def access-control
@@ -86,7 +88,7 @@
 (defmethod yada.security/verify :jwt
   [ctx {:keys [verify]}]
   (let [token (get-in ctx [:parameters :query :access_token])]
-    (log/debug ">>>>> token" token)
+    (log/debug "yada.security/verifying token: " token)
     (verify token)))
 
 
