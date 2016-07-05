@@ -67,7 +67,6 @@
           (str "Not ready to db-find using: " (if (nil? data) "nil" (type data))))))
 
 (defn- update!* [this data-query data-update]
-
   (mc/update (:db this) (:collection this) data-query {$set  data-update} {:multi true}))
 
 (defn- update-by-id!* [this hex-id data]
