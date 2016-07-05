@@ -435,7 +435,7 @@
         (let [mails @(:mails (:mailer *system*))]
 
           (is (= 3 (count mails)))
-          (is (= (select-keys (last mails) [:subject]) {:subject "Auto-Reload: your card has been topped up."}))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
 ))
 
@@ -515,7 +515,7 @@
         (let [mails @(:mails (:mailer *system*))]
 
           (is (= 2 (count mails)))
-          (is (= (select-keys (last mails) [:subject]) {:subject "Auto-Reload: your card has been topped up."}))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           ))
 
       (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
@@ -553,7 +553,7 @@
         (let [mails @(:mails (:mailer *system*))]
 
           (is (= 3 (count mails)))
-          (is (= (select-keys (last mails) [:subject]) {:subject "Auto-Reload: your card has been topped up."}))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
         )
 
@@ -572,7 +572,7 @@
         (is (nil? body ))
         (let [mails @(:mails (:mailer *system*))]
           (is (= 3 (count mails)))
-          (is (= (select-keys (last mails) [:subject]) {:subject "Auto-Reload: your card has been topped up."}))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
         )
 
@@ -596,7 +596,7 @@
         (let [mails @(:mails (:mailer *system*))]
 
           (is (= 4 (count mails)))
-          (is (= (select-keys (last mails) [:subject]) {:subject "Auto-Reload: your card has been topped up."}))
+          (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
         )
       (is (= "done" (:state (p/current (-> *system* :webhook-store) webhook-uuid))))

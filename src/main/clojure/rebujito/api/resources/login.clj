@@ -6,6 +6,7 @@
    [rebujito.scopes :as scopes]
    [rebujito.api.util :as util]
    [rebujito.util :refer (dcatch error*)]
+   [rebujito.template :as template]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
@@ -71,11 +72,18 @@
                                                                        #{scopes/change-email})
 
                                                 send (when (and valid-data access-token)
-                                                       (p/send mailer {:subject (format "Verify your new-email" )
+                                                       (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
                                                                        :to (-> ctx :parameters :body :new-email)
-                                                                       :content (format "%s/change-email/%s"
-                                                                                          (:client-url app-config)
-                                                                                          access-token)}))
+                                                                       :content-type "text/html"
+                                                                       :content (template/render-file
+                                                                                  "templates/email/verify_email.html"
+                                                                                  (merge
+                                                                                    ; TODO don't have user yet - removed from template
+                                                                                    ; (select-keys user [:firstName :lastName])
+                                                                                    {:link (format "%s/change-email/%s"
+                                                                                                       (:client-url app-config)
+                                                                                                       access-token)}))
+                                                                                          }))
 
                                                 ]
 
@@ -148,14 +156,16 @@
                                                     _ (log/info user)
                                                     data {:_id (str (:_id user))}
                                                     access-token (p/grant authorizer data  #{scopes/reset-password})
+                                                    link (format "%s/reset-password/%s/%s" (:client-url app-config) access-token email)
                                                     _ (log/info "JOLIN::: "(p/read-token  authenticator access-token ))
-                                                    send (p/send mailer {:subject (format "sending forgot-password to %s" (get-in ctx [:parameters :body :userName]))
+                                                    send (p/send mailer {:subject "Reset your Starbucks Rewards Password"
                                                                          :to (:emailAddress user)
-
-                                                                         :content (format "%s/reset-password/%s/%s"
-                                                                                          (:client-url app-config)
-                                                                                          access-token email)
-                                                                         })
+                                                                         :content-type "text/html"
+                                                                         :content (template/render-file
+                                                                                    "templates/email/reset_password.html"
+                                                                                    (merge
+                                                                                      (select-keys user [:firstName :lastName])
+                                                                                      {:link link}))})
                                                     _ (log/info send)
                                                     ]
                                                    (util/>200 ctx (if send nil send))))

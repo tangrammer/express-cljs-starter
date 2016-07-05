@@ -1,0 +1,50 @@
+<style>
+table {
+	margin: auto;
+}
+.topbar {
+    height: 20px;
+    background: #006341;
+}
+
+.greet {
+    height: 40px;
+    background: #f7f7f7;
+    text-align: center;
+}
+.main {
+	text-align: justify;
+}
+.footer{
+	height: 20px;
+	background: #f0f0f0;
+}
+</style>
+<table width="600px">
+    <thead>
+        <tr class="topbar">
+            <td></td>
+        </tr>
+        <tr class="greet">
+            <td>
+                <h1>Verify Email</h1></td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="main">
+            	Hi,
+            	<br /><br />
+                Please click on the link below to verify your email
+                <br />
+                <br />
+                <a href="{{link}}">Verify email</a>
+                <br /><br /> OR
+                <br /><br /> copy the link below
+                <br />
+                <br />{{link}}
+            </td>
+        </tr>
+        <tr class="footer"><td></td></tr>
+    </tbody>
+</table>
