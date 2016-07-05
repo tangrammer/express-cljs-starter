@@ -128,11 +128,16 @@
                                          user-id (:user-id auth-data)
                                          mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                   :customerId (id>mimi-id user-id)})
-                                         increment-balance (when mimi-res
+                                         increment-loyalty (when mimi-res
                                                              (p/increment-balance! mimi card-number 50 :loyalty))
+                                         increment-rewards (when mimi-res
+                                                             (p/increment-balance! mimi card-number 50 :rewards))
                                          card (new-physical-card {:cardNumber card-number})
                                          card-id (p/insert-card! user-store user-id card)]
-                                        increment-balance ;; force evaluation of this value
+
+                                         ;; force evaluation
+                                         increment-loyalty
+                                         increment-rewards
                                         (util/>200 ctx (merge
                                                         mocks/greenImageUrls
                                                         (blank-card-data)
@@ -151,11 +156,16 @@
                                              user-id (:user-id auth-data)
                                              mimi-res (p/register-physical-card mimi {:cardNumber card-number
                                                                                       :customerId  (id>mimi-id user-id)})
-                                             increment-balance (when mimi-res
+                                             increment-loyalty (when mimi-res
                                                                  (p/increment-balance! mimi card-number 50 :loyalty))
+                                             increment-rewards (when mimi-res
+                                                                 (p/increment-balance! mimi card-number 50 :rewards))
                                              card (new-digital-card {:cardNumber card-number})
                                              card-id (p/insert-card! user-store user-id card)]
-                                             increment-balance ;; force evaluation of this value
+
+                                             ;; force evaluation
+                                             increment-loyalty
+                                             increment-rewards
                                              (util/>200 ctx (merge
                                                              mocks/greenImageUrls
                                                             (blank-card-data)
