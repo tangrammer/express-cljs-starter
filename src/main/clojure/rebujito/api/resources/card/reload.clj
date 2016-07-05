@@ -93,7 +93,7 @@
                                                                                                                   (manifold.deferred/error-deferred e)))))
 
                                                                                        send-mail (when (and payment-data mimi-card-data)
-                                                                                                   (p/send mailer {:to #_(:emailAddress user) "marcin@jekot.net"
+                                                                                                   (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
                                                                                                                    :subject "Confirmation of Starbucks Card Automatic Reload"
                                                                                                                    :content-type "text/html"
                                                                                                                    :content (template/render-file
