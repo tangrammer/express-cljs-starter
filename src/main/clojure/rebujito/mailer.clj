@@ -14,9 +14,12 @@
 (def Mail {:subject String
            :to (s/conditional string? String :else [String])
            :from String
-           :content String})
+           :content String
+           (s/optional-key :content-type) (s/enum "text/plain" "text/html")})
 
 (s/validate Mail {:to ["hoal"] :subject "asfd"  :from "asda" :content "asfda"} )
+(s/validate Mail {:to ["hoal"] :subject "asfd"  :from "asda" :content "asfda" :content-type "text/html"} )
+
 (defn- generate-to [to]
   (if (= (type to) clojure.lang.PersistentVector)
     (mapv #(hash-map :email %) to)
@@ -49,7 +52,8 @@
                                       {:personalizations [{:to (generate-to (:to data))}],
                                        :from {:email (:from data)},
                                        :subject (:subject data)
-                                       :content [{:type "text/plain", :value (:content data)}]})})]
+                                       :content [{:type (or (:content-type data) "text/plain")
+                                                  :value (:content data)}]})})]
           (if (= 202 (:status res))
             true
             (error* 500 [500 (-> res :body bs/to-string )]))))))))
