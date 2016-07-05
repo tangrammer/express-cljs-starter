@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="subject" content="Confirmation of Starbucks Card Automatic Reload">
+  </head>
+  <body>
+    <div>
+    <p>Thank you for signing up for Automatic Reload on your Starbucks Card.</p>
+
+    <p>This email is confirmation that your Card has recently been reloaded. </p>
+
+    <p>Please see below for details of your reload amount. Values listed are in ZAR.<hr /></p>
+
+    <p><strong>Billing Address:</strong><br />
+    {{address.firstName}} {{address.lastName}}<br/>
+    {{address.addressLine1}}<br/>
+    {{address.addressLine2}}<br/>
+    {{address.city}}<br/>
+    {{address.postalCode}}<br/>
+    {{emailAddress}}<br/>
+    </p>
+    <p><strong>Order Detail:</strong><hr/>
+    <table width="700">
+    <tr>
+    <td style="width:20%">
+    Item</td>
+    <td style="width:30%">
+    Description</td>
+    <td align="center" style="width:10%">
+    Qty</td>
+    <td style="width:20%" align="right">
+    Unit Price</td>
+    <td style="width:20%" align="right">
+    Price</td>
+    </tr>
+
+    <tr><td colspan="5"><hr /></td></tr>
+
+    <tr>
+      <td>{{cardNumber}}</td>
+      <td>Starbucks Stored Value Credit</td>
+      <td>{{amount}}</td>
+      <td>1.00</td>
+      <td>{{amount}}.00</td>
+    </tr>
+
+    <tr><td colspan="5"><hr /></td></tr>
+    <tr><td colspan="4" align="right">Merchandise Subtotal:</td><td colspan="1" align="right">{{amount}}</td></tr>
+    <tr><td colspan="4" align="right">Estimated Tax:</td><td colspan="1" align="right">0</td></tr>
+    <tr><td colspan="4" align="right">Shipping:</td><td colspan="1" align="right">0</td></tr>
+    <tr><td colspan="3"></td><td colspan="2"><hr/></td></tr>
+    <tr><td colspan="4" align="right">Total Charge:</td><td colspan="2" align="right">{{amount}}</td></tr>
+    </table><hr/>
+    </p>
+
+    <p>Your new balance is {{balance}}.</p>
+
+    <p>If you have any questions or concerns regarding this transaction, please contact us by calling us at 1-800-782-7282. Starbucks customer service representatives can be reached by phone Monday - Friday, 5AM - 8PM (PST)and Saturday - Sunday, 6am - 4pm (PST).</p>
+
+    <p>For additional information regarding the Starbucks Card, please visit our FAQ area at <a href="http://www.starbucks.com/customer-service/faqs/card">Starbuck Card Frequently Asked Questions</a></p>
+    </div>
+
+  </body>
+</html>

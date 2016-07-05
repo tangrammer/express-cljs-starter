@@ -9,11 +9,11 @@
    [rebujito.util :refer (dtry dcatch error*)]
    [rebujito.mongo :refer [id>mimi-id]]
    [rebujito.store.mocks :as mocks]
+   [rebujito.template :as template]
    [monger.operators :refer [$push]]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
-
 
 (def schema {:reload {:post {:amount Long
                              :paymentMethodId String
@@ -73,8 +73,9 @@
                                                                                                        (fn [e]
                                                                                                          (p/change-state webhook-store webhook-uuid :error)
                                                                                                          (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
-                                                                                                                         :subject "Payment Error"
-                                                                                                                         :content "There was a problem processing the payment for your Starbucks Auto-Reload."})
+                                                                                                                         :subject "IMPORTANT INFORMATION REGARDING YOUR STARBUCKS CARD SUBSCRIPTION"
+                                                                                                                         :content (template/render-file "templates/html/reload_payment_failed.html" {})})
+
                                                                                                          (manifold.deferred/error-deferred e))))
 
                                                                                   mimi-card-data (when payment-data
@@ -83,18 +84,21 @@
                                                                                                            (fn [e]
                                                                                                              (p/change-state webhook-store webhook-uuid :error)
                                                                                                              (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
-                                                                                                                             :subject "Reload Error"
-                                                                                                                             :content "There was a problem reloading your Starbucks Stored Value Card."})
+                                                                                                                             :subject "IMPORTANT INFORMATION REGARDING YOUR STARBUCKS CARD SUBSCRIPTION"
+                                                                                                                             :content (template/render-file "templates/html/reload_micros_failed.html" {})})
                                                                                                              (manifold.deferred/error-deferred e)))))
 
                                                                                   send-mail (when (and payment-data mimi-card-data)
                                                                                               (p/send mailer {:to #_(:emailAddress user) "marcin@jekot.net"
-                                                                                                              :subject "Auto-Reload: your card has been topped up."
-                                                                                                              :content (format  "Hello %s!\nYour Starbucks card %s has been topped up with R %s.\nYour current balance is R %s. Enjoy it!"
-                                                                                                                                (:firstName user)
-                                                                                                                                (:cardNumber card)
-                                                                                                                                (:amount autoreload-profile)
-                                                                                                                                (:balance mimi-card-data))}))]
+                                                                                                              :subject "Confirmation of Starbucks Card Automatic Reload"
+                                                                                                              :content-type "text/html"
+                                                                                                              :content (template/render-file
+                                                                                                                        "templates/html/reload_success.html"
+                                                                                                                        {:amount (:amount autoreload-profile)
+                                                                                                                         :balance (:balance mimi-card-data)
+                                                                                                                         :cardNumber card
+                                                                                                                         :address nil})
+                                                                                                              }))]
 
                                                                                  (util/>200 ctx {:user user
                                                                                                  :mimi-card-data mimi-card-data
