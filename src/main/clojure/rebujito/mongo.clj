@@ -465,7 +465,7 @@
     (update-by-id!* this hex-id data)))
 
 
-(def states [:new ::one :two :done])
+(def states [:ready :new ::one :two :done])
 
 (def error-state :error)
 
@@ -516,11 +516,11 @@
     (exist-state? states state)
     (pos?
      (.getN
-      (protocols/update-by-id! this (:_id (protocols/current this webhook-uuid)) {:state state  :time (t/now)}))))
+      (protocols/update-by-id! this (:_id (protocols/current this webhook-uuid)) {:state (name state)  :time (t/now)}))))
   (current [this webhook-uuid]
     (if-let [current (first (protocols/find this {:uuid webhook-uuid}))]
       current
-      (protocols/get-and-insert! this {:uuid webhook-uuid :state (first states) :time (t/now)}))))
+      (protocols/get-and-insert! this {:uuid webhook-uuid :state (name (first states)) :time (t/now)}))))
 
 
 
