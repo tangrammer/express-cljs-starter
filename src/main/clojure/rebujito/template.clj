@@ -1,4 +1,4 @@
-(ns rebujito.api.resources.card.reload
+(ns rebujito.template
   (:require
    [selmer.parser :as selmer]))
 

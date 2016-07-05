@@ -74,7 +74,7 @@
                                                                                                          (p/change-state webhook-store webhook-uuid :error)
                                                                                                          (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
                                                                                                                          :subject "IMPORTANT INFORMATION REGARDING YOUR STARBUCKS CARD SUBSCRIPTION"
-                                                                                                                         :content (template/render-file "templates/html/reload_payment_failed.html" {})})
+                                                                                                                         :content (template/render-file "templates/email/reload_payment_failed.html" {})})
 
                                                                                                          (manifold.deferred/error-deferred e))))
 
@@ -85,7 +85,7 @@
                                                                                                              (p/change-state webhook-store webhook-uuid :error)
                                                                                                              (p/send mailer {:to [#_(:emailAddress user) "marcin@jekot.net" (:admin-contact app-config)]
                                                                                                                              :subject "IMPORTANT INFORMATION REGARDING YOUR STARBUCKS CARD SUBSCRIPTION"
-                                                                                                                             :content (template/render-file "templates/html/reload_micros_failed.html" {})})
+                                                                                                                             :content (template/render-file "templates/email/reload_micros_failed.html" {})})
                                                                                                              (manifold.deferred/error-deferred e)))))
 
                                                                                   send-mail (when (and payment-data mimi-card-data)
@@ -93,7 +93,7 @@
                                                                                                               :subject "Confirmation of Starbucks Card Automatic Reload"
                                                                                                               :content-type "text/html"
                                                                                                               :content (template/render-file
-                                                                                                                        "templates/html/reload_success.html"
+                                                                                                                        "templates/email/reload_success.html"
                                                                                                                         {:amount (:amount autoreload-profile)
                                                                                                                          :balance (:balance mimi-card-data)
                                                                                                                          :cardNumber card

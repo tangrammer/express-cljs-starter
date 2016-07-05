@@ -76,9 +76,10 @@
                                                                        :to (-> ctx :parameters :body :new-email)
                                                                        :content-type "text/html"
                                                                        :content (template/render-file
-                                                                                  "templates/html/verify_email.html"
+                                                                                  "templates/email/verify_email.html"
                                                                                   (merge
-                                                                                    (select-keys user [:firstName :lastName])
+                                                                                    ; TODO don't have user yet - removed from template
+                                                                                    ; (select-keys user [:firstName :lastName])
                                                                                     {:link (format "%s/change-email/%s"
                                                                                                        (:client-url app-config)
                                                                                                        access-token)}))
@@ -161,7 +162,7 @@
                                                                          :to (:emailAddress user)
                                                                          :content-type "text/html"
                                                                          :content (template/render-file
-                                                                                    "templates/html/reset_password.html"
+                                                                                    "templates/email/reset_password.html"
                                                                                     (merge
                                                                                       (select-keys user [:firstName :lastName])
                                                                                       {:link link}))})
