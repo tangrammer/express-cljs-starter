@@ -6,6 +6,7 @@
    [rebujito.scopes :as scopes]
    [rebujito.api.util :as util]
    [rebujito.util :refer (dcatch error*)]
+   [rebujito.template :as template]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
@@ -71,11 +72,17 @@
                                                                        #{scopes/change-email})
 
                                                 send (when (and valid-data access-token)
-                                                       (p/send mailer {:subject (format "Verify your new-email" )
+                                                       (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
                                                                        :to (-> ctx :parameters :body :new-email)
-                                                                       :content (format "%s/change-email/%s"
-                                                                                          (:client-url app-config)
-                                                                                          access-token)}))
+                                                                       :content-type "text/html"
+                                                                       :content (template/render-file
+                                                                                  "templates/html/verify_email.html"
+                                                                                  (merge
+                                                                                    (select-keys user [:firstName :lastName])
+                                                                                    {:link (format "%s/change-email/%s"
+                                                                                                       (:client-url app-config)
+                                                                                                       access-token)}))
+                                                                                          }))
 
                                                 ]
 
@@ -153,8 +160,11 @@
                                                     send (p/send mailer {:subject "Reset your Starbucks Rewards Password"
                                                                          :to (:emailAddress user)
                                                                          :content-type "text/html"
-                                                                         :content (format "Please click <a href=\"%s\">here</a> to reset your password." link)
-                                                                         })
+                                                                         :content (template/render-file
+                                                                                    "templates/html/reset_password.html"
+                                                                                    (merge
+                                                                                      (select-keys user [:firstName :lastName])
+                                                                                      {:link link}))})
                                                     _ (log/info send)
                                                     ]
                                                    (util/>200 ctx (if send nil send))))
