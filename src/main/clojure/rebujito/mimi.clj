@@ -97,7 +97,7 @@
   (condp = type
     :stored-value "SGC001"
     :loyalty "MSR001"
-    (throw (ex-info ("MIMI: There's no code for this type %s" type) {}))
+    (throw (ex-info (format "MIMI: There's no code for type %s" type) {}))
     )
   )
 
