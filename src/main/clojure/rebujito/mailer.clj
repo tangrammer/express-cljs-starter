@@ -15,6 +15,7 @@
            :to (s/conditional string? String :else [String])
            :from String
            :content String
+           (s/optional-key :hidden) String
            (s/optional-key :content-type) (s/enum "text/plain" "text/html")})
 
 (s/validate Mail {:to ["hoal"] :subject "asfd"  :from "asda" :content "asfda"} )

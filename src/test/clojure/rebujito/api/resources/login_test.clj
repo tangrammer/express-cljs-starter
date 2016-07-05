@@ -112,7 +112,8 @@
         (is (= nil body)))
         (let [mails @(:mails (:mailer *system*))]
           (is (= 2 (count mails)))
-          (is (.contains (:subject (last mails)) "sending forgot-password")  )
+
+          (is (.contains (:subject (last mails)) "Reset your Starbucks Rewards Password")  )
           (is (p/read-token (:authenticator *system*)
 
                             (last (clojure.string/split
@@ -142,10 +143,11 @@
         (is (= 200 (-> http-response :status)))
         (is (= "" (-> http-response :body bs/to-string)))
 
-        (is (-> *system* :mailer :mails deref first :content))
+
+        (is (-> *system* :mailer :mails deref last :hidden))
 
         (reset! send-token (last (clojure.string/split
-                                   (-> *system* :mailer :mails deref last :content) #"/")))
+                                   (-> *system* :mailer :mails deref last :hidden) #"/")))
         )
 
 
@@ -263,14 +265,14 @@
         (is (= 200 (:status http-response)))
         )
 
-      (is (-> *system* :mailer :mails deref first :content))
+      (is (-> *system* :mailer :mails deref last :hidden))
 
       (let [path (get-path ::login/set-new-password)
             data (assoc (g/generate (:put (:set-new-password login/schema)))
                         :new_password new-password)
             http-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path
                                              (last (butlast (clojure.string/split
-                                                             (-> *system* :mailer :mails deref last :content) #"/"))))
+                                                             (-> *system* :mailer :mails deref last :hidden) #"/"))))
                                      {:throw-exceptions false
                                       :body-encoding "UTF-8"
                                       :body (json/generate-string data)
