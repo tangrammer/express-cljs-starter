@@ -139,9 +139,10 @@ function exportTransactions(customer, txs) {
     table.columns.add('amount', sql.Decimal(19, 2), {nullable: false})
     table.columns.add('balance', sql.Decimal(19, 2), {nullable: false})
     table.columns.add('description', sql.VarChar(128), {nullable: false})
+    table.columns.add('date', sql.DateTime(), {nullable: false})
 
     txs.forEach((tx) => {
-      table.rows.add(tx.id, customer.id, tx.check, tx.amount, tx.balance, tx.description)
+      table.rows.add(tx.id, customer.id, tx.check, tx.amount, tx.balance, tx.description, tx.date)
       exportCheckItems(tx, tx.items)
     })
 
