@@ -186,39 +186,39 @@
 (def points-per-star 5)
 
 (defn- mimi-earn-to-rebujito-tx [mimi-tx]
-  {:historyId (:id mimi-tx)
-   :historyType "SvcTransactionWithPoints"
-   :cardId nil
-   :isoDate (:date mimi-tx)
-   :modifiedDate nil
-   :currency "ZAR"
-   :localCurrency "ZAR"
-   :totalAmount (-> mimi-tx :amount Math/abs)
-   :localTotalAmount 0
-   :points [{
-     :pointType "Default"
-     :promotionName "Default"
-     :pointsEarned (int (/ (-> mimi-tx :amount Math/abs) points-per-star))
-     :localAmount 0.0,
-     :localCurrency 0.0,
-   }]
-   :svcTransaction {
-      :checkId (:check mimi-tx)
-      :transactionType "Redemption"
-      :isVoid false
-      :localizedStoreName (-> mimi-tx :location location-tr)
-      :storeId (-> mimi-tx :location)
-      :storeType "Physical"
-      :localDate nil
-      :currency "ZAR"
-      :localCurrency "ZAR"
-      :transactionAmount 0
-      :localTransactionAmount 0
-      :tax nil
-      :newBalance (:balance mimi-tx)
-      :description nil
-      :tipInfo {}
-   }})
+  (let [amount (-> mimi-tx :amount Math/abs)]
+    {:historyId (:id mimi-tx)
+     :historyType "SvcTransactionWithPoints"
+     :cardId nil
+     :isoDate (:date mimi-tx)
+     :modifiedDate nil
+     :currency "ZAR"
+     :localCurrency "ZAR"
+     :totalAmount amount
+     :localTotalAmount 0
+     :points [{
+       :pointType "Default"
+       :promotionName "Default"
+       :pointsEarned (-> amount (/ points-per-star) double Math/round)
+       :localAmount 0.0,
+       :localCurrency 0.0,
+     }]
+     :svcTransaction {
+        :checkId (:check mimi-tx)
+        :transactionType "Redemption"
+        :isVoid false
+        :localizedStoreName (-> mimi-tx :location location-tr)
+        :storeId (-> mimi-tx :location)
+        :storeType "Physical"
+        :localDate nil
+        :currency "ZAR"
+        :localCurrency "ZAR"
+        :transactionAmount 0
+        :localTransactionAmount 0
+        :tax nil
+        :newBalance (:balance mimi-tx)
+        :description nil
+        :tipInfo {}}}))
 
 (defn- mimi-reload-to-rebujito-tx [mimi-tx]
   {:historyId (:id mimi-tx)
