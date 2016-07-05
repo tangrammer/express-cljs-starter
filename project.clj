@@ -74,6 +74,9 @@
                  ;; external web services
                  [ring.velocity "0.1.2"]
 
+                 ;; templating
+                 [selmer "1.0.7"]
+
                  ;;; explicit deps to avoid conflicts
                  [clj-time "0.11.0"]
                  [org.clojure/tools.reader "1.0.0-beta1"]]
