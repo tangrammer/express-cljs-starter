@@ -140,15 +140,16 @@ function exportTransactions(customer, txs) {
     table.columns.add('balance', sql.Decimal(19, 2), {nullable: false})
     table.columns.add('description', sql.VarChar(128), {nullable: false})
     table.columns.add('date', sql.DateTime(), {nullable: true})
-    table.columns.add('location', sql.Int, {nullable: true})
-
-    txs.forEach((tx) => {
-      table.rows.add(tx.id, customer.id, tx.check, tx.amount, tx.balance, tx.description, tx.date, tx.location)
-      exportCheckItems(tx, tx.items)
-    })
+    table.columns.add('location_id', sql.Int, {nullable: true})
+    table.columns.add('program_id', sql.Int, {nullable: true})
 
     const request = new sql.Request()
-    return request.bulk(table)
+
+    return Promise.each(txs, (tx) => {
+      table.rows.add(tx.id, customer.id, tx.check, tx.amount, tx.balance, tx.description, tx.date, tx.location, tx.program)
+      return exportCheckItems(tx, tx.items)
+    })
+    .then(() => request.bulk(table))
     .then((rowCount) => {
       console.log(`done exporting ${rowCount} transactions`)
     })
@@ -181,9 +182,10 @@ function exportCheckItems(transaction) {
   table.columns.add('menu_item_id', sql.Int, {nullable: false})
   table.columns.add('quantity', sql.Int, {nullable: false})
   table.columns.add('amount', sql.Decimal(19, 2), {nullable: false})
+  table.columns.add('item_index', sql.Int, {nullable: false})
 
-  transaction.items.forEach((item) => {
-    table.rows.add(transaction.id, item.id, item.quantity, item.amount)
+  transaction.items.forEach((item, idx) => {
+    table.rows.add(transaction.id, item.id, item.quantity, item.amount, idx)
   })
 
   var request = new sql.Request()
@@ -192,5 +194,7 @@ function exportCheckItems(transaction) {
 
 function removeTransactions({id: customerId, primaryposref: accountNumber}) {
   console.log(`removing previous transactions for ${accountNumber} [id:${customerId}]`)
-  return sql.query`delete from transactions where customer_id = ${customerId}`
+
+  return sql.query `delete from transaction_items where transaction_id in (select id from transactions where customer_id = ${customerId})`
+    .then(() => sql.query `delete from transactions where customer_id = ${customerId}`)
 }
