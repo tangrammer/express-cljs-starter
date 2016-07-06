@@ -28,14 +28,14 @@
            next-sign (new-sig t2 api-key api-secret)]
        (if (or (= past-sign sign) (= next-sign sign))
          (do
-           (log/debug "found sign at " grace-seconds " seconds")
+           (log/debug "(check [sign api-key api-secret]) => found sign at " grace-seconds " seconds")
            true)
          (if (> (* 60 5) grace-seconds)
            (recur (inc grace-seconds))
            nil))))))
 
 (defn deferred-check [sig client-id client-secret]
-  (log/info "deferred-check" sig client-id client-secret)
+  (log/debug "(deferred-check[sig client-id client-secret])" sig client-id client-secret)
   (if (check sig client-id client-secret)
     true
     (d/error-deferred  (ex-info (str "API ERROR!")

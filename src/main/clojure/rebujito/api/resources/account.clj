@@ -77,7 +77,7 @@
        (p/get-and-insert! user-store mongo-account-data)))))
 
 (defn check-account-mongo [data-account user-store]
-  (log/info "check-account-mongo" data-account)
+  (log/debug "(check-account-mongo [data-account user-store])" " data-account " data-account)
   (when (first (p/find user-store data-account))
     (d/error-deferred (ex-info (str "API ERROR!")
                                {:type :api
@@ -114,11 +114,14 @@
                                                                           :to (:emailAddress mongo-account)
                                                                           :content (format "%s/verify-new-user-email/%s"
                                                                                           (:client-url app-config)
-                                                                                          access-token)}))]
+                                                                                          access-token)}))
+                                                   ]
 
-
-                                                  (log/info "mongo-account!!" mongo-account)
-                                                  (log/info "send!!" send)
+                                                  (do
+                                                    mongo-account
+                                                    send)
+                                                  (log/info "API /create" " db account: " mongo-account)
+                                                  (log/debug "API /create" "send mail: " send)
                                                   (util/>201 ctx (dissoc  mongo-account :password))))
                                         ))}}}
       (merge (util/common-resource :account))))

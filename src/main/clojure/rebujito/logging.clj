@@ -1,7 +1,64 @@
 (ns rebujito.logging
   (:require [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.core :as appenders]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [taoensso.encore    :as enc :refer (compile-if have have? qb)]
+            [taoensso.timbre.profiling :as profiling
+             :refer (pspy p defnp profile)])
+  )
+
+(timbre/level>=  :debug :warn)
+
+(def config-levels [["rebujito.api.util.*" :info]])
+
+(defn max-level [levels]
+  (reduce (fn [x1 x2] (if (timbre/level>= x1 x2) x1 x2)) (first timbre/ordered-levels) levels))
+
+;; (max-level  (map last [[#"^rebujito\.api\.(.*)$" :info] [#"^rebujito\.api\.util$" :warn]]))
+
+(defn log? [[ns? level?] config-levels]
+   (let [->re-pattern
+         (fn [[x l]]
+           [(enc/cond!
+              (enc/re-pattern? x) x
+              (string? x)
+              (let [s (-> (str "^" x "$")
+                          (str/replace "." "\\.")
+                          (str/replace "*" "(.*)"))]
+                (re-pattern s))) l])
+         coincidences (mapv ->re-pattern config-levels)
+         coincidences (map (fn [[n l]] [(re-find n ns?) l]) coincidences)
+         max-level* (max-level (map last coincidences))
+;         coincidences-map (into {} (mapv (comp vec reverse) coincidences))
+         ]
+     (println "hhha" coincidences)
+;     (println "here " (max-level* coincidences-map))
+
+
+     (let [[r l] [(first coincidences) max-level*]]
+
+       (or (nil? r) (timbre/level>= level? l))
+
+       )))
+
+(log? [ "rebujito.api.util" :info] [["rebujito.api.util" :debug]
+                                    ["rebujito.api.*" :warn]])
+
+(log? [ "rebujito.api.util" :debug] [["rebujito.api.util" :debug]
+                                    ["rebujito.api.*" :warn]])
+
+(log? [ "rebujito.api.util" :info] [
+                                    ["rebujito.api.*" :warn]
+                                    ["rebujito.api.util" :debug]])
+
+
+
+
+
+
+#_(profile :info :GAU
+         (dotimes [n 10000]
+           (log? [(str "rebujito.api.util." n) :warn] config-levels)))
 
 (defn default-output-fn
   "Default (fn [data]) -> string output fn.

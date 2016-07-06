@@ -66,7 +66,8 @@
   (stop [this] this)
   protocols/MailService
   (send [this data]
-    (log/info "MockMailer: sending mail with this data" data)
+    (log/info "MockMailer: sending mail to " (:to data) " subject: " (:subject data))
+    (log/debug "mail data" data)
     (swap! (:mails this) conj data)
     true))
 

@@ -273,8 +273,8 @@
 
       d*))
   (register-physical-card [this data]
-    (log/info (format "%s/account/card" base-url))
-    (log/info data)
+    (log/info "(register-physical-card [this data])" " to url: "(format "%s/account/card" base-url))
+    (log/debug data)
 
     (let [d* (d/deferred)]
       (d/future

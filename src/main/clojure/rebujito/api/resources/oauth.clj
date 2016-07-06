@@ -66,7 +66,7 @@
                    (get-in ctx [:parameters :query :sig])
                    (get-in ctx [:parameters :body :client_id])
                    (get-in ctx [:parameters :body :client_secret]))]
-              (log/debug api-client c)
+              (log/debug "inside (get-token [ ....] :client_credentials) api-client " api-client " deferred-check " c)
               (>201 ctx (-> (p/grant authorizer {} #{scopes/application})
                             (sec/jwt authenticator))))
 )

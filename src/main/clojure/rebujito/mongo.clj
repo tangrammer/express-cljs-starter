@@ -58,7 +58,7 @@
 
 (defmulti db-find "dispatch on data meaning"
   (fn [mutable-storage data]
-    (log/info "db-find::" data (type data))
+    (log/debug "db-find:: dispatch on data type: " (type data) data)
     (type data)))
 
 (defmethod db-find :default [_ data]
@@ -429,7 +429,7 @@
 
   protocols/ApiClient
   (login [this id pw]
-    (log/info "login" id pw)
+    (log/debug "(p/login [_ id pw])" id pw)
     (let [try-type :store
           try-id ::login
           try-context '[id pw]]
@@ -573,13 +573,12 @@
 
 (defmethod db-find String
   [mutable-storage data]
-  (log/info "db-find>>>>" data)
+  (log/debug "db-find:: " data)
   (try
     (clojure.walk/keywordize-keys (if (= data "w8tnxd8h2wns43cfdgmt793j")
                                               {"_id" "w8tnxd8h2wns43cfdgmt793j", "secret" "KDRSRVqKHp5TkKvJJhN7RYkE", "who" "mediamonks"}
                                               (find-map-by-id mutable-storage (org.bson.types.ObjectId. data))))
-    (catch Exception e  (ex-info (.getMessage e) {:message (.getMessage e)})))
-)
+    (catch Exception e  (ex-info (.getMessage e) {:message (.getMessage e)}))))
 
 (defmethod db-find org.bson.types.ObjectId
   [mutable-storage data]

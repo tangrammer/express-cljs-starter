@@ -61,7 +61,7 @@
 
                  ;; logging + profiling
                  [org.slf4j/slf4j-api "1.7.21"]
-                 [com.taoensso/timbre "4.1.4" :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor com.fasterxml.jackson.core/jackson-core]]
+                 [com.taoensso/timbre "4.5.1" :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor com.fasterxml.jackson.core/jackson-core]]
                  [com.fzakaria/slf4j-timbre "0.3.1" :exclusions [com.taoensso/timbre junit]]
                  [org.slf4j/jcl-over-slf4j "1.7.21"]
                  [org.slf4j/jul-to-slf4j "1.7.21"]
