@@ -173,19 +173,18 @@ function exportBalances(customer, balances) {
 }
 
 function exportCheckItems(transaction) {
-
   const table = new sql.Table('transaction_items')
 
   table.create = true
 
   table.columns.add('transaction_id', sql.Int, {nullable: false})
+  table.columns.add('item_index', sql.Int, {nullable: false})
   table.columns.add('menu_item_id', sql.Int, {nullable: false})
   table.columns.add('quantity', sql.Int, {nullable: false})
   table.columns.add('amount', sql.Decimal(19, 2), {nullable: false})
-  table.columns.add('item_index', sql.Int, {nullable: false})
 
-  transaction.items.forEach((item, idx) => {
-    table.rows.add(transaction.id, item.id, item.quantity, item.amount, idx)
+  transaction.items.forEach((item, itemIndex) => {
+    table.rows.add(transaction.id, itemIndex, item.id, item.quantity, item.amount)
   })
 
   var request = new sql.Request()
