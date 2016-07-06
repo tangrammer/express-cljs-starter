@@ -7,6 +7,7 @@
    [rebujito.protocols :as p]
    [rebujito.api-test :refer (print-body parse-body)]
    [rebujito.api.resources.account :as account]
+   [rebujito.api.resources.card :as card]
    [rebujito.api.resources.customer-admin :as customer-admin]
    [rebujito.api.resources.profile :as profile]
    [rebujito.api.resources.login :as login]
