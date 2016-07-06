@@ -214,7 +214,9 @@
         [["/users/" :user-id "/profile"]  (-> (customer-admin/profile mimi user-store app-config)
                                               (assoc :id ::customer-admin/profile
                                                      :oauth {:get scopes/customer-admin}))]
-
+        ["/search-customer" (-> (customer-admin/search mimi user-store app-config)
+                                (assoc :id ::customer-admin/search
+                                       :oauth {:get scopes/customer-admin}))]
         ]]
   )
 
