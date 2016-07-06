@@ -65,6 +65,18 @@
         (pprint body)
 
         )
+
+      (let [path (get-path ::card/register-digital-cards)]
+        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
+        (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
+                       :status))))
+
+
+      (pprint (seq (p/find (:user-store *system*) )))
+
       (let [f-n ""
             l-n ""
             e-m (apply str (take 3 (drop 3 (:customer-admin  (:app-config (config :test))))))
