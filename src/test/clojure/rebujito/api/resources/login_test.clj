@@ -111,7 +111,7 @@
         (is (= 200 (-> http-response :status)))
         (is (= nil body)))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 2 (count mails)))
+          (is (= 3 (count mails)))
 
           (is (.contains (:subject (last mails)) "Reset your Starbucks Rewards Password")  )
           (is (p/read-token (:authenticator *system*)

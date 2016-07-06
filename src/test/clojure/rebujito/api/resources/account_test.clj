@@ -25,7 +25,7 @@
 
       (pprint (first users))
 
-      (is (= 1 (count (deref(:mails (-> *system*  :mailer))))))
+      (is (= 2 (count (deref(:mails (-> *system*  :mailer))))))
       (is (= 201  (-> @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path *app-access-token* 1234)
                                   {:throw-exceptions false
                                    :body (json/generate-string account-data)
@@ -35,7 +35,7 @@
                       :status)))
       (pprint (first (seq (p/find (-> *system*  :user-store)))))
 
-      (is (= 2 (count (deref(:mails (-> *system*  :mailer))))))
+      (is (= 3 (count (deref(:mails (-> *system*  :mailer))))))
 
       (is (= (count (seq (p/find (-> *system*  :user-store)))) (inc (count users))))
 
@@ -51,7 +51,7 @@
                 :body "Account Management Service returns error that email address is already taken"}
                (select-keys (-> res parse-body) [:code :body]))))
       ;; doesn't mail again thus an error happen
-      (is (= 2 (count (deref(:mails (-> *system*  :mailer))))))
+      (is (= 3 (count (deref(:mails (-> *system*  :mailer))))))
       (is (= (count (seq (p/find (-> *system*  :user-store)))) (inc (count users))))))
 
   (testing "create-account-only"
@@ -105,7 +105,7 @@
 
 
 
-      (is (= 1 (count (deref(:mails (-> *system*  :mailer))))))
+      (is (= 2 (count (deref(:mails (-> *system*  :mailer))))))
 
       (let [res @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path *app-access-token* 1234)
                                   {:throw-exceptions false
@@ -121,7 +121,7 @@
             verify-email (last mails)
             token (last (clojure.string/split
                                    (:content verify-email) #"/")) ]
-        (is (= 2 (count mails)))
+        (is (= 3 (count mails)))
         (is (= {:subject "Verify your email",
                 :to (:emailAddress account-data)}
                (select-keys verify-email [:subject :to])))

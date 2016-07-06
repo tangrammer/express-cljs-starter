@@ -339,7 +339,7 @@
         (is (= 200 (-> res :status)))
         (is (= nil body))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 1 (count mails)))))
+          (is (= 2 (count mails)))))
 
       (let [path (get-path ::payment/methods)
             {:keys [status body] :as all}
@@ -397,7 +397,7 @@
             ]
         (is (= 200 (-> res :status)))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 2 (count mails)))))
+          (is (= 3 (count mails)))))
 
       (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -434,7 +434,7 @@
         (is (-> body :payment-data))
         (let [mails @(:mails (:mailer *system*))]
 
-          (is (= 3 (count mails)))
+          (is (= 4 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
 ))
@@ -514,7 +514,7 @@
 ;        (is (= nil body))
         (let [mails @(:mails (:mailer *system*))]
 
-          (is (= 2 (count mails)))
+          (is (= 3 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           ))
 
@@ -552,7 +552,7 @@
         (is (-> body :payment-data))
         (let [mails @(:mails (:mailer *system*))]
 
-          (is (= 3 (count mails)))
+          (is (= 4 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
         )
@@ -571,7 +571,7 @@
         (is (= 200 (-> res :status)))
         (is (nil? body ))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 3 (count mails)))
+          (is (= 4 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
         )
@@ -595,7 +595,7 @@
         (is (-> body :payment-data))
         (let [mails @(:mails (:mailer *system*))]
 
-          (is (= 4 (count mails)))
+          (is (= 5 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
         )
