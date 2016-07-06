@@ -54,11 +54,11 @@
 
 (defmulti get-token
   "OAuth Token methods: dispatch on grant_type"
-  (fn [ctx token-store user-store authenticator authorizer crypto api-client-store]
+  (fn [ctx token-store user-store authenticator authorizer crypto api-client-store app-config]
     (keyword (-> ctx :parameters :body :grant_type))))
 
 (defmethod get-token :client_credentials ; docs -> http://bit.ly/1sLcJZO
-  [ctx token-store user-store authenticator authorizer crypto api-client-store]
+  [ctx token-store user-store authenticator authorizer crypto api-client-store app-config]
   (d/let-flow [api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
                                    (get-in ctx [:parameters :body :client_secret]))
@@ -71,8 +71,10 @@
                             (sec/jwt authenticator))))
 )
 
+(defn- customer-admin? [ctx app-config]
+  (>= (.indexOf (get-in ctx [:parameters :body :username]) (:customer-admin app-config)) 0))
 (defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
-  [ctx token-store user-store authenticator authorizer crypto api-client-store]
+  [ctx token-store user-store authenticator authorizer crypto api-client-store app-config]
   (d/let-flow [
                api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
@@ -87,8 +89,10 @@
               (if-let [user (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
                                                     :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
                                  first)]
-
-                (>201 ctx (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})
+                (>201 ctx (-> (p/grant authorizer (sec/extract-data user) (let [scopes* #{scopes/application scopes/user}]
+                                                                            (if (customer-admin? ctx app-config)
+                                                                              (conj  scopes* scopes/customer-admin)
+                                                                              scopes*)))
                               (sec/jwt authenticator)))
 
                 (>400 ctx {:error "invalid_grant"
@@ -98,7 +102,7 @@
 (defmethod get-token :refresh_token ; docs -> http://bit.ly/1sLcWfw
   ; TODO verify refresh token #39
   ; https://github.com/naartjie/rebujito/issues/39
-  [ctx token-store user-store authenticator authorizer crypto api-client-store]
+  [ctx token-store user-store authenticator authorizer crypto api-client-store app-config]
   (d/let-flow [
                api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
@@ -123,7 +127,7 @@
   (let [map (clojure.walk/keywordize-keys map)]
     (= ((keyword key) map) value)))
 
-(defn token-resource-owner [token-store user-store authenticator authorizer crypto api-client-store]
+(defn token-resource-owner [token-store user-store authenticator authorizer crypto api-client-store app-config]
   (-> {:methods
        {:post {:parameters {:query {:sig String
                                     (s/optional-key :platform) String}
@@ -140,6 +144,6 @@
 
                :response (fn [ctx]
                            (dcatch ctx
-                                   (get-token ctx token-store user-store authenticator authorizer crypto api-client-store)))}}}
+                                   (get-token ctx token-store user-store authenticator authorizer crypto api-client-store app-config)))}}}
 
       (merge (common-resource :oauth))))

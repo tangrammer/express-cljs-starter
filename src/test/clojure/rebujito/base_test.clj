@@ -26,6 +26,8 @@
 (def ^:dynamic *user-access-token* nil)
 (def ^:dynamic *app-access-token* nil)
 (def ^:dynamic *user-account-data* nil)
+(def ^:dynamic *customer-admin-data* nil)
+(def ^:dynamic *customer-admin-access-token* nil)
 
 (defn generate-random [n]
   (-> (nonce/random-bytes n)
@@ -194,19 +196,28 @@
   `(let [s# (component/start ~system)
          u# (assoc (new-account-sb)
                    :birthDay "1"
-                   :birthMonth "1")]
+                   :birthMonth "1")
+         customer-admin-data# (assoc (new-account-sb)
+                                     :emailAddress (-> (config :test) :app-config :customer-admin)
+                                     :birthDay "1"
+                                     :birthMonth "1")
+         ]
      (try
        (check-monks-api-key s#)
        (binding [*system* s#
                  *user-account-data* u#
+                 *customer-admin-data* customer-admin-data#
                  *app-access-token* (access-token-application s#)
-                 *user-access-token* (bind-new-user-and-token s# u#)] ~@body)
+                 *user-access-token* (bind-new-user-and-token s# u#)
+                 *customer-admin-access-token* (bind-new-user-and-token s# customer-admin-data#)
+
+                 ] ~@body)
        (finally
          (component/stop s#)))))
 
 (defn system-fixture [config-env]
   (fn[f]
-    (alter-var-root (var rebujito.util/*send-bugsnag*) (fn [d] false))
+    (alter-var-root (var rebujito.util/*send-bugsnag*) (fn [d] true))
     (alter-var-root (var rebujito.util/*bugsnag-release*) (fn [d] "test"))
     (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port]
                                                                (comp inc (fn [s]

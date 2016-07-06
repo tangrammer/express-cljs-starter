@@ -21,6 +21,7 @@
      [profile :as profile]
      [rewards :as rewards]
      [social-profile :as social-profile]
+     [customer-admin :as customer-admin]
      ]
     [rebujito.api.resources.card
      [reload :as card-reload]]))
@@ -63,7 +64,7 @@
         ["/account/create" (-> (account/create store mimi user-store crypto mailer authorizer app-config)
                                (assoc :id ::account/create
                                       :oauth {:post scopes/application}))]
-        ["/oauth/token" (->  (oauth/token-resource-owner token-store user-store authenticator authorizer crypto api-client-store)
+        ["/oauth/token" (->  (oauth/token-resource-owner token-store user-store authenticator authorizer crypto api-client-store app-config)
                              (assoc :id ::oauth/token-resource-owner))]
 
         ["/login/verify-email" (-> (login/verify-email authorizer user-store)
@@ -125,7 +126,7 @@
                #_["/login/reset-username" (-> (login/reset-username authorizer authenticator user-store crypto mailer)
                                              (assoc :id ::login/reset-username
                                              :oauth {:post scopes/user}))]
-               ["/profile"  (-> (profile/profile store mimi user-store app-config)
+               ["/profile"  (-> (profile/profile mimi user-store app-config)
                                 (assoc :id ::profile/me
                                        :oauth {:get scopes/user}))]
                ["/rewards" (-> (rewards/me-rewards store mimi user-store)
@@ -207,7 +208,14 @@
                ["/socialprofile/account" (-> (social-profile/account user-store)
                                              (assoc :id ::social-profile/account
                                                     :oauth {:put scopes/user}))]
-               ]]]]
+               ]]
+        ;; customer-admin
+
+        [["/users/" :user-id "/profile"]  (-> (customer-admin/profile mimi user-store app-config)
+                                              (assoc :id ::customer-admin/profile
+                                                     :oauth {:get scopes/customer-admin}))]
+
+        ]]
   )
 
 (defn dynamic-resource [d authenticator authorizer token-store]

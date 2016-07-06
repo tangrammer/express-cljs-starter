@@ -149,7 +149,9 @@
   (merge (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress]))
          {:subMarket sub-market
           :exId nil
-          :partner false}))
+          :partner false}
+         (when (:user-id readed-jwt)
+           {:user-id (:user-id readed-jwt)})))
 
 
 (defn user-profile-data [ctx user-store submarket]

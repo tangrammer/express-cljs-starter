@@ -9,3 +9,5 @@
 (def reset-password ::reset-password)
 
 (def change-email ::change-email)
+
+(def customer-admin ::customer-admin)

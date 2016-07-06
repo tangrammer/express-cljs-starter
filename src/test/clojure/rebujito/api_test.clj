@@ -114,15 +114,7 @@
              )
          ))
 
-     (testing ::profile/me
-       (let [api-id ::profile/me
-             path (bidi/path-for r api-id)]
-         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                   {:throw-exceptions false
-                                    :body-encoding "UTF-8"
-                                    :content-type :json})
-                        print-body
-                        :status)))))
+
 
      (testing ::social-profile/account
                (let [api-id ::social-profile/account

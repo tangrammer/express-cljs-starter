@@ -19,9 +19,39 @@
                         :socialProfile {}
                         :tippingPreferences {}})
 
-(def schema {:put {:accountImageUrl String}})
 
-(defn profile [store mimi user-store  app-config]
+(defn load-profile [ctx mimi user-store user-id]
+ (d/let-flow [real-user-data (p/find user-store user-id)
+              card-number  (let [try-context '[user-id real-user-data]]
+                             (or (-> real-user-data :cards first :cardNumber)
+                                 #_(error* 500 [500 ::card-number-cant-be-null])))
+
+              balances (when (some? card-number)
+                         (p/balances mimi card-number))
+              rewards (rewards/rewards-response balances card-number)
+              card (card/>get-card user-store (:_id real-user-data) balances)
+              payment-methods (->> (p/get-payment-methods user-store (:_id real-user-data))
+                                   (map payment/adapt-mongo-to-spec))]
+
+             (util/>200 ctx (-> response-defaults
+                                (merge
+                                 {:user (merge
+                                         (select-keys real-user-data [:firstName :lastName :emailAddress])
+                                         {:email (:emailAddress real-user-data)}
+                                         {:exId nil
+                                          :subMarket "ZA"
+                                          :partner false})
+                                  :rewardsSummary rewards
+                                  :paymentMethods payment-methods
+                                  :starbucksCards (if card
+                                                    [card]
+                                                    [])
+                                  }
+                                 (select-keys real-user-data [:addresses :socialProfile]))
+                                (dissoc :target-environment)))))
+
+
+(defn profile [mimi user-store app-config]
   (-> {:methods
        {:get {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
@@ -29,38 +59,13 @@
               :response (fn [ctx]
                           (let [try-id ::profile
                                 try-type :api]
+
                             (dcatch ctx
-                                    (d/let-flow [auth-data (util/authenticated-data ctx)
-                                                 user-id (:user-id auth-data)
-                                                 user-data (util/generate-user-data auth-data (:sub-market app-config))
-                                                 real-user-data (p/find user-store user-id)
-                                                 card-number  (let [try-context '[user-data real-user-data]]
-                                                                (or (-> real-user-data :cards first :cardNumber)
-                                                                    #_(error* 500 [500 ::card-number-cant-be-null])))
-
-                                                 balances (when (some? card-number)
-                                                            (p/balances mimi card-number))
-                                                 rewards (rewards/rewards-response balances card-number)
-                                                 card (card/>get-card user-store user-id balances)
-                                                 payment-methods (->> (p/get-payment-methods user-store (:user-id auth-data))
-                                                                      (map payment/adapt-mongo-to-spec))]
-
-                                                (util/>200 ctx (-> response-defaults
-                                                                   (merge
-                                                                    {:user (merge
-                                                                            (select-keys user-data [:firstName :lastName :emailAddress])
-                                                                            {:email (:emailAddress user-data)}
-                                                                            {:exId nil
-                                                                             :subMarket "ZA"
-                                                                             :partner false})
-                                                                     :rewardsSummary rewards
-                                                                     :paymentMethods payment-methods
-                                                                     :starbucksCards (if card
-                                                                                       [card]
-                                                                                       [])
-                                                                     }
-                                                                    (select-keys real-user-data [:addresses :socialProfile]))
-                                                                   (dissoc :target-environment)))))))}}}
-
-
+                                    (do
+                                      (let [user-data (-> (util/authenticated-data ctx)
+                                                          (util/generate-user-data  (:sub-market app-config)))
+                                            user-id (:user-id user-data)
+                                            ]
+                                        (load-profile ctx mimi user-store user-id)
+                                        )))))}}}
       (merge (util/common-resource :profile))))
