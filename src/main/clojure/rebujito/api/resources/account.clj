@@ -30,7 +30,8 @@
                     :registrationSource String
                     (s/optional-key :createDigitalCard) Boolean
                     (s/optional-key :market) String
-                    (s/optional-key :reputation) {(s/optional-key :ipAddress) String
+                    (s/optional-key :reputation) s/Any
+                    #_{(s/optional-key :ipAddress) String
                                                   (s/optional-key :deviceFingerprint) String}
                     }})
 
