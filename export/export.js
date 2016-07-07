@@ -27,11 +27,15 @@ sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
 .then(getAccounts)
 .then(accounts => {
 
-  let accountNumbers = _.uniq(accounts.map((acc) => acc.primaryposref))
+  let accountNumbers = _.uniq(accounts)
+                          .map((acc) => acc.primaryposref)
+                          .filter((acc) => !!acc)
+                          .valueOf()
 
   console.log(`got ${accountNumbers.length} accounts`)
-  return Promise.map(accountNumbers, (accountNumber, idx) => {
-    if (!accountNumber) return
+  let idx = 0
+  return Promise.map(accountNumbers, (accountNumber) => {
+    idx++
     console.log(`starting ${accountNumber} ${idx}/${accountNumbers.length}`)
     return exportCustomer(accountNumber)
   }, {concurrency: 1})
