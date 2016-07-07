@@ -36,6 +36,17 @@
       )
   )
 
+(def random (java.util.Random.))
+
+(def chars*
+   (map char (concat (range 48 58) (range 66 92) (range 97 123))))
+
+(defn random-char []
+  (nth chars* (.nextInt random (count chars*))))
+
+(defn random-string [length]
+  (apply str (take length (repeatedly random-char))))
+
 (defn generate-mail [format-pattern]
   (format format-pattern (generate-random 6)))
 
@@ -52,7 +63,7 @@
    :birthDay "13",
    :market "ZA"
    :birthMonth "06",
-   :lastName (format  "Ruz-%s" (generate-random 6))
+   :lastName (format  "%s-Ruz" (clojure.string/upper-case (random-string 6)))
    :receiveStarbucksEmailCommunications true,
    :postalCode "41003",
    :country "Spain"})
@@ -164,7 +175,7 @@
                             :content-type :json})]
        res
        (is (= 201 (:status res) ))
-       (println "test account _________________________")
+;       (println "test account _________________________")
        (clojure.pprint/pprint (json/parse-string (bs/to-string (:body res)) true))
        )
      ))
@@ -180,7 +191,7 @@
      (if-let [res (first (p/find (-> system :api-client-store) u))]
        (println (str "api-key"  #_res))
        (do
-         (println (str "creating api-key media-monks"))
+ ;        (println (str "creating api-key media-monks"))
          (insert-new-api-key system :media-monks (:key api-config) (:secret api-config))
          )))
     (catch Exception e (do

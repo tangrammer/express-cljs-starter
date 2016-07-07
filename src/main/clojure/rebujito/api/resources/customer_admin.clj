@@ -52,29 +52,42 @@
                                    :firstname (s/maybe String)
                                    :surname (s/maybe String)
                                    :email (s/maybe String)
-                                   :cardnumber (s/maybe String)}}
+                                   :cardnumber (s/maybe String)
+                                   (s/optional-key :limit) s/Int
+                                   (s/optional-key :offset) s/Int}}
               :response (fn [ctx]
                           (let [try-id ::search
-                                try-type :api]
+                                try-type :api
+                                offset (or (-> ctx :parameters :query :offset) 0)
+                                limit (or (-> ctx :parameters :query :limit) 50)]
                             (dcatch ctx
-                                    (d/let-flow [users (let [query (-> ctx :parameters :query)]
-                                                         (p/search user-store
-                                                                   (:firstname query)
-                                                                   (:surname query)
-                                                                   (:email query)
-                                                                   (:cardnumber query)))
-                                                 adapt-users (->> (mapv #(let [d %]
-                                                                       (merge
-                                                                        (select-keys d [:firstName :lastName :emailAddress])
-                                                                        (hash-map :customerId (:_id d)
-                                                                                  :cardNumber (or (-> d :cards first :cardNumber) ""))))
-                                                                       (seq users))
-                                                                  (sort-by :lastName))]
+                                    (d/let-flow [[count* users] (let [query (-> ctx :parameters :query)]
 
-                                      (util/>200 ctx {:paging {:total (count adapt-users)
+                                                                 [(p/search-count user-store
+                                                                      (:firstname query)
+                                                                      (:surname query)
+                                                                      (:email query)
+                                                                      (:cardnumber query))
+
+                                                                  (p/search user-store
+                                                                             (:firstname query)
+                                                                             (:surname query)
+                                                                             (:email query)
+                                                                             (:cardnumber query)
+                                                                             :lastName
+                                                                             offset limit)])
+
+                                                 adapt-users (mapv #(let [d %]
+                                                                      (merge
+                                                                       (select-keys d [:firstName :lastName :emailAddress])
+                                                                       (hash-map :customerId (:_id d)
+                                                                                 :cardNumber (or (-> d :cards first :cardNumber) ""))))
+                                                                   (seq users))]
+
+                                      (util/>200 ctx {:paging {:total count*
                                                                :returned (count adapt-users)
-                                                               :offset 0
-                                                               :limit 0}
+                                                               :offset offset
+                                                               :limit limit}
                                                       :customers adapt-users
                                                       })
 ))))}}}

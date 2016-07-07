@@ -53,23 +53,35 @@
                       print-body
                       :status))))
       ;; 200 with  valid user logged
+      ;; checking limit and offset too
       (let [f-n ""
             l-n ""
             e-m ""
             c-n ""
-            query (format  "&firstname=%s&surname=%s&email=%s&cardnumber=%s" f-n l-n e-m c-n)
+            limit 1
+            offset 0
+            query (format  "&firstname=%s&surname=%s&email=%s&cardnumber=%s&limit=%s&offset=%s" f-n l-n e-m c-n limit offset)
+
+            query2 (format  "&firstname=%s&surname=%s&email=%s&cardnumber=%s&limit=%s&offset=%s" f-n l-n e-m c-n limit (inc offset))
             res @(http/get (format "http://localhost:%s%s?access_token=%s%s"  port path *customer-admin-access-token* query)
                                                                                                             {:throw-exceptions false
                                                                                                              :body-encoding "UTF-8"
                                                                                                              :content-type :json})
+            res2 @(http/get (format "http://localhost:%s%s?access_token=%s%s"  port path *customer-admin-access-token* query2)
+                                                                                                            {:throw-exceptions false
+                                                                                                             :body-encoding "UTF-8"
+                                                                                                             :content-type :json})
             body (parse-body res)
+            body2 (parse-body res2)
             ]
         (is (= 200 (-> res :status)))
                                         ;        (is (s/validate customer-admin/PagingSchema (:paging
         (s/validate customer-admin/PagingSchema (:paging body))
         (s/validate [customer-admin/SearchSchema] (:customers body))
         (is (pos?  (count (:customers body))))
-        (pprint body)
+        (is (pos?  (count (:customers body2))))
+        (pprint  body)
+        (pprint  body2)
 
         )
 
@@ -81,8 +93,10 @@
                                     :content-type :json})
                        :status))))
 
-      (let [user-to-find (p/find (:user-store *system*)
-                                                (:user-id (p/read-token (:authenticator *system*) *user-access-token*)))
+      (let [tok (p/read-token (:authenticator *system*) *user-access-token*)
+            _ (println "TOK" tok)
+            user-to-find (p/find (:user-store *system*)
+                                                (:user-id tok))
             f-n ""
             l-n ""
             e-m "" #_(apply str (take 3 (drop 3 (:emailAddress *user-account-data*) )))
@@ -101,6 +115,7 @@
         (s/validate [customer-admin/SearchSchema] (:customers body))
         (is (= 1  (count (:customers body))))
         (is (= (:emailAddress user-to-find)  (:emailAddress(first (:customers body)))))
+        (pprint body)
         ))))
 
 (deftest customer-admin-profile

@@ -10,6 +10,7 @@
    [monger.operators :refer [$inc $set $push $pull $elemMatch $or $regex]]
    [monger.core :as mg]
    [monger.json :as mj]
+   [monger.query :as mq]
    [monger.result :refer [acknowledged?]]
    [rebujito.protocols :as protocols]
    [rebujito.util :as util]
@@ -155,6 +156,18 @@
       (conj v {kw {$regex x}})
       v))
 
+(defn- search* [firstName lastName emailAddress cardNumber]
+  (let [conj-or (-> []
+                    (optional-conj-or firstName :firstName)
+                    (optional-conj-or lastName :lastName)
+                    (optional-conj-or emailAddress :emailAddress))
+        conj-or (if (and cardNumber (not= cardNumber ""))
+                  (conj conj-or {:cards {$elemMatch {:cardNumber {$regex cardNumber}}}})
+                  conj-or)]
+    (if (empty? conj-or)
+      nil
+      conj-or)))
+
 (defrecord UserStorage [db-conn collection secret-key ephemeral?]
   component/Lifecycle
   (start [this]
@@ -233,25 +246,35 @@
       (util/dtry
        (do
          (let [found (mc/find-one-as-map  (:db this) (:collection this)  {:cards {$elemMatch {:cardNumber card-number}}})]
-           {:user  found :card (first (filter #(= (:cardNumber %) card-number) (:cards found) ))})
-       )))
+           {:user found :card (first (filter #(= (:cardNumber %) card-number) (:cards found)))})))))
 
-    )
-  (search [this firstName lastName emailAddress cardNumber]
-    (log/info "(search [_ firstName lastName emailAddress cardNumber])" firstName lastName emailAddress cardNumber)
-    (let [conj-or (-> []
-                      (optional-conj-or firstName :firstName)
-                      (optional-conj-or lastName :lastName)
-                      (optional-conj-or emailAddress :emailAddress))
-          conj-or (if (and cardNumber (not= cardNumber ""))
-                    (conj conj-or {:cards {$elemMatch {:cardNumber {$regex cardNumber}}}})
-                    conj-or)
-          ]
+  (search-count [this firstName lastName emailAddress cardNumber]
+    (log/info "(count [_ firstName lastName emailAddress cardNumber])" firstName lastName emailAddress cardNumber)
+    (if-let [conj-or (search* firstName lastName emailAddress cardNumber)]
+      (mc/count (:db this) (:collection this) {$or conj-or})
+      (mc/count (:db this) (:collection this))))
+
+
+  (search [this firstName lastName emailAddress cardNumber sort-by offset limit]
+    (let [offset 101
+          limit 50]
+      (inc (quot offset limit)))
+    (log/info "(search [_ firstName lastName emailAddress cardNumber sort-by offset limit])" firstName lastName emailAddress cardNumber sort-by offset limit)
+    (let [page (inc (quot offset limit))
+          conj-or (search* firstName lastName emailAddress cardNumber)]
       (let [res  (if (empty? conj-or)
-                   (mc/find-maps (:db this) (:collection this))
-                   (mc/find-maps (:db this) (:collection this) {$or conj-or}))]
+                   (mq/with-collection (:db this) (:collection this)
+                     (mq/find {})
+                     (mq/sort {sort-by 1})
+                     (mq/paginate :page page :per-page limit)
+                     )
+                   (mq/with-collection (:db this) (:collection this)
+                     (mq/find {$or conj-or})
+                     (mq/sort {sort-by 1})
+                     (mq/paginate :page page :per-page limit)
+                     ))]
         (log/debug "search_query" conj-or)
-        (log/debug "search_result" (clojure.string/join "," (mapv :emailAddress res)))
+        (log/debug "search_result" (clojure.string/join "," (mapv sort-by res)))
         res)))
 
   protocols/UserPaymentMethodStore
