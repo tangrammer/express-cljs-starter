@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clojure.repl :refer (pst)]
    [bidi.bidi :as bidi]
+   [rebujito.logging :as log-levels]
    [rebujito.schemas :refer (MongoUser MimiUser)]
    [rebujito.protocols :as p]
    [com.stuartsierra.component :as component]
@@ -229,3 +230,23 @@
           (f))
         (catch Exception e (do (println (str "caught exception: " (.getMessage e)))
                                (throw e)))))))
+
+
+
+(defn log-config [config-data]
+  (-> log-levels/timbre-info-config
+      (assoc  :level :debug
+              :output-fn log-levels/default-output-fn
+              :middleware [(fn [{:keys [level vargs ?ns-str ] :as data}]
+                             (let [should-log? (log-levels/log? [?ns-str  level] config-data)]
+                                        ;                                                (println ?ns-str level should-log?)
+                               (when should-log?
+                                 data)))])
+
+      (update-in [:ns-blacklist]
+                 (fn [c]
+                   (conj c
+                         "org.mongodb.driver.cluster"
+                         "org.mongodb.driver.connection"
+                         "org.mongodb.driver.protocol.*"
+                         "io.netty.buffer.PoolThreadCache"))) ))

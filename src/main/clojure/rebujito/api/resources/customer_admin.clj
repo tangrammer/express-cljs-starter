@@ -67,7 +67,7 @@
                                                                        (merge
                                                                         (select-keys d [:firstName :lastName :emailAddress])
                                                                         (hash-map :customerId (:_id d)
-                                                                                  :cardNumber "")))
+                                                                                  :cardNumber (or (-> d :cards first :cardNumber) ""))))
                                                                        (seq users))
                                                                   (sort-by :lastName))]
 

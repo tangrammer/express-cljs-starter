@@ -5,13 +5,14 @@
    [bidi.bidi :as bidi]
    [byte-streams :as bs]
    [rebujito.protocols :as p]
+   [taoensso.timbre :as log]
    [rebujito.api-test :refer (print-body parse-body)]
    [rebujito.api.resources.account :as account]
    [rebujito.api.resources.card :as card]
    [rebujito.api.resources.customer-admin :as customer-admin]
    [rebujito.api.resources.profile :as profile]
    [rebujito.api.resources.login :as login]
-   [rebujito.base-test :refer (system-fixture *app-access-token* *system* *customer-admin-access-token* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
+   [rebujito.base-test :refer (log-config system-fixture *user-account-data* *app-access-token* *system* *customer-admin-access-token* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [clojure.pprint :refer (pprint)]
    [cheshire.core :as json]
@@ -21,7 +22,12 @@
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
 
 
-
+(log/set-config! (log-config [["rebujito.*" :warn]
+                              ["rebujito.security.*" :warn]
+                              ["rebujito.mongo" :debug]
+                              ["rebujito.mongo.*" :debug]
+                              ["rebujito.api.*" :warn]
+                              ["rebujito.api.util" :warn]]))
 
 (deftest customer-admin-search
   (testing ::customer-admin/profile
@@ -67,21 +73,21 @@
 
         )
 
+      ;; here adding a card to search by cardNumber
       (let [path (get-path ::card/register-digital-cards)]
-        ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
         (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                    {:throw-exceptions false
                                     :body-encoding "UTF-8"
                                     :content-type :json})
                        :status))))
 
-
-      (pprint (seq (p/find (:user-store *system*) )))
-
-      (let [f-n ""
+      (let [user-to-find (p/find (:user-store *system*)
+                                                (:user-id (p/read-token (:authenticator *system*) *user-access-token*)))
+            f-n ""
             l-n ""
-            e-m (apply str (take 3 (drop 3 (:customer-admin  (:app-config (config :test))))))
-            c-n ""
+            e-m "" #_(apply str (take 3 (drop 3 (:emailAddress *user-account-data*) )))
+            c-n (apply str (take 3 (->  user-to-find
+                                        :cards first :cardNumber)))
             query (format  "&firstname=%s&surname=%s&email=%s&cardnumber=%s" f-n l-n e-m c-n)
 
             res @(http/get (format "http://localhost:%s%s?access_token=%s%s"  port path *customer-admin-access-token* query)
@@ -91,10 +97,11 @@
             body (parse-body res)
             ]
         (is (= 200 (-> res :status)))
-                                        ;        (is (s/validate customer-admin/PagingSchema (:paging
         (s/validate customer-admin/PagingSchema (:paging body))
         (s/validate [customer-admin/SearchSchema] (:customers body))
-        (is (= 1  (count (:customers body))))))))
+        (is (= 1  (count (:customers body))))
+        (is (= (:emailAddress user-to-find)  (:emailAddress(first (:customers body)))))
+        ))))
 
 (deftest customer-admin-profile
   (testing ::customer-admin/profile
