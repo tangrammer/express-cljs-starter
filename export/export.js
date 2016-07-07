@@ -27,12 +27,14 @@ sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
 .then(getAccounts)
 .then(accounts => {
 
-  let accountNumbers = _.uniq(accounts)
-                          .map((acc) => acc.primaryposref)
-                          .filter((acc) => !!acc)
-                          .valueOf()
+  let accountNumbers = _(accounts)
+                         .map((acc) => acc.primaryposref)
+                         .filter((acc) => !!acc)
+                         .uniq()
+                         .valueOf()
 
   console.log(`got ${accountNumbers.length} accounts`)
+
   let idx = 0
   return Promise.map(accountNumbers, (accountNumber) => {
     idx++
