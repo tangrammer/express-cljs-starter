@@ -30,9 +30,9 @@ sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
   let accountNumbers = _.uniq(accounts.map((acc) => acc.primaryposref))
 
   console.log(`got ${accountNumbers.length} accounts`)
-  return Promise.map(accountNumbers, (accountNumber) => {
+  return Promise.map(accountNumbers, (accountNumber, idx) => {
     if (!accountNumber) return
-    console.log(`starting ${accountNumber}`)
+    console.log(`starting ${accountNumber} ${idx}/${accountNumbers.length}`)
     return exportCustomer(accountNumber)
   }, {concurrency: 1})
 })
