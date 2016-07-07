@@ -27,12 +27,14 @@ sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
 .then(getAccounts)
 .then(accounts => {
 
-  let accountNumbers = _.uniq(accounts)
-                          .map((acc) => acc.primaryposref)
-                          .filter((acc) => !!acc)
-                          .valueOf()
+  let accountNumbers = _(accounts)
+                         .map((acc) => acc.primaryposref)
+                         .filter((acc) => !!acc)
+                         .uniq()
+                         .valueOf()
 
   console.log(`got ${accountNumbers.length} accounts`)
+
   let idx = 0
   return Promise.map(accountNumbers, (accountNumber) => {
     idx++
@@ -56,9 +58,8 @@ function exportCustomer(accountNumber) {
     .then(() => {
       return exportTransactions(customer, txs)
     })
-    .then(() => {
-      return exportBalances(customer, balances)
-    })
+    .then(() => deleteBalances(customer))
+    .then(() => exportBalances(customer, balances))
   })
 }
 
@@ -161,6 +162,10 @@ function exportTransactions(customer, txs) {
       console.log(`done exporting ${rowCount} transactions`)
     })
   })
+}
+
+function deleteBalances(customer) {
+  return sql.query `delete from balances where customer_id = ${customer.id}`
 }
 
 function exportBalances(customer, balances) {
