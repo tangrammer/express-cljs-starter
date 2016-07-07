@@ -14,42 +14,60 @@
 (defn max-level [levels]
   (reduce (fn [x1 x2] (if (timbre/level>= x1 x2) x1 x2)) (first timbre/ordered-levels) levels))
 
+(defn min-level [levels]
+  (reduce (fn [x1 x2] (if (timbre/level>= x1 x2) x2 x1)) (first levels) (next levels)))
+
 ;; (max-level  (map last [[#"^rebujito\.api\.(.*)$" :info] [#"^rebujito\.api\.util$" :warn]]))
 
+(defn x? [x]
+  (enc/cond!
+   (enc/re-pattern? x) x
+   (string? x)
+   (let [s (-> (str "^" x "$")
+               (str/replace "." "\\.")
+               (str/replace "*" "(.*)"))]
+     (re-pattern s))))
+
 (defn log? [[ns? level?] config-levels]
-   (let [->re-pattern
-         (fn [[x l]]
-           [(enc/cond!
-              (enc/re-pattern? x) x
-              (string? x)
-              (let [s (-> (str "^" x "$")
-                          (str/replace "." "\\.")
-                          (str/replace "*" "(.*)"))]
-                (re-pattern s))) l])
-         coincidences (mapv ->re-pattern config-levels)
-         coincidences (map (fn [[n l]] [(re-find n ns?) l]) coincidences)
-         max-level* (max-level (map last coincidences))
-;         coincidences-map (into {} (mapv (comp vec reverse) coincidences))
-         ]
-     (println "hhha" coincidences)
-;     (println "here " (max-level* coincidences-map))
+  (let [->re-pattern (fn [[x l]] [(x? x) l])
+        coincidences (mapv ->re-pattern config-levels)
+        coincidences (->> coincidences
+                          (map (fn [[n l]] [(re-find n ns?) l]) )
+                          (filter (fn [[x _]] (some? x))))
+        max-level* (max-level (map last coincidences))
+        min-level* (min-level (map last coincidences))]
+;     (println "hhha" coincidences max-level* min-level*)
+     (let [[r l] [(first coincidences) min-level*]]
+       (or (nil? r) (timbre/level>= level? l)))))
+
+(def cf [["rebujito.api.util" :debug]
+         ["rebujito.api.*" :warn]])
 
 
-     (let [[r l] [(first coincidences) max-level*]]
 
-       (or (nil? r) (timbre/level>= level? l))
+(assert (false? (log? ["rebujito.api.util" :trace] cf)))
+(assert (false? (log? ["rebujito.api.util" :trace] (reverse cf))))
 
-       )))
+(assert (log? ["rebujito.api.util" :debug] cf))
+(assert (log? ["rebujito.api.util" :debug] (reverse cf)))
 
-(log? [ "rebujito.api.util" :info] [["rebujito.api.util" :debug]
-                                    ["rebujito.api.*" :warn]])
+(assert  (log? ["rebujito.api.util" :info] cf))
+(assert  (log? ["rebujito.api.util" :info] (reverse cf)))
 
-(log? [ "rebujito.api.util" :debug] [["rebujito.api.util" :debug]
-                                    ["rebujito.api.*" :warn]])
+(assert (false? (log? ["rebujito.api.lolo" :info] cf)))
 
-(log? [ "rebujito.api.util" :info] [
-                                    ["rebujito.api.*" :warn]
-                                    ["rebujito.api.util" :debug]])
+(assert (false? (log? ["rebujito.api.lolo" :info] (reverse cf))))
+
+
+(assert (log? ["rebujito.api.lolo" :warn] cf))
+(assert (log? ["rebujito.api.lolo" :warn] (reverse cf)))
+
+
+(assert (log? ["rebujito.api.lolo" :error] cf))
+(assert (log? ["rebujito.api.lolo" :error] (reverse cf)))
+
+
+
 
 
 

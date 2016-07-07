@@ -7,7 +7,7 @@
    [com.stuartsierra.component  :as component]
    [monger.collection :as mc]
    [monger.conversion :refer [from-db-object]]
-   [monger.operators :refer [$inc $set $push $pull $elemMatch]]
+   [monger.operators :refer [$inc $set $push $pull $elemMatch $or $regex]]
    [monger.core :as mg]
    [monger.json :as mj]
    [monger.result :refer [acknowledged?]]
@@ -150,7 +150,10 @@
   (update-by-id! [this hex-id data]
     (update-by-id!* this hex-id data))
   )
-
+(defn- optional-conj-or [v x kw]
+  (if (and x (not= x ""))
+      (conj v {kw {$regex x}})
+      v))
 
 (defrecord UserStorage [db-conn collection secret-key ephemeral?]
   component/Lifecycle
@@ -233,6 +236,15 @@
            {:user  found :card (first (filter #(= (:cardNumber %) card-number) (:cards found) ))})
        )))
 
+    )
+  (search [this firstName lastName emailAddress cardNumber]
+    (let [conj-or (-> []
+                      (optional-conj-or firstName :firstName)
+                      (optional-conj-or lastName :lastName)
+                      (optional-conj-or emailAddress :emailAddress))]
+      (if (empty? conj-or)
+        (mc/find-maps (:db this) (:collection this))
+        (mc/find-maps (:db this) (:collection this) {$or conj-or})))
     )
   protocols/UserPaymentMethodStore
   (update-payment-method [this oid payment-method]

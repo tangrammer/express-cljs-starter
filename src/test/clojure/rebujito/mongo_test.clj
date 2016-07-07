@@ -22,17 +22,20 @@
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
 
 
-(def config-levels [["rebujito.api.util" :debug]
+(def config-levels [["rebujito.*" :info]
+                    ["rebujito.security.*" :debug]
+                    ["rebujito.mongo" :debug]
+                    ["rebujito.mongo.*" :debug]
                     ["rebujito.api.*" :warn]
-
-                    ])
+                    ["rebujito.api.util" :debug]])
 
 (log/set-config! (-> log-levels/timbre-info-config
-                     (assoc  :level :info
+                     (assoc  :level :debug
                              :middleware [(fn [{:keys [level vargs ?ns-str ] :as data}]
-                                            (println ?ns-str level)
-                                            (when (log-levels/log? [?ns-str  level] config-levels)
-                                              data))])
+                                            (let [should-log? (log-levels/log? [?ns-str  level] config-levels)]
+                                              (println ?ns-str level should-log?)
+                                              (when should-log?
+                                              data)))])
 
                      (update-in [:ns-blacklist]
                                 (fn [c]

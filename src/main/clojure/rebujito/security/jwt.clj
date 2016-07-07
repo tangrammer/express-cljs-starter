@@ -42,6 +42,7 @@
   (stop [this] this)
   p/Authenticator
   (read-token [this token]
+    (log/debug "(read-token [_ token]) " token)
     (try
       (jws-unsign token secret-key)
       (catch Exception e (do

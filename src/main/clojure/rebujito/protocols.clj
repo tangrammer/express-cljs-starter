@@ -65,6 +65,8 @@
   (get-user-and-card [this card-number]
     "get card with card-number not the card-id, and without user-id.
      The query is a nested over :cards collection")
+  (search [this firstName lastName emailAddress cardNumber])
+
   )
 
 (defprotocol UserPaymentMethodStore
