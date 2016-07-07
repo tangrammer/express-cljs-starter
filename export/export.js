@@ -4,6 +4,7 @@ const Promise = require('bluebird')
 const sql = require('mssql')
 const micros = require('micros')
 const moment = require('moment')
+const _ = require('lodash')
 
 micros.setBrand('starbucks')
 
@@ -25,9 +26,11 @@ const cols = [
 sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
 .then(getAccounts)
 .then(accounts => {
-  console.log(`got ${accounts.length} accounts`)
-  return Promise.map(accounts, (account) => {
-    const accountNumber = account.primaryposref
+
+  let accountNumbers = _.uniq(accounts.map((acc) => acc.primaryposref))
+
+  console.log(`got ${accountNumbers.length} accounts`)
+  return Promise.map(accountNumbers, (accountNumber) => {
     if (!accountNumber) return
     console.log(`starting ${accountNumber}`)
     return exportCustomer(accountNumber)
