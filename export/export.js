@@ -58,9 +58,8 @@ function exportCustomer(accountNumber) {
     .then(() => {
       return exportTransactions(customer, txs)
     })
-    .then(() => {
-      return exportBalances(customer, balances)
-    })
+    .then(() => deleteBalances(customer))
+    .then(() => exportBalances(customer, balances))
   })
 }
 
@@ -163,6 +162,10 @@ function exportTransactions(customer, txs) {
       console.log(`done exporting ${rowCount} transactions`)
     })
   })
+}
+
+function deleteBalances(customer) {
+  return sql.query `delete from balances where customer_id = ${customer.id}`
 }
 
 function exportBalances(customer, balances) {
