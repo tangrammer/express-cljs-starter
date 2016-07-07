@@ -3,7 +3,8 @@
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
-   [rebujito.api.resources.profile :refer (load-profile)]
+   [rebujito.api.resources.profile :as profile]
+   [rebujito.api.resources.card :as card]
    [rebujito.api.util :as util]
    [rebujito.protocols :as p]
    [rebujito.util :refer (dcatch error*)]
@@ -46,12 +47,16 @@
                           (let [try-id ::profile
                                 try-type :api]
                             (dcatch ctx
-                                    (load-profile ctx mimi user-store (-> ctx :parameters :path :user-id))
+                                    (profile/load-profile ctx mimi user-store (-> ctx :parameters :path :user-id))
                                     )))}}}
       (merge (util/common-resource :customer-admin))))
 
-
-
+(defn history [user-store mimi]
+  (-> {:methods
+       {:get {:parameters {:query {:access_token String}
+                           :path {:user-id String}}
+              :response (fn [ctx]
+                          (card/history user-store mimi ctx (-> ctx :parameters :path :user-id)))}}}))
 
 (def SearchSchema
   {:customerId String
