@@ -123,26 +123,26 @@
     {:post {:parameters {:query {:access_token String}
                          :body (-> schema :register-physical :post)}
             :response (fn [ctx]
-                        (dcatch  ctx (d/let-flow [card-number (-> ctx :parameters :body :cardNumber)
-                                         auth-data (util/authenticated-data ctx)
-                                         user-id (:user-id auth-data)
-                                         mimi-res (p/register-physical-card mimi {:cardNumber card-number
-                                                                                  :customerId (id>mimi-id user-id)})
-                                         increment-loyalty (when mimi-res
-                                                             (p/increment-balance! mimi card-number 50 :loyalty))
-                                         increment-rewards (when mimi-res
-                                                             (p/increment-balance! mimi card-number 50 :rewards))
-                                         card (new-physical-card {:cardNumber card-number})
-                                         card-id (p/insert-card! user-store user-id card)]
+                        (dcatch  ctx
+                                 (let [card-number (-> ctx :parameters :body :cardNumber)
+                                       card (new-physical-card {:cardNumber card-number})
+                                       auth-data (util/authenticated-data ctx)
+                                       user-id (:user-id auth-data)
+                                       card-id @(d/chain
+                                                 (p/register-physical-card mimi {:cardNumber card-number
+                                                                                 :customerId (id>mimi-id user-id)})
+                                                 (fn [_]
+                                                   (p/increment-balance! mimi card-number 50 :loyalty))
+                                                 (fn [_]
+                                                   (p/increment-balance! mimi card-number 50 :rewards))
+                                                 (fn [_]
+                                                   (p/insert-card! user-store user-id card)))]
 
-                                         ;; force evaluation
-                                         increment-loyalty
-                                         increment-rewards
-                                        (util/>200 ctx (merge
-                                                        mocks/greenImageUrls
-                                                        (blank-card-data)
-                                                        (assoc card :cardId card-id))))))}}}
-
+                                   (util/>200 ctx (merge
+                                                   mocks/greenImageUrls
+                                                   (blank-card-data)
+                                                   (assoc card :cardId card-id))))
+                                 ))}}}
    (merge (util/common-resource :me/cards))))
 
 (defn register-digital-card [user-store mimi counter-store]
@@ -151,25 +151,25 @@
     {:post {:parameters {:query {:access_token String}}
             :response (fn [ctx]
                         (dcatch ctx
-                                (d/let-flow [card-number (str (p/increment! counter-store :digital-card-number))
-                                             auth-data (util/authenticated-data ctx)
-                                             user-id (:user-id auth-data)
-                                             mimi-res (p/register-physical-card mimi {:cardNumber card-number
-                                                                                      :customerId  (id>mimi-id user-id)})
-                                             increment-loyalty (when mimi-res
-                                                                 (p/increment-balance! mimi card-number 50 :loyalty))
-                                             increment-rewards (when mimi-res
-                                                                 (p/increment-balance! mimi card-number 50 :rewards))
-                                             card (new-digital-card {:cardNumber card-number})
-                                             card-id (p/insert-card! user-store user-id card)]
-
-                                             ;; force evaluation
-                                             increment-loyalty
-                                             increment-rewards
-                                             (util/>200 ctx (merge
-                                                             mocks/greenImageUrls
-                                                            (blank-card-data)
-                                                            (assoc card :cardId card-id))))))}}}
+                                (let [auth-data (util/authenticated-data ctx)
+                                      user-id (:user-id auth-data)
+                                      card @(d/let-flow [card-number (str (p/increment! counter-store :digital-card-number))]
+                                                           (d/chain
+                                                            (p/register-physical-card mimi {:cardNumber card-number
+                                                                                            :customerId  (id>mimi-id user-id)})
+                                                            (fn [_]
+                                                              (p/increment-balance! mimi card-number 50 :loyalty))
+                                                            (fn [_]
+                                                              (p/increment-balance! mimi card-number 50 :rewards))
+                                                            (fn [_]
+                                                              (let [card (new-digital-card {:cardNumber card-number})
+                                                                    card-id (p/insert-card! user-store user-id card)]
+                                                                (assoc card :cardId card-id)))
+                                                            ))]
+                                  (util/>200 ctx (merge
+                                                  mocks/greenImageUrls
+                                                  (blank-card-data)
+                                                   card)))))}}}
 
    (merge (util/common-resource :me/cards))))
 
