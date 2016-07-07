@@ -85,8 +85,7 @@ output-fn <opts-map>)`."
   ([data] (default-output-fn nil data))
   ([{:keys [no-stacktrace? stacktrace-fonts] :as opts} data]
    (let [{:keys [level ?err_ vargs_ msg_ ?ns-str hostname_ timestamp_]} data]
-     (str "Rebujito!"
-             (force timestamp_)       " "
+     (str (last (clojure.string/split (force timestamp_) #" "))       " "
 ;             (force hostname_)        " "
        (str/upper-case (name level))  " "
        "[" (or ?ns-str "?ns") "] - "

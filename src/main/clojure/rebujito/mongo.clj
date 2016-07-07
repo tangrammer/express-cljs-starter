@@ -238,14 +238,22 @@
 
     )
   (search [this firstName lastName emailAddress cardNumber]
+    (log/info "(search [_ firstName lastName emailAddress cardNumber])" firstName lastName emailAddress cardNumber)
     (let [conj-or (-> []
                       (optional-conj-or firstName :firstName)
                       (optional-conj-or lastName :lastName)
-                      (optional-conj-or emailAddress :emailAddress))]
-      (if (empty? conj-or)
-        (mc/find-maps (:db this) (:collection this))
-        (mc/find-maps (:db this) (:collection this) {$or conj-or})))
-    )
+                      (optional-conj-or emailAddress :emailAddress))
+          conj-or (if (and cardNumber (not= cardNumber ""))
+                    (conj conj-or {:cards {$elemMatch {:cardNumber {$regex cardNumber}}}})
+                    conj-or)
+          ]
+      (let [res  (if (empty? conj-or)
+                   (mc/find-maps (:db this) (:collection this))
+                   (mc/find-maps (:db this) (:collection this) {$or conj-or}))]
+        (log/debug "search_query" conj-or)
+        (log/debug "search_result" (clojure.string/join "," (mapv :emailAddress res)))
+        res)))
+
   protocols/UserPaymentMethodStore
   (update-payment-method [this oid payment-method]
     (let [try-type :store

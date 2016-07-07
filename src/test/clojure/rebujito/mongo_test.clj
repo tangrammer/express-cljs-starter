@@ -10,7 +10,7 @@
    [rebujito.api.resources.card :as card]
    [aleph.http :as http]
    [rebujito.api-test :refer (print-body parse-body create-digital-card*)]
-   [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path)]
+   [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path log-config)]
    [clojure.test :refer :all]
    [taoensso.encore    :as enc :refer (compile-if have have? qb)]
    [clojure.string     :as str]
@@ -22,28 +22,12 @@
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
 
 
-(def config-levels [["rebujito.*" :info]
-                    ["rebujito.security.*" :debug]
-                    ["rebujito.mongo" :debug]
-                    ["rebujito.mongo.*" :debug]
-                    ["rebujito.api.*" :warn]
-                    ["rebujito.api.util" :debug]])
-
-(log/set-config! (-> log-levels/timbre-info-config
-                     (assoc  :level :debug
-                             :middleware [(fn [{:keys [level vargs ?ns-str ] :as data}]
-                                            (let [should-log? (log-levels/log? [?ns-str  level] config-levels)]
-                                              (println ?ns-str level should-log?)
-                                              (when should-log?
-                                              data)))])
-
-                     (update-in [:ns-blacklist]
-                                (fn [c]
-                                  (conj c
-                                        "org.mongodb.driver.cluster"
-                                        "org.mongodb.driver.connection"
-                                        "org.mongodb.driver.protocol.*"
-                                        "io.netty.buffer.PoolThreadCache"))) ))
+(log/set-config! (log-config [["rebujito.*" :info]
+                              ["rebujito.security.*" :debug]
+                              ["rebujito.mongo" :debug]
+                              ["rebujito.mongo.*" :debug]
+                              ["rebujito.api.*" :warn]
+                              ["rebujito.api.util" :debug]]))
 
 (deftest test-auto-reload-profile
   (testing :test-auto-reload-profile
