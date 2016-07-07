@@ -211,14 +211,13 @@
                ]]
         ;; customer-admin
 
-        [["/users/" :user-id  ]
+        [["/users/" :user-id]
          [["/profile"  (-> (customer-admin/profile mimi user-store app-config)
                            (assoc :id ::customer-admin/profile
                                   :oauth {:get scopes/customer-admin}))]
           ["/add-stars"  (-> (customer-admin/add-stars mimi user-store app-config)
-                           (assoc :id ::customer-admin/add-stars
-                                  :oauth {:put scopes/customer-admin}))]]]
-
+                             (assoc :id ::customer-admin/add-stars
+                                    :oauth {:put scopes/customer-admin}))]]]
 
         ["/search-customer" (-> (customer-admin/search mimi user-store app-config)
                                 (assoc :id ::customer-admin/search
