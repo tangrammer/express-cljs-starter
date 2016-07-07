@@ -158,6 +158,7 @@
       d*))
 
   (increment-balance! [this card-number amount type]
+    (log/debug "(increment-balance! [_ card-number amount type])" card-number amount type)
     (let [d* (d/deferred)
           card-type-code (get-code type)
           try-id ::load-card
@@ -282,6 +283,7 @@
                            (conj :prod-mimi))))
       d*))
   (increment-balance! [this card-number amount type]
+    (log/debug "(increment-balance! [_ card-number amount type])" card-number amount type)
     (let [d* (d/deferred)]
       (if-let [mimi-card-data (assoc mocks/mimi-card :target-environment :dev) #_(p/increment-balance! mimi {:cardId (-> card-data :cardNumber) :amount (-> payment-data :amount)} :stored-value)]
         (d/success! d* mimi-card-data)

@@ -13,6 +13,30 @@
 
 
 
+(defn add-stars [mimi user-store app-config]
+  (-> {:methods
+       {:put {:parameters {:query {:access_token String}
+                           :path {:user-id String}
+                           :body {:amount s/Int}
+                           }
+              :response (fn [ctx]
+                          (let [try-id ::add-stars
+                                try-type :api]
+                            (dcatch ctx
+                                    (d/let-flow [user-id (-> ctx :parameters :path :user-id)
+                                                 amount (-> ctx :parameters :body :amount)
+                                                 real-user-data (p/find user-store user-id)
+                                                 card-number  (let [try-context '[user-id real-user-data]]
+                                                                (or (-> real-user-data :cards first :cardNumber)
+                                                                    #_(error* 500 [500 ::card-number-cant-be-null])))
+                                                 res (d/chain
+                                                      (p/increment-balance! mimi card-number amount :loyalty)
+                                                      (fn [_]
+                                                        (p/increment-balance! mimi card-number amount :rewards)))]
+
+                                                (util/>200 ctx (when res nil))))))}}}
+      (merge (util/common-resource :customer-admin))))
+
 
 (defn profile [mimi user-store app-config]
   (-> {:methods

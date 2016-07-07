@@ -25,9 +25,41 @@
 (log/set-config! (log-config [["rebujito.*" :warn]
                               ["rebujito.security.*" :warn]
                               ["rebujito.mongo" :debug]
+                              ["rebujito.mimi" :debug]
                               ["rebujito.mongo.*" :debug]
                               ["rebujito.api.*" :warn]
                               ["rebujito.api.util" :warn]]))
+
+(deftest customer-admin-add-stars
+  (testing ::customer-admin/profile
+    (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+
+          ]
+
+      ;; here adding a card to search by cardNumber
+      (let [path (get-path ::card/register-digital-cards)]
+        (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
+                       :status))))
+
+      (let [tok (p/read-token (:authenticator *system*) *user-access-token*)
+            user-id (:user-id tok)
+            api-id ::customer-admin/add-stars
+            path (bidi/path-for r api-id :user-id user-id)
+            res @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
+                           {:throw-exceptions false
+                            :body (json/generate-string {:amount 149})
+                            :body-encoding "UTF-8"
+                            :content-type :json})
+            body (parse-body res)
+            ]
+        (is (= 200 (-> res :status)))
+
+        (pprint body)
+        ))))
 
 (deftest customer-admin-search
   (testing ::customer-admin/profile
