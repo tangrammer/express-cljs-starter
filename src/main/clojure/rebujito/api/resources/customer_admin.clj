@@ -1,8 +1,10 @@
 (ns rebujito.api.resources.customer-admin
   (:require
    [cheshire.core :as json]
+   [taoensso.timbre :as log]
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
+   [rebujito.api.resources.card :as card ]
    [rebujito.api.resources.profile :refer (load-profile)]
    [rebujito.api.util :as util]
    [rebujito.protocols :as p]
@@ -10,6 +12,37 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]
    ))
+
+(defn transfer-from [mimi user-store]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :path {:user-id String}
+                            :body (-> card/schema :transfer-from :post)}
+               :response (fn [ctx]
+                           (let [try-id ::transfer-from
+                                 try-type :api]
+                             (dcatch ctx
+                                     (card/transfer-from* ctx
+                                                        (-> ctx :parameters :path :user-id)
+                                                        user-store
+                                                        mimi))))}}}
+
+   (merge (util/common-resource :customer-admin))))
+
+(defn transfer-to [mimi user-store ]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :path {:user-id String}
+                            :body (-> card/schema :transfer-to :post)}
+               :response (fn [ctx]
+                           (let [try-id ::transfer-to
+                                 try-type :api]
+                             (dcatch ctx
+                                     (card/transfer-to* ctx
+                                                        (-> ctx :parameters :path :user-id)
+                                                        user-store
+                                                        mimi))))}}}
+      (merge (util/common-resource :customer-admin))))
 
 
 
