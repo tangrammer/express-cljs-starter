@@ -69,9 +69,9 @@ function getAccounts() {
 
 function exportCustomerProfile(customer) {
 
-  console.log(`exporting ${customer.primaryposref}`)
+  console.log(`exporting ${customer.primaryposref} [${customer.id}]`)
 
-  return sql.query`delete from customers where id = ${customer.id}`
+  return sql.query `delete from customers where id = ${customer.id}`
   .then(() => {
 
     const ps = new sql.PreparedStatement()
@@ -168,11 +168,11 @@ function exportBalances(customer, balances) {
   table.create = true
 
   table.columns.add('customer_id', sql.Int, {nullable: false})
-  table.columns.add('program', sql.VarChar(128), {nullable: false})
+  table.columns.add('program_id', sql.Int, {nullable: false})
   table.columns.add('balance', sql.Decimal(19, 2), {nullable: false})
 
   balances.programs.forEach((program) => {
-    table.rows.add(customer.id, program.program, program.balance)
+    table.rows.add(customer.id, program.id, program.balance)
   })
 
   var request = new sql.Request()
