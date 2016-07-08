@@ -5,13 +5,16 @@
    [rebujito.api-test :refer (print-body parse-body)]
    [rebujito.api.resources.account :as account]
    [rebujito.api.resources.login :as login]
-   [rebujito.base-test :refer (system-fixture *app-access-token* *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
+   [taoensso.timbre :as log]
+   [rebujito.base-test :refer (log-config system-fixture *app-access-token* *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [clojure.pprint :refer (pprint)]
    [cheshire.core :as json]
    [clojure.test :refer :all]))
 
 (use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
+
+
 
 (deftest test-create-account
   (testing ::account/create
@@ -94,7 +97,15 @@
 
 
 (deftest verify-account
-(testing ::account/create
+  (log/set-config! (log-config [["rebujito.*" :warn]
+                                ["rebujito.security.*" :warn]
+                                ["rebujito.mongo" :info]
+                                ["rebujito.mimi" :info]
+                                ["rebujito.mimi.*" :info]
+                                ["rebujito.mongo.*" :info]
+                                ["rebujito.api.*" :info]
+                                ["rebujito.api.util" :warn]]))
+  (testing ::account/create
     (let [port (-> *system*  :webserver :port)
           path (get-path ::account/create)
           account-data (assoc (new-account-sb)
@@ -108,10 +119,10 @@
       (is (= 2 (count (deref(:mails (-> *system*  :mailer))))))
 
       (let [res @(http/post (format "http://localhost:%s%s?access_token=%s&market=%s"  port path *app-access-token* 1234)
-                                  {:throw-exceptions false
-                                   :body (json/generate-string account-data)
-                                   :body-encoding "UTF-8"
-                                   :content-type :json})]
+                            {:throw-exceptions false
+                             :body (json/generate-string account-data)
+                             :body-encoding "UTF-8"
+                             :content-type :json})]
         (is (= 201  (-> res :status)))
         (is (= false  (:verifiedEmail (parse-body res) :doesnt-exist!)))
         (is (= (count (seq (p/find (-> *system*  :user-store)))) (inc (count users))))
@@ -120,7 +131,7 @@
       (let [mails (deref(:mails (-> *system*  :mailer)))
             verify-email (last mails)
             token (last (clojure.string/split
-                                   (:hidden verify-email) #"/")) ]
+                         (:hidden verify-email) #"/")) ]
         (is (= 3 (count mails)))
         (is (= {:subject "Verify your Starbucks Rewards email"
                 :to (:emailAddress account-data)}
@@ -129,9 +140,9 @@
 
         (let [path (get-path ::login/verify-email)
               res-verify @(http/put (format "http://localhost:%s%s?access_token=%s"  port path token)
-                                  {:throw-exceptions false
-                                   :body-encoding "UTF-8"
-                                   :content-type :json})]
+                                    {:throw-exceptions false
+                                     :body-encoding "UTF-8"
+                                     :content-type :json})]
 
           (is (= 200 (:status res-verify)))
           (is (= true (:verifiedEmail (first (p/find (-> *system*  :user-store ) {:emailAddress (:emailAddress account-data)}))) ))
@@ -140,9 +151,9 @@
 
         (let [path (get-path ::login/verify-email)
               res-verify @(http/put (format "http://localhost:%s%s?access_token=%s"  port path token)
-                                  {:throw-exceptions false
-                                   :body-encoding "UTF-8"
-                                   :content-type :json})]
+                                    {:throw-exceptions false
+                                     :body-encoding "UTF-8"
+                                     :content-type :json})]
 
           (is (= 401 (:status res-verify)))
 
@@ -151,6 +162,6 @@
 
 
         )
-))
+      ))
 
   )

@@ -104,7 +104,7 @@
                                  (name (:collection this))
                                  (:collection this)))]
       (when (:ephemeral? this)
-        (println "DEV ENV removing data from collection: " (:collection c))
+        (log/warn "DEV ENV removing data from collection: " (:collection c))
         (mc/remove (:db c) (:collection c)))
       c
       ))

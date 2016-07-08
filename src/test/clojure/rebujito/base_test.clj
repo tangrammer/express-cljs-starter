@@ -1,6 +1,7 @@
 (ns rebujito.base-test
   (:require
    [byte-streams :as bs]
+   [taoensso.timbre :as log]
    [cheshire.core :as json]
    [clojure.repl :refer (pst)]
    [bidi.bidi :as bidi]
@@ -23,6 +24,7 @@
                [clojure.test :refer (is)]
                ))
 
+(declare log-config)
 (def ^:dynamic *system* nil)
 (def ^:dynamic *user-access-token* nil)
 (def ^:dynamic *app-access-token* nil)
@@ -176,7 +178,7 @@
        res
        (is (= 201 (:status res) ))
 ;       (println "test account _________________________")
-       (clojure.pprint/pprint (json/parse-string (bs/to-string (:body res)) true))
+       (log/info (json/parse-string (bs/to-string (:body res)) true))
        )
      ))
   )
@@ -229,6 +231,7 @@
 
 (defn system-fixture [config-env]
   (fn[f]
+    (log/set-config! (assoc (log-config []) :level :warn))
     (alter-var-root (var rebujito.util/*send-bugsnag*) (fn [d] true))
     (alter-var-root (var rebujito.util/*bugsnag-release*) (fn [d] "test"))
     (with-system (-> (dev/new-dev-system config-env (update-in (config :test) [:yada :port]

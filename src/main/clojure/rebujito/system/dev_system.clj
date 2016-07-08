@@ -6,6 +6,7 @@
    [rebujito.config :refer (config)]
    [rebujito.store :refer (new-mock-store)]
    [rebujito.mimi.mocks :refer (new-mock-mimi)]
+   [taoensso.timbre :as log]
    [rebujito.mailer :refer (new-mock-mailer)]
    [rebujito.system :refer (new-system-map new-dependency-map)]))
 
@@ -15,19 +16,19 @@
    {
     :+mock-store
     (fn [config]
-      (println "using :+mock-store profile in dev-system")
+      (log/warn "using :+mock-store profile in dev-system")
       (fn [system-map]
         (-> system-map
             (assoc :store (new-mock-store)))))
     :+mock-mailer
     (fn [config]
-      (println "using :+mock-mailer profile in dev-system")
+      (log/warn "using :+mock-mailer profile in dev-system")
       (fn [system-map]
         (-> system-map
             (assoc :mailer (new-mock-mailer {})))))
     :+ephemeral-db
     (fn [config]
-      (println "using :+ephemeral-db to start mongo with no data inside")
+      (log/warn "using :+ephemeral-db to start mongo with no data inside")
       (fn [system-map]
         (-> system-map
             (assoc
@@ -39,13 +40,13 @@
              :api-client-store (rebujito.mongo/new-api-key-store (:auth config) true)))))
     :+mock-mimi
     (fn [config]
-      (println "using :+mock-mimi profile in dev-system")
+      (log/warn "using :+mock-mimi profile in dev-system")
       (fn [system-map]
         (-> system-map
             (assoc :mimi (new-mock-mimi (:mimi config))))))
     :+mock-payment-gateway
     (fn [config]
-        (println "using :+mock-payment-gateway profile in dev-system")
+        (log/warn "using :+mock-payment-gateway profile in dev-system")
         (fn [system-map]
             (-> system-map
                 (assoc :payment-gateway (new-mock-payment-gateway (:payment-gateway config))))))}

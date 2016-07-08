@@ -70,13 +70,11 @@
 
      (testing ::devices/register
        (let [path (get-path ::devices/register)]
-                                        ;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
          (is (= 202 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path 123)
                                     {:throw-exceptions false
                                      :body-encoding "UTF-8"
                                      :body (json/generate-string (g/generate (-> devices/schema :post )))
                                      :content-type :json})
-                                        ;                        print-body
                         :status)))))
 
      (testing ::payment/method-detail
@@ -136,7 +134,6 @@
                                      :body (json/generate-string
                                             (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password *user-account-data*)))
                                      :content-type :json})
-                                        ;                        print-body
                         :status)))
 
          ))
@@ -152,7 +149,6 @@
                           :body (json/generate-string
                                  (select-keys *user-account-data*  (keys (-> login/schema :forgot-password :post))))
                           :content-type :json})
-                                        ;             print-body
              :status)
          #_(is (= 200 ))
 
@@ -168,7 +164,6 @@
                         {:throw-exceptions false
                          :body-encoding "UTF-8"
                          :content-type :json})]
-    ;;         (println (format "http://localhost:%s%s?access_token=%s"  port path 123))
     (is (= 200 (-> res :status)))
     (parse-body res)))
 
@@ -189,12 +184,8 @@
                                  (json/parse-string "{\"grant_type\":\"password\",\"client_id\":\"574c95bfe986e3fdfc531a3e\",\"client_secret\":\"66ae769048067c5a06029fb5ae66fb439738c76cf3f7a9776659c0142d0e2d0f\",\"username\":\"stephan+starbucks_za_01@mediamonks.com\",\"password\":\"#myPassword01\", \"risk[reputation][IPAddress]\":\"true\", \"risk[reputation][deviceFingerprint]\":\"true\", \"risk[platform]\":\"true\"}" true)
                                  :body-encoding "UTF-8"
                                  :content-type :x-www-form-urlencoded})
-                  body (-> r :body bs/to-string (json/parse-string true))
-                  ;;                  _ (println body)
-
-                  ]
+                  body (-> r :body bs/to-string (json/parse-string true))]
               (reset! access_token (:access_token body))
-              ;;            (println "\n >>>> password access_token "@access_token "\n")
               r)
             :status)
 
