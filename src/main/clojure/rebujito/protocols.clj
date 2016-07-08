@@ -9,6 +9,7 @@
 
 (defprotocol Mimi
   (create-account [this data])
+  (update-account [this data])
   (remove-account [this data])
   (register-physical-card [this data])
   (increment-balance! [this card-number amount type])

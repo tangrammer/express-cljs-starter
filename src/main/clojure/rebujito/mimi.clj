@@ -130,10 +130,18 @@
                        (-> body :customerId vector (conj :prod-mimi))))
                  )))
       d*))
+  (update-account [this data]
+    (log/warn "update-account-mimi! [_ data]" data)
+    (clj-bugsnag.core/notify
+     (rebujito.MimiException. "TODO: MIMI update-account is not implemented yet!")
+          {:api-key (:key (:bugsnag (rebujito.config/config)))
+           :environment rebujito.util/*bugsnag-release*
+           :meta {:context {:data data}}})
+    true)
   (remove-account [this data]
     (log/warn "remove-account-mimi! [_ data]" data)
     (clj-bugsnag.core/notify
-     (rebujito.MimiException. "TODO: remove-account is not implemented yet!")
+     (rebujito.MimiException. "TODO: MIMI remove-account is not implemented yet!")
           {:api-key (:key (:bugsnag (rebujito.config/config)))
            :environment rebujito.util/*bugsnag-release*
            :meta {:context {:data data}}})

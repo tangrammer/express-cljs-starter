@@ -52,6 +52,13 @@
    }
   )
 
+(def UpdateMongoUser
+  {(s/optional-key :emailAddress) (s/maybe String)
+   (s/optional-key  :firstName) (s/maybe String)
+   (s/optional-key  :lastName) (s/maybe String)
+   (s/optional-key :birthDay) (s/conditional number? Integer :else String)
+   (s/optional-key :birthMonth) (s/conditional number? Integer :else String)})
+
 (def MongoUser
   (merge
    UserProfileData

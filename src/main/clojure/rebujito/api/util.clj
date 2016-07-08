@@ -199,3 +199,7 @@
 
 (defn get-tier-name [balance-response]
   (or (-> balance-response :tier :name) "Green"))
+
+(defn remove-nils [m]
+  (reduce (fn [c [a b]] (if b (assoc c a b) c) ) {} m)
+  )

@@ -6,6 +6,8 @@
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.api.resources.profile :as profile]
    [rebujito.api.resources.login :as login]
+   [rebujito.api.resources.account :as account]
+   [rebujito.schemas :refer (UpdateMongoUser)]
    [rebujito.api.resources.card :as card]
    [rebujito.api.resources.addresses :as addresses]
    [rebujito.api.util :as util]
@@ -14,6 +16,8 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]
    ))
+
+(def schema {:user {:put UpdateMongoUser}})
 
 (defn user [user-store mimi]
   (-> {:methods
@@ -28,10 +32,37 @@
                                                     mimi-res (when user
                                                                (p/remove-account mimi user))
                                                     removed? (when mimi-res
-                                                               (p/remove-by-id! user-store user-id))]
+                                                               (p/remove-by-id! user-store user-id))
+                                                    ]
                                                    (if removed?
                                                      (util/>200 ctx nil)
-                                                     (util/>500 ctx "we couldn't remove this user!"))))))}}}
+                                                     (util/>500 ctx "we couldn't remove this user!"))))))}
+        :put    {:parameters {:query {:access_token String}
+                              :path {:user-id String}
+                              :body (-> schema :user :put)}
+                 :response (fn [ctx]
+                             (let [try-id ::user
+                                   try-type :api]
+                               (dcatch ctx
+                                       (d/let-flow [payload (util/remove-nils (-> ctx :parameters :body))
+
+                                                    user-id (-> ctx :parameters :path :user-id)
+                                                    email-exists? (when (:emailAddress payload)
+                                                                    (account/check-account-mongo {:emailAddress (:emailAddress payload)} user-store))
+
+                                                    user (when-not email-exists?
+                                                           (p/find user-store user-id))
+                                                    mimi-res (when user
+                                                               (p/update-account mimi user))
+                                                    updated? (when mimi-res
+                                                               (pos? (.getN (p/update-by-id! user-store user-id payload))))
+
+                                                    ]
+
+                                                   (if updated?
+                                                     (util/>200 ctx nil)
+                                                     (util/>500 ctx "we couldn't update the account"))))))}}
+       }
       (merge (util/common-resource :customer-admin))))
 
 (defn forgot-password [user-store mailer authenticator authorizer app-config]
