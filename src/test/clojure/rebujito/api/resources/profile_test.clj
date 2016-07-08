@@ -27,8 +27,91 @@
                               ["rebujito.mongo" :debug]
                               ["rebujito.mimi" :debug]
                               ["rebujito.mongo.*" :debug]
-                              ["rebujito.api.*" :warn]
+                              ["rebujito.api.*" :debug]
                               ["rebujito.api.util" :warn]]))
+
+
+(deftest customer-admin-transfer-from
+  (testing ::customer-admin/transfer-from
+    (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+          api-id ::customer-admin/transfer-from
+          user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
+          path (bidi/path-for r api-id :user-id user-id)]
+
+      ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
+      (is (= 403 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :content-type :json})
+                     print-body
+                     :status)))
+
+      ;; here adding a card to search by cardNumber
+      (let [path (get-path ::card/register-digital-cards)]
+        (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
+                       :status))))
+
+      ;; 200 with  valid user logged
+      (let [user-to-find (p/find (:user-store *system*)
+                                 (:user-id (p/read-token (:authenticator *system*) *user-access-token*)))
+            card-number (->  user-to-find :cards first :cardNumber)
+            res @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :body (json/generate-string
+                                                {:cardNumber card-number
+                                                 :cardPin "???"})
+                                 :content-type :json})]
+        (is (= 200 (-> res :status)))
+;        (is (= nil (parse-body res)))
+        ))
+    )
+  )
+
+(deftest customer-admin-transfer-to
+  (testing ::customer-admin/transfer-to
+    (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+          api-id ::customer-admin/transfer-to
+          user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
+          path (bidi/path-for r api-id :user-id user-id)]
+
+      ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
+      (is (= 403 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :content-type :json})
+                     print-body
+                     :status)))
+
+      ;; here adding a card to search by cardNumber
+      (let [path (get-path ::card/register-digital-cards)]
+        (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
+                       :status))))
+
+      ;; 200 with  valid user logged
+      (let [user-to-find (p/find (:user-store *system*)
+                                 (:user-id (p/read-token (:authenticator *system*) *user-access-token*)))
+            card-number (->  user-to-find :cards first :cardNumber)
+            res @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :body (json/generate-string
+                                                {:cardNumber card-number
+                                                 :cardPin "???"})
+                                 :content-type :json})]
+        (is (= 200 (-> res :status)))
+;        (is (= nil (parse-body res)))
+        ))
+    )
+  )
 
 (deftest customer-admin-add-stars
   (testing ::customer-admin/profile

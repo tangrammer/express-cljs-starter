@@ -212,7 +212,17 @@
         ;; customer-admin
 
         [["/users/" :user-id]
-         [["/profile"  (-> (customer-admin/profile mimi user-store app-config)
+         [["/transfer" [["/to" (-> (customer-admin/transfer-to mimi user-store)
+                           (assoc :id ::customer-admin/transfer-to
+                                  :oauth {:post scopes/customer-admin}))]
+                        ["/from" (-> (customer-admin/transfer-from mimi user-store)
+                           (assoc :id ::customer-admin/transfer-from
+                                  :oauth {:post scopes/customer-admin}))]
+                        #_["/to-digital" (-> (customer-admin/transfer-to mimi user-store)
+                           (assoc :id ::customer-admin/transfer-to-digital
+                                  :oauth {:post scopes/customer-admin}))]]]
+
+          ["/profile"  (-> (customer-admin/profile mimi user-store app-config)
                            (assoc :id ::customer-admin/profile
                                   :oauth {:get scopes/customer-admin}))]
           ["/add-stars"  (-> (customer-admin/add-stars mimi user-store app-config)

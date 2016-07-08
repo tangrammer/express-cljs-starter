@@ -14,9 +14,14 @@
    [yada.resource :refer [resource]]))
 
 (def schema {:register-physical {:post {:cardNumber String
-                                        :pin String
-                                        }
+                                        :pin String}
                                  :pin String}
+
+             :transfer-from {:post {:cardNumber String
+                                    :cardPin String}}
+
+             :transfer-to {:post {:cardNumber String
+                                  :cardPin String}}
 
              :autoreload {:post {:status (s/enum "active" "disabled")
                                  :autoReloadType (s/enum "Amount")
@@ -67,6 +72,18 @@
            :environment rebujito.util/*bugsnag-release*
            :user user-id}))
     (first cards)))
+
+(defn- get-card-data-deferred-exception [user-store user-id]
+  (or (get-card-data user-store user-id)
+      (d/error-deferred
+       (ex-info (str "No Card for this user")
+                {:type :api
+                 :status 400
+                 :code "xxxx"
+                 :message (format  "This user %s doesn't have card attached!" user-id)
+                 :body  "This user doesn't have card attached!"
+                 })))
+  )
 
 (defn >get-card [user-store user-id balances]
   (comment rebujito.store.mocks/card
@@ -383,45 +400,62 @@
              }}}
    (merge (util/common-resource :me/cards))))
 
+(defn transfer-from* [ctx user-id user-store mimi]
+  (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
+               _ (log/debug "card-data::" card-data)
+               to (:cardNumber card-data)
+               from (-> ctx :parameters :body :cardNumber)
+               ;; TODO verify pin
+               ;; TODO check from card isn't linked to a customer
+               fromPin (-> ctx :parameters :body :cardPin)
+               mimi-res (p/transfer mimi from to)
+               _ (log/debug "mimi success?" mimi-res from to fromPin)
+               ]
+              (if mimi-res
+                (util/>200 ctx {:status "ok"})
+                (util/>500 ctx {:status "error"}))
+              )
+  )
+
 (defn transfer-from [user-store mimi]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
-                            :body {:cardNumber String
-                                   :cardPin String}}
+                            :body (-> schema :transfer-from :post)}
                :response (fn [ctx]
-                           (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
-                                        card-data (get-card-data user-store user-id)
-                                        to (:cardNumber card-data)
-                                        from (-> ctx :parameters :body :cardNumber)
-                                        ;; TODO verify pin
-                                        ;; TODO check from card isn't linked to a customer
-                                        fromPin (-> ctx :parameters :body :cardPin)
-                                        success? (when (and to from fromPin) (p/transfer mimi from to))]
-                            (if success?
-                              (util/>200 ctx {:status "ok"})
-                              (util/>500 ctx {:status "error"}))
-                              ))}}}
+                           (transfer-from* ctx
+                                           (:user-id (util/authenticated-data ctx))
+                                           user-store
+                                           mimi))}}}
 
    (merge (util/common-resource :me/cards))))
+
+(defn transfer-to* [ctx user-id user-store mimi]
+  (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
+               _ (log/debug "card-data::" card-data)
+               from (:cardNumber card-data)
+               to (-> ctx :parameters :body :cardNumber)
+               ;; TODO verify pin
+               ;; TODO check to card isn't linked to a customer
+               to-pin (-> ctx :parameters :body :cardPin)
+               mimi-res (p/transfer mimi from to)
+               _ (log/debug "mimi success?" mimi-res to from to-pin)
+               updated? (when mimi-res
+                          (let [res (p/update-card-number user-store user-id from to)]
+                            (log/debug "mongo-update-card-number-res" res)
+                            res))]
+              (if (pos? (.getN updated?))
+                (util/>200 ctx {:status "ok"})
+                (util/>500 ctx {:status "error"}))
+              ))
 
 (defn transfer-to [user-store mimi]
   (-> {:methods
         {:post {:parameters {:query {:access_token String}
-                             :body {:cardNumber String
-                                    :cardPin String}}
+                             :body (-> schema :transfer-to :post) }
                 :response (fn [ctx]
-                            (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
-                                         card-data (get-card-data user-store user-id)
-                                         from (:cardNumber card-data)
-                                         to (-> ctx :parameters :body :cardNumber)
-                                         ;; TODO verify pin
-                                         ;; TODO check to card isn't linked to a customer
-                                         toPin (-> ctx :parameters :body :cardPin)
-                                         success? (when (and to from toPin) (p/transfer mimi from to))
-                                         success? (when success? (p/update-card-number user-store user-id from to))]
-                             (if success?
-                               (util/>200 ctx {:status "ok"})
-                               (util/>500 ctx {:status "error"}))
-                               ))}}}
+                            (transfer-to* ctx
+                                          (:user-id (util/authenticated-data ctx))
+                                          user-store
+                                          mimi))}}}
 
     (merge (util/common-resource :me/cards))))
