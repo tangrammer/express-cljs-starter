@@ -212,15 +212,19 @@
         ;; customer-admin
 
         [["/users/" :user-id]
-         [["/transfer" [["/to" (-> (customer-admin/transfer-to mimi user-store)
-                           (assoc :id ::customer-admin/transfer-to
-                                  :oauth {:post scopes/customer-admin}))]
+         [
+          [["/addresses/" :address-id] (-> (customer-admin/address user-store)
+                                           (assoc :id ::customer-admin/address
+                                                  :oauth {:put scopes/customer-admin}))]
+          ["/transfer" [["/to" (-> (customer-admin/transfer-to mimi user-store)
+                                   (assoc :id ::customer-admin/transfer-to
+                                          :oauth {:post scopes/customer-admin}))]
                         ["/from" (-> (customer-admin/transfer-from mimi user-store)
-                           (assoc :id ::customer-admin/transfer-from
-                                  :oauth {:post scopes/customer-admin}))]
+                                     (assoc :id ::customer-admin/transfer-from
+                                            :oauth {:post scopes/customer-admin}))]
                         #_["/to-digital" (-> (customer-admin/transfer-to mimi user-store)
-                           (assoc :id ::customer-admin/transfer-to-digital
-                                  :oauth {:post scopes/customer-admin}))]]]
+                                             (assoc :id ::customer-admin/transfer-to-digital
+                                                    :oauth {:post scopes/customer-admin}))]]]
 
           ["/profile"  (-> (customer-admin/profile mimi user-store app-config)
                            (assoc :id ::customer-admin/profile

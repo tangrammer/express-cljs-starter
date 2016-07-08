@@ -4,11 +4,13 @@
    [schema.core :as s ]
    [bidi.bidi :as bidi]
    [byte-streams :as bs]
+   [schema-generators.generators :as g]
    [rebujito.protocols :as p]
    [taoensso.timbre :as log]
    [rebujito.api-test :refer (print-body parse-body)]
    [rebujito.api.resources.account :as account]
    [rebujito.api.resources.card :as card]
+   [rebujito.api.resources.addresses :as addresses]
    [rebujito.api.resources.customer-admin :as customer-admin]
    [rebujito.api.resources.profile :as profile]
    [rebujito.api.resources.login :as login]
@@ -31,6 +33,73 @@
                               ["rebujito.api.util" :warn]]))
 
 
+
+
+(deftest customer-admin-update-address
+  (testing ::customer-admin/address
+    (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+          address-id (atom "")]
+      ;; create!
+      (let [path (get-path ::addresses/addresses)
+            http-res @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                 {:throw-exceptions false
+                                  :body-encoding "UTF-8"
+                                  :body (json/generate-string
+                                         (g/generate (:post addresses/schema))
+
+                                         )
+                                  :content-type :json})
+            _ (is (= (:status http-res) 201))
+            body (parse-body http-res)]
+
+        ;; checking the header "/me/addresses/a8963052-9131-475d-9a23-40a3d2f109cc"
+        (is  (:location (clojure.walk/keywordize-keys (-> http-res :headers ))))
+        (reset! address-id (last (clojure.string/split (:location (clojure.walk/keywordize-keys (-> http-res :headers ))) #"\/"))))
+
+      (let [api-id ::customer-admin/address
+            user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
+            path (bidi/path-for r api-id :user-id user-id :address-id @address-id)
+            update-payload (g/generate (:put addresses/schema))
+            ]
+
+        ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
+        (is (= 403 (-> @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :body (json/generate-string update-payload)
+                                   :content-type :json})
+                       :status)))
+
+
+        ;; 200 with  valid user logged
+        (let [user-to-find (p/find (:user-store *system*)
+                                   (:user-id (p/read-token (:authenticator *system*) *user-access-token*)))
+              res @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
+                             {:throw-exceptions false
+                              :body-encoding "UTF-8"
+                              :body (json/generate-string  update-payload)
+                              :content-type :json})
+              body (parse-body res)]
+          (is (= 200 (-> res :status)))
+          (is (=  nil body))
+          )
+
+
+        ;; get-detail
+        (let [path (bidi/path-for (-> *system* :docsite-router :routes) ::addresses/get :address-id @address-id)
+              http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                       {:throw-exceptions false
+                                        :body-encoding "UTF-8"
+                                        :content-type :json})
+              body (parse-body http-response)
+              ]
+          (is (= 200 (-> http-response :status)))
+          (is (= (select-keys update-payload [:addressLine1 :name :city ]) (select-keys body [:addressLine1 :name :city ]))))
+
+
+        ))
+    ))
 
 (deftest customer-admin-history
   (testing ::customer-admin/history

@@ -45,6 +45,13 @@
                                :postalCode String
                                :type String}}})
 
+
+(defn update-address* [ctx payload user-id address-id user-store]
+  (d/let-flow [
+               new-address (assoc payload :addressId address-id)
+               updated? (p/update-address user-store user-id new-address)]
+              (util/>200 ctx (when updated? nil))))
+
 (defn addresses [user-store]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
@@ -61,7 +68,7 @@
 ))}
         :get {:parameters {:query {:access_token String}}
               :response (fn [ctx]
-                          (-> (d/let-flow [auth-data (util/authenticated-data ctx)
+                          (dcatch ctx (d/let-flow [auth-data (util/authenticated-data ctx)
                                            user-id (:user-id auth-data)
                                            addresses (p/get-addresses user-store user-id)]
                                (util/>200 ctx addresses))))}}}
@@ -72,15 +79,12 @@
        {:get {:parameters {:path {:address-id String}
                            :query {:access_token String}}
               :response (fn [ctx]
-                          (-> (d/let-flow [auth-data (util/authenticated-data ctx)
+                          (dcatch ctx (d/let-flow [auth-data (util/authenticated-data ctx)
                                            user-id (:user-id auth-data)
                                            address-id (-> ctx :parameters :path :address-id)
                                            address (p/get-address user-store user-id address-id)
                                            ]
-                                          (util/>200 ctx address))
-                              (d/catch clojure.lang.ExceptionInfo
-                                  (fn [exception-info]
-                                    (domain-exception ctx (ex-data exception-info))))))}
+                                          (util/>200 ctx address))))}
 
         :delete {:parameters {:query {:access_token String}
                               :path {:address-id String}}
@@ -88,30 +92,23 @@
                              ;; TODO: complete possible outputs
                              ;;      400	111028	Cannot delete registration address.
                              ;;      400	111037	Address is in use.
-                             (-> (d/let-flow [auth-data (util/authenticated-data ctx)
-                                              user-id (:user-id auth-data)
-                                              address-id (-> ctx :parameters :path :address-id)
-                                              address (p/get-address user-store user-id address-id)
-                                              res-mongo (p/remove-address user-store user-id address)]
+                             (dcatch ctx
+                                     (d/let-flow [auth-data (util/authenticated-data ctx)
+                                                  user-id (:user-id auth-data)
+                                                  address-id (-> ctx :parameters :path :address-id)
+                                                  address (p/get-address user-store user-id address-id)
+                                                  res-mongo (p/remove-address user-store user-id address)]
 
-                                             (util/>200 ctx nil))
-                                 (d/catch clojure.lang.ExceptionInfo
-                                     (fn [exception-info]
-                                       (domain-exception ctx (ex-data exception-info))))))}
+                                                 (util/>200 ctx nil))))}
         :put {:parameters {:query {:access_token String}
                            :path {:address-id String}
                            :body (-> schema :put)}
-           :response (fn [ctx]
-                       (let [payload (-> ctx :parameters :body)]
-                         (-> (d/let-flow [user-id (-> ctx util/authenticated-data :user-id)
-                                          address-id (get-in ctx [:parameters :path :address-id])
-                                          new-address (assoc payload :addressId address-id)]
-
-                               (p/update-address user-store user-id new-address)
-                               (util/>200 ctx nil))
-                             (d/catch clojure.lang.ExceptionInfo
-                                 (fn [exception-info]
-                                   (domain-exception ctx (ex-data exception-info)))))))}
+              :response (fn [ctx]
+                          (dcatch ctx
+                                  (let [payload (-> ctx :parameters :body)
+                                        user-id (-> ctx util/authenticated-data :user-id)
+                                        address-id (get-in ctx [:parameters :path :address-id])]
+                                    (update-address* ctx payload user-id address-id user-store))))}
         }}
 
      (merge (util/common-resource :addresses))))

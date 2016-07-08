@@ -6,12 +6,31 @@
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.api.resources.profile :as profile]
    [rebujito.api.resources.card :as card]
+   [rebujito.api.resources.addresses :as addresses]
    [rebujito.api.util :as util]
    [rebujito.protocols :as p]
    [rebujito.util :refer (dcatch error*)]
    [schema.core :as s]
    [yada.resource :refer [resource]]
    ))
+
+
+(defn address [user-store]
+  (-> {:methods
+       {:put {:parameters {:query {:access_token String}
+                           :path {:user-id String
+                                  :address-id String}
+                           :body (-> addresses/schema :put)
+                           }
+              :response (fn [ctx]
+                          (let [try-id ::address
+                                try-type :api]
+                            (dcatch ctx
+                                   (let [payload (-> ctx :parameters :body)
+                                         user-id (-> ctx :parameters :path :user-id)
+                                         address-id (-> ctx :parameters :path :address-id)]
+                                     (addresses/update-address* ctx payload user-id address-id user-store)))))}}}
+      (merge (util/common-resource :customer-admin))))
 
 (defn transfer-from [mimi user-store]
   (-> {:methods
