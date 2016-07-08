@@ -79,6 +79,7 @@
                                                                                                               (p/change-state webhook-store webhook-uuid :error)
                                                                                                               (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
                                                                                                                               :subject "IMPORTANT INFORMATION REGARDING YOUR STARBUCKS CARD SUBSCRIPTION"
+                                                                                                                              :content-type "text/html"
                                                                                                                               :content (template/render-file "templates/email/reload_payment_failed.html" {})})
                                                                                                               (manifold.deferred/error-deferred e))))
 
@@ -89,6 +90,7 @@
                                                                                                                   (p/change-state webhook-store webhook-uuid :error)
                                                                                                                   (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
                                                                                                                                   :subject "IMPORTANT INFORMATION REGARDING YOUR STARBUCKS CARD SUBSCRIPTION"
+                                                                                                                                  :content-type "text/html"
                                                                                                                                   :content (template/render-file "templates/email/reload_micros_failed.html" {})})
                                                                                                                   (manifold.deferred/error-deferred e)))))
 
