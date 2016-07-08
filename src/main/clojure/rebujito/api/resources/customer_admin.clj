@@ -14,7 +14,6 @@
    [yada.resource :refer [resource]]
    ))
 
-
 (defn address [user-store]
   (-> {:methods
        {:put {:parameters {:query {:access_token String}
@@ -30,6 +29,26 @@
                                          user-id (-> ctx :parameters :path :user-id)
                                          address-id (-> ctx :parameters :path :address-id)]
                                      (addresses/update-address* ctx payload user-id address-id user-store)))))}}}
+      (merge (util/common-resource :customer-admin))))
+
+(defn transfer-to-new-digital [mimi user-store counter-store ]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :path {:user-id String}}
+               :response (fn [ctx]
+                           (log/info "transfer-to-new-digital")
+                           (let [try-id ::transfer-to
+                                 try-type :api]
+                             (dcatch ctx
+                                     (let [user-id (-> ctx :parameters :path :user-id)
+                                           card (card/register-digital-card* counter-store user-store
+                                                                             mimi user-id nil)]
+                                       (card/transfer_to* ctx
+                                                          user-id
+                                                          user-store
+                                                          mimi
+                                                          (:cardNumber card)
+                                                          nil)))))}}}
       (merge (util/common-resource :customer-admin))))
 
 (defn transfer-from [mimi user-store]
@@ -57,13 +76,13 @@
                            (let [try-id ::transfer-to
                                  try-type :api]
                              (dcatch ctx
-                                     (card/transfer-to* ctx
+                                     (card/transfer_to* ctx
                                                         (-> ctx :parameters :path :user-id)
                                                         user-store
-                                                        mimi))))}}}
+                                                        mimi
+                                                        (-> ctx :parameters :body :cardNumber)
+                                                        (-> ctx :parameters :body :cardPin)))))}}}
       (merge (util/common-resource :customer-admin))))
-
-
 
 (defn add-stars [mimi user-store app-config]
   (-> {:methods
@@ -88,7 +107,6 @@
 
                                                 (util/>200 ctx (when res nil))))))}}}
       (merge (util/common-resource :customer-admin))))
-
 
 (defn profile [mimi user-store app-config]
   (-> {:methods
@@ -123,10 +141,6 @@
    :returned s/Num
    :offset s/Num
    :limit s/Num})
-
-
-
-
 
 (defn search [mimi user-store app-config]
   (-> {:methods

@@ -26,10 +26,11 @@
 
 (log/set-config! (log-config [["rebujito.*" :warn]
                               ["rebujito.security.*" :warn]
-                              ["rebujito.mongo" :debug]
-                              ["rebujito.mimi" :debug]
-                              ["rebujito.mongo.*" :debug]
-                              ["rebujito.api.*" :debug]
+                              ["rebujito.mongo" :info]
+                              ["rebujito.mimi" :info]
+                              ["rebujito.mimi.*" :info]
+                              ["rebujito.mongo.*" :info]
+                              ["rebujito.api.*" :info]
                               ["rebujito.api.util" :warn]]))
 
 
@@ -216,6 +217,37 @@
                                  :content-type :json})]
         (is (= 200 (-> res :status)))
 ;        (is (= nil (parse-body res)))
+        ))
+    )
+  )
+
+(deftest customer-admin-transfer-to-new-digital
+  (testing ::customer-admin/transfer-to-new-digital
+    (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+          api-id ::customer-admin/transfer-to-new-digital
+          user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
+          path (bidi/path-for r api-id :user-id user-id)]
+
+      ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
+      (is (= 403 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :content-type :json})
+                     print-body
+                     :status)))
+
+
+      (let [user-to-find (p/find (:user-store *system*)
+                                 (:user-id (p/read-token (:authenticator *system*) *user-access-token*)))
+            card-number (->  user-to-find :cards first :cardNumber)
+            res @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+
+                                 :content-type :json})]
+        (is (= 200 (-> res :status)))
+        (is (= {:status "ok"} (parse-body res)))
         ))
     )
   )

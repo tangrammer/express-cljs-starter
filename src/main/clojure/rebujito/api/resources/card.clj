@@ -162,6 +162,30 @@
                                  ))}}}
    (merge (util/common-resource :me/cards))))
 
+(defn register-digital-card* [counter-store user-store mimi user-id points?]
+  (log/info "register-digital-card* [_ _ _ user-id points?]" user-id points?)
+  (merge
+   mocks/greenImageUrls
+   (blank-card-data)
+   @(d/let-flow [card-number (str (p/increment! counter-store :digital-card-number))]
+                                                           (d/chain
+                                                            (p/register-physical-card mimi {:cardNumber card-number
+                                                                                            :customerId  (id>mimi-id user-id)})
+                                                            (fn [_]
+                                                              (when points?
+                                                                (p/increment-balance! mimi card-number points? :loyalty)))
+                                                            (fn [_]
+                                                              (when points?
+                                                                (p/increment-balance! mimi card-number points? :rewards)))
+                                                            (fn [_]
+                                                              (let [card (new-digital-card {:cardNumber card-number})
+                                                                    card-id (p/insert-card! user-store user-id card)
+                                                                    card (assoc card :cardId card-id)
+                                                                    ]
+                                                                (log/info "card:" card)
+                                                                card
+                                                                ))))))
+
 (defn register-digital-card [user-store mimi counter-store]
   (->
    {:methods
@@ -170,23 +194,8 @@
                         (dcatch ctx
                                 (let [auth-data (util/authenticated-data ctx)
                                       user-id (:user-id auth-data)
-                                      card @(d/let-flow [card-number (str (p/increment! counter-store :digital-card-number))]
-                                                           (d/chain
-                                                            (p/register-physical-card mimi {:cardNumber card-number
-                                                                                            :customerId  (id>mimi-id user-id)})
-                                                            (fn [_]
-                                                              (p/increment-balance! mimi card-number 50 :loyalty))
-                                                            (fn [_]
-                                                              (p/increment-balance! mimi card-number 50 :rewards))
-                                                            (fn [_]
-                                                              (let [card (new-digital-card {:cardNumber card-number})
-                                                                    card-id (p/insert-card! user-store user-id card)]
-                                                                (assoc card :cardId card-id)))
-                                                            ))]
-                                  (util/>200 ctx (merge
-                                                  mocks/greenImageUrls
-                                                  (blank-card-data)
-                                                   card)))))}}}
+                                      card (register-digital-card* counter-store user-store mimi user-id 50)]
+                                  (util/>200 ctx card))))}}}
 
    (merge (util/common-resource :me/cards))))
 
@@ -428,21 +437,23 @@
 
    (merge (util/common-resource :me/cards))))
 
-(defn transfer-to* [ctx user-id user-store mimi]
+(defn transfer_to* [ctx user-id user-store mimi to-card-number to-pin]
+  (log/info "transfer_to* [_ _ _ _ to-card-number to-pin]" to-card-number to-pin)
   (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
                _ (log/debug "card-data::" card-data)
                from (:cardNumber card-data)
-               to (-> ctx :parameters :body :cardNumber)
+
                ;; TODO verify pin
                ;; TODO check to card isn't linked to a customer
-               to-pin (-> ctx :parameters :body :cardPin)
-               mimi-res (p/transfer mimi from to)
-               _ (log/debug "mimi success?" mimi-res to from to-pin)
+
+               mimi-res (p/transfer mimi from to-card-number)
+               _ (log/debug "mimi success?" mimi-res to-card-number from to-pin)
                updated? (when mimi-res
-                          (let [res (p/update-card-number user-store user-id from to)]
+                          (let [res (p/update-card-number user-store user-id from to-card-number)]
                             (log/debug "mongo-update-card-number-res" res)
-                            res))]
-              (if (pos? (.getN updated?))
+                            (pos? (.getN res))))]
+              (log/info "transferred" updated?)
+              (if updated?
                 (util/>200 ctx {:status "ok"})
                 (util/>500 ctx {:status "error"}))
               ))
@@ -452,9 +463,12 @@
         {:post {:parameters {:query {:access_token String}
                              :body (-> schema :transfer-to :post) }
                 :response (fn [ctx]
-                            (transfer-to* ctx
+                            (transfer_to* ctx
                                           (:user-id (util/authenticated-data ctx))
                                           user-store
-                                          mimi))}}}
+                                          mimi
+                                          (-> ctx :parameters :body :cardNumber)
+                                          (-> ctx :parameters :body :cardPin)
+                                          ))}}}
 
     (merge (util/common-resource :me/cards))))
