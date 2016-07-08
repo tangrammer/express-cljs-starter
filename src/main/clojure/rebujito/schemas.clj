@@ -5,6 +5,7 @@
 
 (def PaymentMethodMongo
   {
+   (s/optional-key :createdDate) s/Any
    :accountNumberLastFour String
    (s/optional-key :billingAddressId) String
    (s/optional-key :default) String
@@ -20,6 +21,7 @@
 
 (def AutoReloadMongo
   {
+   (s/optional-key :createdDate) s/Any
    :autoReloadId String
    :cardId String
    :status (s/enum "active" "disabled" "enabled")
@@ -54,6 +56,7 @@
   (merge
    UserProfileData
    {
+    (s/optional-key :createdDate) s/Any
     (s/optional-key :_id) org.bson.types.ObjectId
     :addressLine1 String
     (s/optional-key :addressLine2) String

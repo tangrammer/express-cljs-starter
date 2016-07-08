@@ -164,7 +164,7 @@
           (is (=  (-> *user-account-data*
                       (dissoc  :_id :password :birthDay :birthMonth)
                       (assoc  :emailAddress new-email :verifiedEmail true ))
-                  (dissoc user-by-email :_id :password :birthMonth :birthDay)))))
+                  (dissoc user-by-email :_id :password :birthMonth :birthDay :createdDate)))))
 
 
       ;; OPT checks

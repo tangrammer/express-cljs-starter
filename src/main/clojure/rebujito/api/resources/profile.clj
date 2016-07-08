@@ -36,7 +36,7 @@
              (util/>200 ctx (-> response-defaults
                                 (merge
                                  {:user (merge
-                                         (select-keys real-user-data [:firstName :lastName :emailAddress])
+                                         (select-keys real-user-data [:firstName :lastName :emailAddress :createdDate])
                                          {:email (:emailAddress real-user-data)}
                                          {:exId nil
                                           :subMarket "ZA"

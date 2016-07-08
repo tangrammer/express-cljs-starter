@@ -97,12 +97,12 @@
   )
 
 (defn- get-and-insert!* [this data]
-  (mc/insert-and-return (:db this) (:collection this) data)
+  (mc/insert-and-return (:db this) (:collection this) (assoc data :createdDate (t/now)))
   )
 
 
 (defn- insert!* [this data]
-  (mc/insert (:db this) (:collection this) data))
+  (mc/insert (:db this) (:collection this) (assoc data :createdDate (t/now))))
 
 (defn- start* [this]
       (let [c (assoc this

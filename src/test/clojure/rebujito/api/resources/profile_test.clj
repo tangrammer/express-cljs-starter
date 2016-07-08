@@ -482,10 +482,12 @@
     (let [r (-> *system* :docsite-router :routes)
           port (-> *system*  :webserver :port)
           api-id ::profile/me
-          path (bidi/path-for r api-id)]
-      (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+          path (bidi/path-for r api-id)
+          res @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                 {:throw-exceptions false
                                  :body-encoding "UTF-8"
                                  :content-type :json})
-                     print-body
-                     :status))))))
+          body (parse-body res)]
+      (is (= 200 (-> res :status)))
+      (is (-> body :user :createdDate))
+      )))
