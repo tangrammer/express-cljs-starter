@@ -75,7 +75,7 @@
                                                        (let [link (format "%s/change-email/%s"
                                                                           (:client-url app-config)
                                                                           access-token)]
-                                                         (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
+                                                         (p/send mailer {:subject "Verify your Starbucks Rewards email"
                                                                          :to (-> ctx :parameters :body :new-email)
                                                                          :content-type "text/html"
                                                                          :hidden link

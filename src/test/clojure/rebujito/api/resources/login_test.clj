@@ -117,7 +117,7 @@
           (is (p/read-token (:authenticator *system*)
 
                             (last (clojure.string/split
-                                   (-> mails first :content) #"/"))
+                                   (-> mails first :hidden) #"/"))
                             )  )
           #_(is (p/verify (:authorizer *system*) (:content (first mails)) rebujito.scopes/reset-password))))))
 

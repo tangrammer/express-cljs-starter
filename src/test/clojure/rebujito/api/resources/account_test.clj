@@ -120,9 +120,9 @@
       (let [mails (deref(:mails (-> *system*  :mailer)))
             verify-email (last mails)
             token (last (clojure.string/split
-                                   (:content verify-email) #"/")) ]
+                                   (:hidden verify-email) #"/")) ]
         (is (= 3 (count mails)))
-        (is (= {:subject "Verify your email",
+        (is (= {:subject "Verify your Starbucks Rewards email"
                 :to (:emailAddress account-data)}
                (select-keys verify-email [:subject :to])))
 
