@@ -140,6 +140,27 @@
 
       (merge (util/common-resource :login))))
 
+
+(defn forgot-password* [ctx user mailer authorizer app-config]
+  (d/let-flow [user-id (str (:_id user))
+
+               access-token (p/grant authorizer {:_id user-id}  #{scopes/reset-password})
+
+               link (format "%s/reset-password/%s/%s" (:client-url app-config) access-token (:emailAddress user))
+
+               send (p/send mailer {:subject "Reset your Starbucks Rewards Password"
+                                    :to (:emailAddress user)
+                                    :hidden link
+                                    :content-type "text/html"
+                                    :content (template/render-file
+                                              "templates/email/reset_password.html"
+                                              (merge
+                                               (select-keys user [:firstName :lastName])
+                                               {:link link}))})
+               _ (log/info send)
+               ]
+              (util/>200 ctx (if send nil send))))
+
 (defn forgot-password [user-store mailer authenticator authorizer app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String
@@ -147,30 +168,17 @@
                             :body (-> schema :forgot-password :post)}
                :response (fn [ctx]
                            (dcatch ctx
-                                   (let [token (get-in ctx [:parameters :query :access_token])]
-                                     (do
-                                       (d/let-flow [params (get-in ctx [:parameters :body])
-                                                    email (get-in ctx [:parameters :body :emailAddress])
-                                                    user (or (first (p/find user-store {:emailAddress (get-in ctx [:parameters :body :emailAddress])}))
-                                                             (error* 400 [400 (format "user %s doesn't exist" (:emailAddress params))]))
-                                                    _ (log/info user)
-                                                    data {:_id (str (:_id user))}
-                                                    access-token (p/grant authorizer data  #{scopes/reset-password})
-                                                    link (format "%s/reset-password/%s/%s" (:client-url app-config) access-token email)
+                                   (let [token (get-in ctx [:parameters :query :access_token])
+                                         params (get-in ctx [:parameters :body])
 
-                                                    send (p/send mailer {:subject "Reset your Starbucks Rewards Password"
-                                                                         :to (:emailAddress user)
-                                                                         :hidden link
-                                                                         :content-type "text/html"
-                                                                         :content (template/render-file
-                                                                                    "templates/email/reset_password.html"
-                                                                                    (merge
-                                                                                      (select-keys user [:firstName :lastName])
-                                                                                      {:link link}))})
-                                                    _ (log/info send)
-                                                    ]
-                                                   (util/>200 ctx (if send nil send))))
-                                     )))}}}
+                                         ]
+                                     (do
+                                       (d/chain
+                                        (or (first (p/find user-store {:emailAddress (:emailAddress params)}))
+                                                                (error* 400 [400 (format "user %s doesn't exist" (:emailAddress params))]))
+                                        (fn [user]
+                                          (log/info user)
+                                          (forgot-password* ctx user mailer authorizer app-config)))))))}}}
 
 
       (merge (util/common-resource :login))))

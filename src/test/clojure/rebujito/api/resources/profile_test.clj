@@ -35,6 +35,40 @@
 
 
 
+(deftest customer--forgot-password
+
+  (testing ::customer-admin/forgot-password
+    (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)]
+
+      (let [api-id ::customer-admin/forgot-password
+            user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
+            path (bidi/path-for r api-id :user-id user-id)]
+
+        ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
+        (is (= 403 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :content-type :json})
+                       :status)))
+
+
+        ;; 200 with  valid user logged
+        (let [res @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
+                             {:throw-exceptions false
+                              :body-encoding "UTF-8"
+                              :content-type :json})
+              body (parse-body res)]
+          (is (= 200 (-> res :status)))
+          (is (=  nil body))
+          (let [mails @(:mails (:mailer *system*))]
+          (is (= 3 (count mails)))
+
+          (is (.contains (:subject (last mails)) "Reset your Starbucks Rewards Password")  )
+          (is (= user-id (:user-id (p/read-token (:authenticator *system*)
+                                    (last (clojure.string/split
+                                           (-> mails first :hidden) #"/"))))))))))))
+
 
 (deftest customer-admin-update-address
   (testing ::customer-admin/address

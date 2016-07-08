@@ -216,6 +216,10 @@
           [["/addresses/" :address-id] (-> (customer-admin/address user-store)
                                            (assoc :id ::customer-admin/address
                                                   :oauth {:put scopes/customer-admin}))]
+          ["/forgot-password" (-> (customer-admin/forgot-password user-store mailer authenticator authorizer app-config)
+                                  (assoc :id ::customer-admin/forgot-password
+                                         :oauth {:post scopes/customer-admin}))]
+
           ["/transfer" [["/to" (-> (customer-admin/transfer-to mimi user-store)
                                    (assoc :id ::customer-admin/transfer-to
                                           :oauth {:post scopes/customer-admin}))]

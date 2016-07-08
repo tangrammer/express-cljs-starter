@@ -5,6 +5,7 @@
    [manifold.deferred :as d]
    [rebujito.api.resources :refer (domain-exception)]
    [rebujito.api.resources.profile :as profile]
+   [rebujito.api.resources.login :as login]
    [rebujito.api.resources.card :as card]
    [rebujito.api.resources.addresses :as addresses]
    [rebujito.api.util :as util]
@@ -13,6 +14,20 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]
    ))
+
+(defn forgot-password [user-store mailer authenticator authorizer app-config]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :path {:user-id String}
+                           }
+              :response (fn [ctx]
+                          (let [try-id ::forgot-password
+                                try-type :api]
+                            (dcatch ctx
+                                    (d/let-flow [user-id (-> ctx :parameters :path :user-id)
+                                                 user (p/find user-store user-id)]
+                                      (login/forgot-password* ctx user mailer authorizer app-config)))))}}}
+      (merge (util/common-resource :customer-admin))))
 
 (defn address [user-store]
   (-> {:methods

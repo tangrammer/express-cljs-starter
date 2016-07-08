@@ -92,7 +92,7 @@
   )
 
 
-(deftest reset-pw
+(deftest forgot-password
 
   (testing ::login/forgot-password
     (let [port (-> *system*  :webserver :port)
