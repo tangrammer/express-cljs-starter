@@ -319,7 +319,10 @@
                             ))
                        3 100 (fn [res] (merge res {:type :mimi :code "xxxxx" :message "Balances error!"}))
                        )))
-  (get-history [this card-number])
+  (get-history [this card-number]
+    (log/info "fetching transactions for" card-number)
+    {:transactions []}
+    )
   (transfer [this from to]
     (log/info "transferring card balances from" from "to" to)
     true)

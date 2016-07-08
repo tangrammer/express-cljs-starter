@@ -279,33 +279,28 @@
     (= (count (:items mimi-tx)) 0)
     (> (:amount mimi-tx) 0)))
 
-(defn history [user-store mimi ctx user-id]
-  (-> (d/let-flow [card-data (:cards (p/find user-store user-id))
-                   card-number (-> card-data first :cardNumber)
-                   ; some numbers to test history
-                  ;  card-number "9623570800007"
-                  ;  card-number "9623570800099"
-                  ;  card-number "9623570900003"
-                  ;  card-number "9623570900005"
-                  ;  card-number "9623570900007"
-                  ;  card-number "9623570900010"
-                   history-data (p/get-history mimi card-number)
-                   txs (->> history-data :transactions reverse)
-                   txs (filter #(or (earn-predicate %) (reload-predicate %)) txs)
-                   txs (map #(if (earn-predicate %) (mimi-earn-to-rebujito-tx %) (mimi-reload-to-rebujito-tx %)) txs)
-                   txs (take 50 txs)]
-         (util/>200 ctx {:paging {:total (count txs)
-                                  :returned (count txs)
-                                  :offset 0
-                                  :limit 50}
-                         :historyItems txs
-                         })
-      )
-      (d/catch clojure.lang.ExceptionInfo
-          (fn [exception-info]
-            (domain-exception ctx (ex-data exception-info))))
-      )
-  )
+(defn history* [user-store mimi ctx user-id]
+  (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
+               card-number (-> card-data :cardNumber)
+                                        ; some numbers to test history
+                                        ;  card-number "9623570800007"
+                                        ;  card-number "9623570800099"
+                                        ;  card-number "9623570900003"
+                                        ;  card-number "9623570900005"
+                                        ;  card-number "9623570900007"
+                                        ;  card-number "9623570900010"
+               history-data (p/get-history mimi card-number)
+               txs (->> history-data
+                        :transactions
+                        reverse
+                        (filter #(or (earn-predicate %) (reload-predicate %)))
+                        (map #(if (earn-predicate %) (mimi-earn-to-rebujito-tx %) (mimi-reload-to-rebujito-tx %)))
+                        (take 50))]
+              (util/>200 ctx {:paging {:total (count txs)
+                                       :returned (count txs)
+                                       :offset 0
+                                       :limit 50}
+                              :historyItems txs})))
 
 (defn history-resource [user-store mimi]
   (->
@@ -314,7 +309,7 @@
                                 (s/optional-key :limit) String
                                 (s/optional-key :offset) String}}
            :response (fn [ctx]
-                       (history user-store mimi ctx (:user-id (util/authenticated-data ctx))))}}}
+                       (dcatch ctx (history* user-store mimi ctx (:user-id (util/authenticated-data ctx)))))}}}
    (merge (util/common-resource :me/cards))))
 
 (defn autoreload [user-store mimi payment-gateway app-config]

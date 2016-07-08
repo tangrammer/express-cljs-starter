@@ -31,6 +31,44 @@
                               ["rebujito.api.util" :warn]]))
 
 
+
+(deftest customer-admin-history
+  (testing ::customer-admin/history
+    (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+          api-id ::customer-admin/history
+          user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
+          path (bidi/path-for r api-id :user-id user-id)]
+
+      ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
+      (is (= 403 (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :content-type :json})
+                     :status)))
+
+      ;; here adding a card to search by cardNumber
+      (let [path (get-path ::card/register-digital-cards)]
+        (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})
+                       :status))))
+
+      ;; 200 with  valid user logged
+      (let [user-to-find (p/find (:user-store *system*)
+                                 (:user-id (p/read-token (:authenticator *system*) *user-access-token*)))
+            card-number (->  user-to-find :cards first :cardNumber)
+            res @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :content-type :json})]
+        (is (= 200 (-> res :status)))
+     ;   (is (= nil (parse-body res)))
+        ))
+    )
+  )
+
 (deftest customer-admin-transfer-from
   (testing ::customer-admin/transfer-from
     (let [r (-> *system* :docsite-router :routes)
