@@ -88,7 +88,8 @@
        {:get {:parameters {:query {:access_token String}
                            :path {:user-id String}}
               :response (fn [ctx]
-                          (card/history user-store mimi ctx (-> ctx :parameters :path :user-id)))}}}))
+                          (card/history user-store mimi ctx (-> ctx :parameters :path :user-id)))}}}
+      (merge (util/common-resource :customer-admin))))
 
 (def SearchSchema
   {:customerId String
