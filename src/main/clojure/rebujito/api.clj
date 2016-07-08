@@ -137,7 +137,7 @@
                          (assoc :id ::card/get-cards
                                 :oauth {:get scopes/user}))]
                  ["/history"
-                  (-> (card/history user-store mimi)
+                  (-> (card/history-resource user-store mimi)
                       (assoc :id ::card/history
                              :oauth {:get scopes/user}))]
                  ["/register"
@@ -227,7 +227,11 @@
                                   :oauth {:get scopes/customer-admin}))]
           ["/add-stars"  (-> (customer-admin/add-stars mimi user-store app-config)
                              (assoc :id ::customer-admin/add-stars
-                                    :oauth {:put scopes/customer-admin}))]]]
+                                    :oauth {:put scopes/customer-admin}))]
+          ["/cards/history" (-> (customer-admin/history user-store mimi)
+                                (assoc :id ::customer-admin/history
+                                       :oauth {:get scopes/customer-admin}))]
+         ]]
 
         ["/search-customer" (-> (customer-admin/search mimi user-store app-config)
                                 (assoc :id ::customer-admin/search
