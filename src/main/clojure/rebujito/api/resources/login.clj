@@ -184,8 +184,9 @@
                                                 user-id (:user-id authenticated-data)
                                                 updated? (p/update-by-id! user-store user-id {:verifiedEmail true})]
                                                (if (pos? (.getN updated?))
-                                                 (do
-                                                   (log/info "invalidating!!!"  (p/invalidate! authorizer (get-in ctx [:parameters :query :access_token])))
+                                                 (let [res (p/invalidate! authorizer (get-in ctx [:parameters :query :access_token]))]
+
+                                                   (log/info "invalidating!!!"  res)
                                                    (util/>200 ctx nil))
                                                  (util/>400 ctx (str "transaction failed"))
                                                  ))))}}}
