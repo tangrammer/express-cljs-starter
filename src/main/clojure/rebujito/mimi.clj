@@ -24,7 +24,7 @@
         rchan (d/deferred)]
     (async/go-loop [attempt-number 0]
       (let [res (async/<! c)]
-        (log/info "Attempt: "  attempt-number " :: Res: " res)
+        (log/debug "Attempt: "  attempt-number " :: Res: " res)
         (if (>= (:status res) 400)
           (do
             (async/<!! (async/timeout time-to-delay))
@@ -126,7 +126,7 @@
                                                                :as :json
                                                                :throw-exceptions true
                                                                :form-params data})]
-                       (log/info body)
+                       (log/info "mimi create-account" body)
                        (-> body :customerId vector (conj :prod-mimi))))
                  )))
       d*))
@@ -152,7 +152,7 @@
                                                                         :as :json
                                                                         }
                                    )]
-                  (log/info status body)
+                  (log/info "mimi register-physical-card" status body)
                   (-> [:success]
                       (conj :prod-mimi))))))
       d*))
@@ -176,7 +176,7 @@
                                         :accept :json
                                         :as :json}
                                        )]
-                      (log/info "load-card-mimi response " status body)
+                      (log/info "mimi increment-balance " status body)
                        {:balance (:balance body)}))))
       d*))
 
@@ -193,7 +193,7 @@
                                                                              :as :json
                                                                              :throw-exceptions true
                                                                              :form-params {}})]
-                              (log/info "balances retrieved from prod mimi: " body)
+                              (log/info "mimi balances: " body)
                               (async/>!! % all))
                             (catch Exception e (async/>!! % {:status 500
                                                              :body (.getMessage e)}))
@@ -218,7 +218,7 @@
                                                  :as :json
                                                  :throw-exceptions true
                                                  :form-params {}})]
-          (log/info body)
+          (log/info "mimi get-history" body)
           (d/success! d* body))
         (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
                                               (d/error! d* (ex-info (str "error!!!" (:status ex))
@@ -245,7 +245,7 @@
                                                 :as :json
                                                 :throw-exceptions true
                                                 :form-params {:from from :to to}})]
-        (log/info body)
+        (log/info "mimi transfer" body)
         (d/success! d* body))
       (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
                                             (d/error! d* (ex-info (str "error!!!" (:status ex))
@@ -260,76 +260,6 @@
     d*))
   )
 
-(defrecord MockMimi [base-url token]
-  component/Lifecycle
-  (start [this]
-    this)
-  (stop [this] this)
-  protocols/Mimi
-  (create-account [this data]
-    (let [d* (d/deferred)]
-      (d/success! d* (-> (str (rand-int 1000000))
-                         vector
-                         (conj :mock-mimi)))
-
-      d*))
-  (register-physical-card [this data]
-    (log/info "(register-physical-card [this data])" " to url: "(format "%s/account/card" base-url))
-    (log/debug data)
-
-    (let [d* (d/deferred)]
-      (d/future
-        (d/success! d* (-> [:success]
-                           (conj :prod-mimi))))
-      d*))
-  (increment-balance! [this card-number amount type]
-    (log/debug "(increment-balance! [_ card-number amount type])" card-number amount type)
-    (let [d* (d/deferred)]
-      (if-let [mimi-card-data (assoc mocks/mimi-card :target-environment :dev) #_(p/increment-balance! mimi {:cardId (-> card-data :cardNumber) :amount (-> payment-data :amount)} :stored-value)]
-        (d/success! d* mimi-card-data)
-        (d/error! d* (ex-info (str "API MIMI ERROR")
-                              {:type :mimi
-                               :status 500
-                               :body ["An unexpected error occurred debiting the card."]})))
-      d*)
-    )
-
-  (balances [this card-number]
-    ; TODO: mock the response, don't hit mimi
-    (log/info "fetching mock balances for ..." card-number)
-    (let [d* (d/deferred)
-          ; card-number "9623570800099"
-          card-number "9623570900002"
-          ]
-          (repeat-and-delay
-                       #(d/future
-                          (try
-                            (let [{:keys [status body] :as all} (http-c/get (format "%s/account/%s/balances" base-url card-number)
-                                                                            {:headers {"Authorization" (format "Bearer %s" token)}
-                                                                             :insecure? true
-                                                                             :content-type :json
-                                                                             :accept :json
-                                                                             :as :json
-                                                                             :throw-exceptions true
-                                                                             :form-params {}})]
-                              (log/info body)
-                              (async/>!! % all))
-                            (catch Exception e (async/>!! % {:status 500
-                                                             :body (.getMessage e)}))
-                            ))
-                       3 100 (fn [res] (merge res {:type :mimi :code "xxxxx" :message "Balances error!"}))
-                       )))
-  (get-history [this card-number]
-    (log/info "fetching transactions for" card-number)
-    {:transactions []}
-    )
-  (transfer [this from to]
-    (log/info "transferring card balances from" from "to" to)
-    true)
-  )
 
 (defn new-prod-mimi [mimi-config]
   (map->ProdMimi mimi-config))
-
-(defn new-mock-mimi [mimi-config]
-  (map->MockMimi  mimi-config))

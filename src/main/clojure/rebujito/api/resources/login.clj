@@ -127,9 +127,7 @@
                                      (do
                                        (d/let-flow [new-password (get-in ctx [:parameters :body :new_password])
                                                     auth-data (util/authenticated-data ctx)
-                                                    _ (log/info "JODER::: " auth-data)
                                                     user-id (:user-id auth-data)
-                                                    _ (log/info "JODER::: " user-id (p/find user-store user-id))
                                                     updated? (p/update-by-id! user-store user-id {:password (p/sign crypto new-password)})]
                                                    (if (pos? (.getN updated?))
                                                      (do
@@ -159,7 +157,7 @@
                                                     data {:_id (str (:_id user))}
                                                     access-token (p/grant authorizer data  #{scopes/reset-password})
                                                     link (format "%s/reset-password/%s/%s" (:client-url app-config) access-token email)
-                                                    _ (log/info "JOLIN::: "(p/read-token  authenticator access-token ))
+
                                                     send (p/send mailer {:subject "Reset your Starbucks Rewards Password"
                                                                          :to (:emailAddress user)
                                                                          :hidden link

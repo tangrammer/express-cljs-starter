@@ -279,6 +279,15 @@
     (= (count (:items mimi-tx)) 0)
     (> (:amount mimi-tx) 0)))
 
+(defn- filter-history [history-data]
+  (->> history-data
+                        :transactions
+                        reverse
+                        (filter #(or (earn-predicate %) (reload-predicate %)))
+                        (map #(if (earn-predicate %) (mimi-earn-to-rebujito-tx %) (mimi-reload-to-rebujito-tx %)))
+                        (take 50))
+  )
+
 (defn history* [user-store mimi ctx user-id]
   (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
                card-number (-> card-data :cardNumber)
@@ -290,12 +299,7 @@
                                         ;  card-number "9623570900007"
                                         ;  card-number "9623570900010"
                history-data (p/get-history mimi card-number)
-               txs (->> history-data
-                        :transactions
-                        reverse
-                        (filter #(or (earn-predicate %) (reload-predicate %)))
-                        (map #(if (earn-predicate %) (mimi-earn-to-rebujito-tx %) (mimi-reload-to-rebujito-tx %)))
-                        (take 50))]
+               txs (filter-history history-data)]
               (util/>200 ctx {:paging {:total (count txs)
                                        :returned (count txs)
                                        :offset 0

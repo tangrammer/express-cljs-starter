@@ -64,7 +64,7 @@
                                  :body-encoding "UTF-8"
                                  :content-type :json})]
         (is (= 200 (-> res :status)))
-     ;   (is (= nil (parse-body res)))
+        (is (= (#'rebujito.api.resources.card/filter-history (rebujito.mimi.mocks/get-history)) (:historyItems (parse-body res))))
         ))
     )
   )

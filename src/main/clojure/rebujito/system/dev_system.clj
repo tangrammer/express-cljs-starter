@@ -5,7 +5,7 @@
    [com.stuartsierra.component :as component :refer (using)]
    [rebujito.config :refer (config)]
    [rebujito.store :refer (new-mock-store)]
-   [rebujito.mimi :refer (new-mock-mimi)]
+   [rebujito.mimi.mocks :refer (new-mock-mimi)]
    [rebujito.mailer :refer (new-mock-mailer)]
    [rebujito.system :refer (new-system-map new-dependency-map)]))
 
