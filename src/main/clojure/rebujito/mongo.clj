@@ -74,6 +74,13 @@
   (let [id (to-mongo-object-id hex-id)]
     (mc/update-by-id (:db this) (:collection this) id {$set data})))
 
+(defn- remove-by-id!* [this hex-id]
+  (log/warn "removing by-id" hex-id)
+  (let [id (to-mongo-object-id hex-id)
+        res (pos? (.getN (mc/remove-by-id (:db this) (:collection this) id)))]
+    (log/info "result:" res)
+    res))
+
 (defn- update-push-by-id!* [this hex-id data]
   (let [id (to-mongo-object-id hex-id)]
     (mc/update-by-id (:db this) (:collection this) id {$push data})))
@@ -421,6 +428,8 @@
     (update!* this data-query data-update))
   (update-by-id! [this hex-id data]
     (update-by-id!* this hex-id data))
+  (remove-by-id! [this hex-id]
+    (remove-by-id!* this hex-id))
   )
 
 (defrecord BaseStorage [db-conn collection secret-key ephemeral?]

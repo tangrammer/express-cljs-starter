@@ -88,6 +88,14 @@
                          (conj :mock-mimi)))
 
       d*))
+  (remove-account [this data]
+    (log/warn "remove-account-mimi! [_ data]" data)
+    (clj-bugsnag.core/notify
+     (rebujito.MimiException. "TODO: remove-account is not implemented yet!")
+          {:api-key (:key (:bugsnag (rebujito.config/config)))
+           :environment rebujito.util/*bugsnag-release*
+           :meta {:context {:data data}}})
+    true)
   (register-physical-card [this data]
     (log/info "(register-physical-card [this data])" " to url: "(format "%s/account/card" base-url))
     (log/debug data)

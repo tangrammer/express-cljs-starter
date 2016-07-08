@@ -15,6 +15,25 @@
    [yada.resource :refer [resource]]
    ))
 
+(defn user [user-store mimi]
+  (-> {:methods
+       {:delete {:parameters {:query {:access_token String}
+                              :path {:user-id String}}
+                 :response (fn [ctx]
+                             (let [try-id ::user
+                                   try-type :api]
+                               (dcatch ctx
+                                       (d/let-flow [user-id (-> ctx :parameters :path :user-id)
+                                                    user (p/find user-store user-id)
+                                                    mimi-res (when user
+                                                               (p/remove-account mimi user))
+                                                    removed? (when mimi-res
+                                                               (p/remove-by-id! user-store user-id))]
+                                                   (if removed?
+                                                     (util/>200 ctx nil)
+                                                     (util/>500 ctx "we couldn't remove this user!"))))))}}}
+      (merge (util/common-resource :customer-admin))))
+
 (defn forgot-password [user-store mailer authenticator authorizer app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}

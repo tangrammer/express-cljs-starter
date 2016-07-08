@@ -212,7 +212,9 @@
         ;; customer-admin
 
         [["/users/" :user-id]
-         [
+         [["" (-> (customer-admin/user user-store mimi)
+                  (assoc :id ::customer-admin/user
+                         :oauth {:delete scopes/customer-admin}))]
           [["/addresses/" :address-id] (-> (customer-admin/address user-store)
                                            (assoc :id ::customer-admin/address
                                                   :oauth {:put scopes/customer-admin}))]

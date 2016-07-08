@@ -9,11 +9,13 @@
 
 (defprotocol Mimi
   (create-account [this data])
+  (remove-account [this data])
   (register-physical-card [this data])
   (increment-balance! [this card-number amount type])
   (balances [this data])
   (get-history [this card-number])
   (transfer [this from to])
+
   )
 
 (defprotocol Encrypter
@@ -50,7 +52,9 @@
     "sync, the result is the updated document")
   (get-and-insert! [this data]
     "sync, the result is the new document")
-  (update-by-id! [this id data]))
+  (update-by-id! [this id data])
+  (remove-by-id! [this oid])
+  )
 
 (defprotocol WebhookStore
   (webhook-uuid [this uuid])
