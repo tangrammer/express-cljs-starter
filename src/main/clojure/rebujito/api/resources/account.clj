@@ -7,6 +7,7 @@
    [rebujito.mimi :as mim]
    [rebujito.schemas :refer (MongoUser)]
    [rebujito.scopes :as scopes]
+   [rebujito.template :as template]
    [rebujito.protocols :as p]
    [rebujito.api.resources :refer (domain-exception)]
    [buddy.core.codecs :refer (bytes->hex)]
@@ -110,12 +111,18 @@
 
                                                    access-token  (p/grant authorizer (select-keys mongo-account [:emailAddress :_id]) #{scopes/verify-email})
 
+                                                   link (format "%s/verify-new-user-email/%s" (:client-url app-config) access-token)
+
                                                    send (when mongo-account
-                                                          (p/send mailer {:subject (format "Verify your email" )
-                                                                          :to (:emailAddress mongo-account)
-                                                                          :content (format "%s/verify-new-user-email/%s"
-                                                                                          (:client-url app-config)
-                                                                                          access-token)}))
+                                                     (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
+                                                                     :to (:emailAddress mongo-account)
+                                                                     :content-type "text/html"
+                                                                     :hidden link
+                                                                     :content (template/render-file
+                                                                               "templates/email/verify_email.html"
+                                                                               (merge
+                                                                                (select-keys mongo-account [:firstName :lastName])
+                                                                                {:link link}))}))
                                                    ]
 
                                                   (do
