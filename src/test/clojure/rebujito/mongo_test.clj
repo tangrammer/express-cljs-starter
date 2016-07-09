@@ -155,9 +155,4 @@
              :state "ready"}  (select-keys (p/current (:webhook-store *system*) (str webhook-uuid "00"))
                                            [:uuid :state])))
 
-    (is (= 2 (count(seq  (p/find (:webhook-store *system*))))))
-    )
-
-
-
-  )
+    (is (= 2 (count(seq  (p/find (:webhook-store *system*))))))))
