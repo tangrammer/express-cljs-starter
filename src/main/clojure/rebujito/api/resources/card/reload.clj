@@ -102,7 +102,7 @@
                                                                                                                              "templates/email/reload_success.html"
                                                                                                                              {:amount (:amount autoreload-profile)
                                                                                                                               :balance (:balance mimi-card-data)
-                                                                                                                              :cardNumber card
+                                                                                                                              :cardNumber (:cardNumber card)
                                                                                                                               :address nil})}))
                                                                                        _ (log/info send-mail)
                                                                                        ]
