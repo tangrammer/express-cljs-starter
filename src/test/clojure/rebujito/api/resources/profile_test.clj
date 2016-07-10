@@ -343,7 +343,7 @@
     )
   )
 
-(deftest customer-admin-transfer-to-new-digital
+#_(deftest customer-admin-transfer-to-new-digital
   (testing ::customer-admin/transfer-to-new-digital
     (let [r (-> *system* :docsite-router :routes)
           port (-> *system*  :webserver :port)

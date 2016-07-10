@@ -224,7 +224,7 @@
                         ["/from" (-> (customer-admin/transfer-from mimi user-store)
                                      (assoc :id ::customer-admin/transfer-from
                                             :oauth {:post scopes/customer-admin}))]
-                        ["/to-new-digital" (-> (customer-admin/transfer-to-new-digital mimi user-store counter-store)
+                        #_["/to-new-digital" (-> (customer-admin/transfer-to-new-digital mimi user-store counter-store)
                                              (assoc :id ::customer-admin/transfer-to-new-digital
                                                     :oauth {:post scopes/customer-admin}))]]]
 
