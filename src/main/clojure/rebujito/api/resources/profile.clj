@@ -19,7 +19,6 @@
                         :socialProfile {}
                         :tippingPreferences {}})
 
-
 (defn load-profile [ctx mimi user-store user-id]
  (d/let-flow [user-data (p/find user-store user-id)
               card-number  (let [try-context '[user-id user-data]]
@@ -49,7 +48,6 @@
                                   }
                                  (select-keys user-data [:addresses :socialProfile]))
                                 (dissoc :target-environment)))))
-
 
 (defn profile [mimi user-store app-config]
   (-> {:methods
