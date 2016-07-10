@@ -16,7 +16,7 @@
   (balances [this data])
   (get-history [this card-number])
   (transfer [this from to])
-
+  (issue-coupon [this card-number type])
   )
 
 (defprotocol Encrypter

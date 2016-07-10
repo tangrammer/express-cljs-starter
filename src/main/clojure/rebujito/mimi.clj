@@ -102,6 +102,23 @@
     )
   )
 
+(def urls
+  {:issue-coupon
+   (fn [base-url card-number coupon-type]
+     {:method :post
+      :url (format "%s/account/%s/coupons/%s/issue" base-url card-number coupon-type)})})
+
+(defn call-mimi
+  ([token url-method] (call-mimi url-method {}))
+  ([token url-method data]
+   (http-c/request (merge url-method
+                    {:headers {"Authorization" (format "Bearer %s" token)}
+                    :insecure? true
+                    :content-type :json
+                    :accept :json
+                    :as :json
+                    :throw-exceptions true
+                    :form-params data}))))
 
 (defrecord ProdMimi [base-url token]
   component/Lifecycle
@@ -275,8 +292,11 @@
                                                   :body (.getMessage e)})))
       ))
     d*))
-  )
 
+  (issue-coupon [this card-number coupon-type]
+    (log/info "issuing" coupon-type "coupon to" card-number)
+    (call-mimi token ((:issue-coupon urls) base-url card-number coupon-type)))
+  )
 
 (defn new-prod-mimi [mimi-config]
   (map->ProdMimi mimi-config))

@@ -237,6 +237,10 @@
           ["/cards/history" (-> (customer-admin/history user-store mimi)
                                 (assoc :id ::customer-admin/history
                                        :oauth {:get scopes/customer-admin}))]
+          ["/coupons/issue" (-> (customer-admin/issue-coupon mimi)
+                                (assoc :id ::customer-admin/coupons
+                                       :oauth {:post scopes/cusotmer-admin}
+                                       ))]
          ]]
 
         ["/search-customer" (-> (customer-admin/search mimi user-store app-config)

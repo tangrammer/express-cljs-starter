@@ -17,7 +17,10 @@
    [yada.resource :refer [resource]]
    ))
 
-(def schema {:user {:put UpdateMongoUser}})
+(def schema {:user {:put UpdateMongoUser}
+             :issue-coupon {(s/optional-key :couponType) String
+                            :category String
+                            :comment String}})
 
 (defn user [user-store mimi]
   (-> {:methods
@@ -252,4 +255,22 @@
                                                       :customers adapt-users
                                                       })
 ))))}}}
+      (merge (util/common-resource :customer-admin))))
+
+(defn issue-coupon [mimi]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :path {:user-id String}
+                            :body (:issue-coupon schema)}
+               :response (fn [ctx]
+                          (d/let-flow [body (-> ctx :parameters :body)
+                                       user-id (-> ctx :parameters :path :user-id)
+                                       type (or (:couponType body) "BURN001")
+                                       comment (:comment body)
+                                       category (:category body)
+                                       coupon (p/issue-coupon mimi user-id type)]
+                            (if coupon
+                              (util/>200 ctx {:success true})
+                              (util/>500 ctx {:success false})))
+                          )}}}
       (merge (util/common-resource :customer-admin))))
