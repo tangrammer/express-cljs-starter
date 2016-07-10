@@ -6,7 +6,7 @@
   )
 
 (defn extract-data [user]
-  (select-keys user [:_id :firstName :lastName :emailAddress]))
+  (select-keys user [:_id :firstName :lastName :emailAddress :verifiedEmail]))
 
 (defn valid? [protected-data]
   (s/validate (assoc auth/OauthValidData

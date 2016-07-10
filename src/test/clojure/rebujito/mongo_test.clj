@@ -56,6 +56,7 @@
                                         ;    (println (p/add-auto-reload (:user-store *system*) user-id {} (g/generate rs/AutoReloadMongo)))
                                         ;    (println user-id)
       (clojure.pprint/pprint (p/find (:user-store *system*) user-id))
+
       (is (-> (p/find (:user-store *system*) user-id)
               :cards first :autoReloadProfile))
       (is (-> (p/find (:user-store *system*) user-id)

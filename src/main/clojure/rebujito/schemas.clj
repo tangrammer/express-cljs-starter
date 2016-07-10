@@ -49,6 +49,7 @@
   {:emailAddress String
    :firstName String
    :lastName String
+   (s/optional-key  :verifiedEmail)  Boolean
    }
   )
 
