@@ -101,7 +101,11 @@
    :transfer-card
     (fn [base-url]
       {:method :post
-       :url (format "%s/account/transfer" base-url)})})
+       :url (format "%s/account/transfer" base-url)})
+   :transactions
+     (fn [base-url card-number]
+       {:method :get
+        :url (format "%s/account/%s/transactions" base-url card-number)})})
 
 (defn call-mimi
   ([token url-method] (call-mimi token url-method {}))
@@ -233,19 +237,10 @@
 
   (get-history [this card-number]
     (log/info "fetching transactions for" card-number)
-    (let [d* (d/deferred)
-          ;; card-number "9623570900002"
-          ]
+    (let [d* (d/deferred)]
       (d/future
       (try
-        (let [{:keys [status body]} (http-c/get (format "%s/account/%s/transactions" base-url card-number)
-                                                {:headers {"Authorization" (format "Bearer %s" token)}
-                                                 :insecure? true
-                                                 :content-type :json
-                                                 :accept :json
-                                                 :as :json
-                                                 :throw-exceptions true
-                                                 :form-params {}})]
+        (let [{:keys [status body]} (call-mimi token ((:transactions urls) base-url card-number))]
           (log/info "mimi get-history" body)
           (d/success! d* body))
         (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
