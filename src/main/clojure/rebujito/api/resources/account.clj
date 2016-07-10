@@ -33,7 +33,7 @@
                     (s/optional-key :market) String
                     (s/optional-key :reputation) s/Any
                     #_{(s/optional-key :ipAddress) String
-                                                  (s/optional-key :deviceFingerprint) String}
+                       (s/optional-key :deviceFingerprint) String}
                     }})
 
 (def CreateAccountMimiMapping
@@ -114,15 +114,15 @@
                                                    link (format "%s/verify-new-user-email/%s" (:client-url app-config) access-token)
 
                                                    send (when mongo-account
-                                                     (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
-                                                                     :to (:emailAddress mongo-account)
-                                                                     :content-type "text/html"
-                                                                     :hidden link
-                                                                     :content (template/render-file
-                                                                               "templates/email/verify_email.html"
-                                                                               (merge
-                                                                                (select-keys mongo-account [:firstName :lastName])
-                                                                                {:link link}))}))
+                                                          (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
+                                                                          :to (:emailAddress mongo-account)
+                                                                          :content-type "text/html"
+                                                                          :hidden link
+                                                                          :content (template/render-file
+                                                                                    "templates/email/verify_email.html"
+                                                                                    (merge
+                                                                                     (select-keys mongo-account [:firstName :lastName])
+                                                                                     {:link link}))}))
                                                    ]
 
                                                   (do
@@ -131,7 +131,7 @@
                                                   (log/info "API /create" " db account: " mongo-account)
                                                   (log/debug "API /create" "send mail: " send)
                                                   (util/>201 ctx (dissoc  mongo-account :password))))
-                                        ))}}}
+                             ))}}}
       (merge (util/common-resource :account))))
 
 (defn me [store mimi user-store app-config]
@@ -140,7 +140,11 @@
                                    (s/optional-key :select) String
                                    (s/optional-key :ignore) String}}
               :response (fn [ctx]
-                          (let [auth-data (util/authenticated-data ctx)]
-                            (util/>201 ctx (util/generate-user-data auth-data (:sub-market app-config)))))}}}
+                          (dcatch  ctx
+                                   (d/let-flow [auth-data (util/authenticated-data ctx)
+                                                user (p/find user-store (:user-id auth-data))]
+                                               (util/>201 ctx (merge
+                                                               (select-keys user [:verifiedEmail])
+                                                               (util/generate-user-data auth-data (:sub-market app-config)))))))}}}
 
       (merge (util/common-resource :account))))
