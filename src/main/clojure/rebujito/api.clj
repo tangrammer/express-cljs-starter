@@ -121,11 +121,6 @@
                                              (assoc :id ::login/me-change-password
                                              :oauth {:post scopes/user}))]
 
-               ;; deprecacted
-               ;; TODO check with Marcing if we can remove "login/reset-usernamex"
-               #_["/login/reset-username" (-> (login/reset-username authorizer authenticator user-store crypto mailer)
-                                             (assoc :id ::login/reset-username
-                                             :oauth {:post scopes/user}))]
                ["/profile"  (-> (profile/profile mimi user-store app-config)
                                 (assoc :id ::profile/me
                                        :oauth {:get scopes/user}))]
