@@ -179,14 +179,14 @@
             (log/error "getting coupons" err)
             (.json (.status res 500) #js {:error (.toString err)})))))))
 
-(.post app "/mimi/starbucks/account/:cardNumber/coupons/:couponCode"
+(.post app "/mimi/starbucks/account/:cardNumber/coupons/:couponCode/issue"
   (fn
     [req res]
     "issue coupon"
     (let [card-number (-> req .-params .-cardNumber)
           coupon-code (-> req .-params .-couponCode)
           p0 (.issueCoupon starbucks-micros #js {:account card-number
-                                                 :code couponCode})]
+                                                 :code coupon-code})]
       (.then p0
         (fn [result]
           (.json res #js {:success true})))

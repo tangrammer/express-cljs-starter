@@ -237,7 +237,7 @@
           ["/cards/history" (-> (customer-admin/history user-store mimi)
                                 (assoc :id ::customer-admin/history
                                        :oauth {:get scopes/customer-admin}))]
-          ["/coupons/issue" (-> (customer-admin/issue-coupon mimi)
+          ["/coupons/issue" (-> (customer-admin/issue-coupon mimi user-store)
                                 (assoc :id ::customer-admin/coupons
                                        :oauth {:post scopes/cusotmer-admin}
                                        ))]

@@ -100,7 +100,7 @@
       :url (format "%s/account/%s/coupons/%s/issue" base-url card-number coupon-type)})})
 
 (defn call-mimi
-  ([token url-method] (call-mimi url-method {}))
+  ([token url-method] (call-mimi token url-method {}))
   ([token url-method data]
    (http-c/request (merge url-method
                     {:headers {"Authorization" (format "Bearer %s" token)}

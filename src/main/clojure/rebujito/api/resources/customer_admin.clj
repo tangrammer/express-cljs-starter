@@ -256,7 +256,7 @@
                                                       })))))}}}
       (merge (util/common-resource :customer-admin))))
 
-(defn issue-coupon [mimi]
+(defn issue-coupon [mimi user-store]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:user-id String}
@@ -264,10 +264,12 @@
                :response (fn [ctx]
                           (d/let-flow [body (-> ctx :parameters :body)
                                        user-id (-> ctx :parameters :path :user-id)
+                                       user-data (p/find user-store user-id)
                                        type (or (:couponType body) "BURN001")
                                        comment (:comment body)
                                        category (:category body)
-                                       coupon (p/issue-coupon mimi user-id type)]
+                                       card-number (-> user-data :cards first :cardNumber)
+                                       coupon (p/issue-coupon mimi card-number type)]
                             (if coupon
                               (util/>200 ctx {:success true})
                               (util/>500 ctx {:success false})))
