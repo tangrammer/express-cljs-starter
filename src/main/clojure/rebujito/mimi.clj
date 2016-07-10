@@ -105,7 +105,24 @@
    :transactions
      (fn [base-url card-number]
        {:method :get
-        :url (format "%s/account/%s/transactions" base-url card-number)})})
+        :url (format "%s/account/%s/transactions" base-url card-number)})
+   :balances
+     (fn [base-url card-number]
+       {:method :get
+        :url (format "%s/account/%s/balances" base-url card-number)})
+   :create-account
+     (fn [base-url]
+       {:method :post
+        :url (format "%s/account" base-url)})
+   :link-card
+     (fn [base-url]
+       {:method :post
+        :url (format "%s/account/card" base-url)})
+   :increment-balance
+     (fn [base-url card-number card-type-code]
+       {:method :post
+        :url (format "%s/account/%s/%s" base-url card-number card-type-code)})
+  })
 
 (defn call-mimi
   ([token url-method] (call-mimi token url-method {}))
@@ -135,14 +152,7 @@
               try-context '[data]]
           (ddtry d* (do
                       (s/validate CreateAccountSchema data)
-                      (let [{:keys [status body]} (http-c/post (format "%s/account" base-url)
-                                                              {:headers {"Authorization" (format "Bearer %s" token)}
-                                                               :insecure? true
-                                                               :content-type :json
-                                                               :accept :json
-                                                               :as :json
-                                                               :throw-exceptions true
-                                                               :form-params data})]
+                      (let [{:keys [status body]} (call-mimi token ((:create-account urls) base-url) data)]
                        (log/info "mimi create-account" body)
                        (-> body :customerId vector (conj :prod-mimi))))
                  )))
@@ -168,24 +178,13 @@
   (register-physical-card [this data]
     (log/info (format "%s/account/card" base-url))
     (log/info data)
-                                        ;    (println {"Authorization" (format "Bearer %s" token)})
     (let [d* (d/deferred)]
       (d/future
         (let [try-type :mimi
               try-id ::register-physical-card
               try-context '[data]]
           (ddtry d*
-                (let [{:keys [status body]}
-                      (http-c/post (format "%s/account/card" base-url) {
-                                        ;                                 :method :post
-                                                                        :insecure? true
-                                                                        :headers {"Authorization" (format "Bearer %s" token)}
-                                                                        :form-params  data
-                                                                        :content-type :json
-                                                                        :accept :json
-                                                                        :as :json
-                                                                        }
-                                   )]
+                (let [{:keys [status body]} (call-mimi token ((:link-card urls) base-url) data)]
                   (log/info "mimi register-physical-card" status body)
                   (-> [:success]
                       (conj :prod-mimi))))))
@@ -201,15 +200,8 @@
       (d/future
         (ddtry d* (do
                     (log/info "loading" card-number "with" amount (format "%s/account/%s/" base-url card-number card-type-code))
-                    (let [{:keys [status body]}
-                          (http-c/post (format "%s/account/%s/%s" base-url card-number card-type-code)
-                                       {:insecure? true
-                                        :headers {"Authorization" (format "Bearer %s" token)}
-                                        :form-params {:amount amount}
-                                        :content-type :json
-                                        :accept :json
-                                        :as :json}
-                                       )]
+                    (let [url-method ((:increment-balance urls) base-url card-number card-type-code)
+                          {:keys [status body]} (call-mimi token url-method {:amount amount})]
                       (log/info "mimi increment-balance " status body)
                        {:balance (:balance body)}))))
       d*))
@@ -219,14 +211,7 @@
     (repeat-and-delay
                        #(d/future
                           (try
-                            (let [{:keys [status body] :as all} (http-c/get (format "%s/account/%s/balances" base-url card-number)
-                                                                            {:headers {"Authorization" (format "Bearer %s" token)}
-                                                                             :insecure? true
-                                                                             :content-type :json
-                                                                             :accept :json
-                                                                             :as :json
-                                                                             :throw-exceptions true
-                                                                             :form-params {}})]
+                            (let [{:keys [status body] :as all} (call-mimi token ((:balances urls) base-url) card-number)]
                               (log/info "mimi balances: " body)
                               (async/>!! % all))
                             (catch Exception e (async/>!! % {:status 500
