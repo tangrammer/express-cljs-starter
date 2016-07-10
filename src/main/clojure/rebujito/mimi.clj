@@ -97,19 +97,24 @@
   {:issue-coupon
    (fn [base-url card-number coupon-type]
      {:method :post
-      :url (format "%s/account/%s/coupons/%s/issue" base-url card-number coupon-type)})})
+      :url (format "%s/account/%s/coupons/%s/issue" base-url card-number coupon-type)})
+   :transfer-card
+    (fn [base-url]
+      {:method :post
+       :url (format "%s/account/transfer" base-url)})})
 
 (defn call-mimi
   ([token url-method] (call-mimi token url-method {}))
   ([token url-method data]
    (http-c/request (merge url-method
                     {:headers {"Authorization" (format "Bearer %s" token)}
+                    :form-params data
                     :insecure? true
                     :content-type :json
                     :accept :json
                     :as :json
                     :throw-exceptions true
-                    :form-params data}))))
+                    }))))
 
 (defrecord ProdMimi [base-url token]
   component/Lifecycle
@@ -260,14 +265,7 @@
     (let [d* (d/deferred)]
     (d/future
      (try
-      (let [{:keys [status body]} (http-c/post (format "%s/account/transfer" base-url)
-                                               {:headers {"Authorization" (format "Bearer %s" token)}
-                                                :insecure? true
-                                                :content-type :json
-                                                :accept :json
-                                                :as :json
-                                                :throw-exceptions true
-                                                :form-params {:from from :to to}})]
+      (let [{:keys [status body]} (call-mimi token ((:transfer-card urls) base-url) {:from from :to to})]
         (log/info "mimi transfer" body)
         (d/success! d* body))
       (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
