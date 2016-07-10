@@ -4,9 +4,9 @@
             [clojure.test :refer :all]))
 
 (def mimi-response {:programs
-                     [{:program "MSR - Customer Tier" :balance 362 }
-                      {:program "MSR - Employee" :balance 4 }
-                      {:program "Employee Credit Card" :balance 0 }]
+                     [{:code "MSR001" :program "SR - Customer" :balance 362}
+                      {:code "MSR002" :program "SR - Customer Reward" :balance 12}
+                      {:code "SGC001" :program "Starbucks Card" :balance 0 }]
                     :tier
                      { :name "Gold"
                        :date "2016-03-18"
