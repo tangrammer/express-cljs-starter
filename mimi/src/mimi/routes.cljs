@@ -164,7 +164,6 @@
           (log/error "getting transactions" err)
           (.json (.status res 500) #js {:error (.toString err)}))))))
 
-
 (.get app "/mimi/starbucks/account/:cardNumber/coupons"
   (fn
     [req res]

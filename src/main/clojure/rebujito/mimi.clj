@@ -11,13 +11,10 @@
    [byte-streams :as bs]
    [com.stuartsierra.component  :as component]
    [schema.core :as s]
-   [rebujito.store.mocks :as mocks]
    [taoensso.timbre :as log]))
-
 
 (defn random-value []
   (first (random-sample 0.1 (cycle [{:status 500 :body :fail-message} {:status 500 :body :fail-message}{:status 500 :body :fail-message} {:status 200 :body :success!}]))))
-
 
 (defn repeat-and-delay [http-fn* attempts time-to-delay  ex-data-fn]
   (let [c (async/chan)
@@ -36,7 +33,6 @@
     (http-fn* c)
     rchan))
 
-
 (defn http-call
   [c]
   (async/thread
@@ -47,8 +43,6 @@
 
 #_(do
   (println @(repeat-and-delay  http-call 1 100 (fn [res] (merge res {:type :mimi :code 134 :message "wow!"})))))
-
-
 
 (def errors {:create-account {"111000" [400 "Username is already taken" "Account Management Service returns error that user name is already taken"]
                               "111001" [400"Unknown error occured" "Account Management Service returns error"]
@@ -92,15 +86,12 @@
    :region String
    })
 
-
 (defn- get-code [type]
   (condp = type
     :stored-value "SGC001"
     :loyalty "MSR001"
     :rewards "MSR002"
-    (throw (ex-info (format "MIMI: There's no code for type %s" type) {}))
-    )
-  )
+    (throw (ex-info (format "MIMI: There's no code for type %s" type) {}))))
 
 (def urls
   {:issue-coupon
@@ -234,8 +225,6 @@
                             ))
                        3 100 (fn [res] (merge res {:type :mimi :code "xxxxx" :message "Balances error!"}))
                        ))
-
-
 
   (get-history [this card-number]
     (log/info "fetching transactions for" card-number)
