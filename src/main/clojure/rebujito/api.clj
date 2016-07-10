@@ -239,7 +239,7 @@
                                        :oauth {:get scopes/customer-admin}))]
           ["/coupons/issue" (-> (customer-admin/issue-coupon mimi user-store)
                                 (assoc :id ::customer-admin/coupons
-                                       :oauth {:post scopes/cusotmer-admin}
+                                       :oauth {:post scopes/customer-admin}
                                        ))]
          ]]
 
