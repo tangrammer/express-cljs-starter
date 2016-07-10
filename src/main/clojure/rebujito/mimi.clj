@@ -211,7 +211,7 @@
     (repeat-and-delay
                        #(d/future
                           (try
-                            (let [{:keys [status body] :as all} (call-mimi token ((:balances urls) base-url) card-number)]
+                            (let [{:keys [status body] :as all} (call-mimi token ((:balances urls) base-url card-number))]
                               (log/info "mimi balances: " body)
                               (async/>!! % all))
                             (catch Exception e (async/>!! % {:status 500
