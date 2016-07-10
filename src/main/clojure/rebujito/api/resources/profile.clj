@@ -21,23 +21,23 @@
 
 
 (defn load-profile [ctx mimi user-store user-id]
- (d/let-flow [real-user-data (p/find user-store user-id)
-              card-number  (let [try-context '[user-id real-user-data]]
-                             (or (-> real-user-data :cards first :cardNumber)
+ (d/let-flow [user-data (p/find user-store user-id)
+              card-number  (let [try-context '[user-id user-data]]
+                             (or (-> user-data :cards first :cardNumber)
                                  #_(error* 500 [500 ::card-number-cant-be-null])))
 
               balances (when (some? card-number)
                          (p/balances mimi card-number))
               rewards (rewards/rewards-response balances card-number)
-              card (card/>get-card user-store (:_id real-user-data) balances)
-              payment-methods (->> (p/get-payment-methods user-store (:_id real-user-data))
+              card (card/>get-card user-store (:_id user-data) balances)
+              payment-methods (->> (p/get-payment-methods user-store (:_id user-data))
                                    (map payment/adapt-mongo-to-spec))]
 
              (util/>200 ctx (-> response-defaults
                                 (merge
                                  {:user (merge
-                                         (select-keys real-user-data [:firstName :lastName :emailAddress :createdDate])
-                                         {:email (:emailAddress real-user-data)}
+                                         (select-keys user-data [:firstName :lastName :emailAddress :createdDate])
+                                         {:email (:emailAddress user-data)}
                                          {:exId nil
                                           :subMarket "ZA"
                                           :partner false})
@@ -47,7 +47,7 @@
                                                     [card]
                                                     [])
                                   }
-                                 (select-keys real-user-data [:addresses :socialProfile]))
+                                 (select-keys user-data [:addresses :socialProfile]))
                                 (dissoc :target-environment)))))
 
 
