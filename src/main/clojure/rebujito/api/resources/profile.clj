@@ -60,8 +60,6 @@
 
                             (dcatch ctx
                                     (do
-                                      (let [user-data (util/authenticated-data ctx)
-                                            user-id (:user-id user-data)]
-                                        (load-profile ctx mimi user-store user-id)
-                                        )))))}}}
+                                      (let [user-id (util/authenticated-user-id ctx)]
+                                        (load-profile ctx mimi user-store user-id))))))}}}
       (merge (util/common-resource :profile))))
