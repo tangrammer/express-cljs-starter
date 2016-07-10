@@ -68,7 +68,8 @@
           token-stored (do
                          (when (:user-id data)
                            ;; TODO: filter by scopes!! to not invalidate tokens of diferent types
-                           (p/update! token-store (select-keys data [:user-id]) {:valid false}))
+;                           (p/update! token-store (select-keys data [:user-id]) {:valid false})
+                           )
                          (p/get-and-insert! token-store data))
 
           access-token (p/generate-token authenticator token-stored 60)]
