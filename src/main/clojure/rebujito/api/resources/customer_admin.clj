@@ -164,9 +164,9 @@
                             (dcatch ctx
                                     (d/let-flow [user-id (-> ctx :parameters :path :user-id)
                                                  amount (-> ctx :parameters :body :amount)
-                                                 real-user-data (p/find user-store user-id)
-                                                 card-number  (let [try-context '[user-id real-user-data]]
-                                                                (or (-> real-user-data :cards first :cardNumber)
+                                                 user-data (p/find user-store user-id)
+                                                 card-number  (let [try-context '[user-id user-data]]
+                                                                (or (-> user-data :cards first :cardNumber)
                                                                     #_(error* 500 [500 ::card-number-cant-be-null])))
                                                  res (d/chain
                                                       (p/increment-balance! mimi card-number amount :loyalty)
