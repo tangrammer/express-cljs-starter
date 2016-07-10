@@ -150,11 +150,12 @@ function exportTransactions(customer, txs) {
     table.columns.add('date', sql.DateTime(), {nullable: true})
     table.columns.add('location_id', sql.Int, {nullable: true})
     table.columns.add('program_id', sql.Int, {nullable: true})
+    table.columns.add('category_id', sql.Int, {nullable: true})
 
     const request = new sql.Request()
 
     return Promise.each(txs, (tx) => {
-      table.rows.add(tx.id, customer.id, tx.check, tx.amount, tx.balance, tx.description, tx.date, tx.location, tx.program)
+      table.rows.add(tx.id, customer.id, tx.check, tx.amount, tx.balance, tx.description, tx.date, tx.location, tx.program, tx.category)
       return exportCheckItems(tx, tx.items)
     })
     .then(() => request.bulk(table))
