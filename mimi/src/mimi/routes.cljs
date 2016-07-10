@@ -224,5 +224,6 @@
           (.json res #js {:success true})))
       (.catch p0
         (fn [err]
+          (log/error "transferring accounts" err)
           (.status res 500)
           (.json res #js {:error (.toString err)}))))))
