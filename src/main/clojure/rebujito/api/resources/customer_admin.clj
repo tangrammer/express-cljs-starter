@@ -253,8 +253,7 @@
                                                                :offset offset
                                                                :limit limit}
                                                       :customers adapt-users
-                                                      })
-))))}}}
+                                                      })))))}}}
       (merge (util/common-resource :customer-admin))))
 
 (defn issue-coupon [mimi]
