@@ -99,7 +99,7 @@
         {:rewardsProgram rewards-program}
         {:myTiers []})))
 
-(defn me-rewards [store mimi user-store]
+(defn me-rewards [mimi user-store]
  (-> {:methods
       {:get {:parameters {:query {:access_token String
                                   (s/optional-key :locale) String
