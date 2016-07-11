@@ -28,10 +28,10 @@
                    :country String
                    :firstName String
                    :lastName String
-                   :name String
                    :phoneNumber String
                    :postalCode String
                    :type String
+                   (s/optional-key :name) String
                    (s/optional-key :countrySubdivision) String
                    (s/optional-key :addressId) String}
 
