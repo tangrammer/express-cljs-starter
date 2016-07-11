@@ -88,40 +88,7 @@
         ))))
 
 
-(deftest customer-user-delete
 
-  (testing ::customer-admin/user
-    (let [r (-> *system* :docsite-router :routes)
-          port (-> *system*  :webserver :port)]
-
-      (let [api-id ::customer-admin/user
-            user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
-            path (bidi/path-for r api-id :user-id user-id)]
-
-        ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
-        (is (= 403 (-> @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
-                                  {:throw-exceptions false
-                                   :body-encoding "UTF-8"
-                                   :content-type :json})
-                       :status)))
-
-
-        ;; 200 with  valid user logged
-        (let [res @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
-                             {:throw-exceptions false
-                              :body-encoding "UTF-8"
-                              :content-type :json})
-              body (parse-body res false)]
-          (is (= 200 (-> res :status)))
-          (is (=  "" body)))
-
-        ;; 500 with  no existent user
-        (let [res @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
-                             {:throw-exceptions false
-                              :body-encoding "UTF-8"
-                              :content-type :json})
-              body (parse-body res false)]
-          (is (= 500 (-> res :status))))))))
 
 (deftest customer-forgot-password
 

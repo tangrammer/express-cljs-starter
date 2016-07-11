@@ -165,14 +165,7 @@
            :environment rebujito.util/*bugsnag-release*
            :meta {:context {:data data}}})
     true)
-  (remove-account [this data]
-    (log/warn "remove-account-mimi! [_ data]" data)
-    (clj-bugsnag.core/notify
-     (rebujito.MimiTODOException. "TODO: MIMI remove-account is not implemented yet!")
-          {:api-key (:key (:bugsnag (rebujito.config/config)))
-           :environment rebujito.util/*bugsnag-release*
-           :meta {:context {:data data}}})
-    true)
+
 
       ; TODO rename to link-card
   (register-physical-card [this data]

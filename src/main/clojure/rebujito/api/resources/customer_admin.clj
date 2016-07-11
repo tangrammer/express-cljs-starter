@@ -24,23 +24,7 @@
 
 (defn user [user-store mimi]
   (-> {:methods
-       {:delete {:parameters {:query {:access_token String}
-                              :path {:user-id String}}
-                 :response (fn [ctx]
-                             (let [try-id ::user
-                                   try-type :api]
-                               (dcatch ctx
-                                       (d/let-flow [user-id (-> ctx :parameters :path :user-id)
-                                                    user (p/find user-store user-id)
-                                                    mimi-res (when user
-                                                               (p/remove-account mimi user))
-                                                    removed? (when mimi-res
-                                                               (p/remove-by-id! user-store user-id))
-                                                    ]
-                                                   (if removed?
-                                                     (util/>200 ctx nil)
-                                                     (util/>500 ctx "we couldn't remove this user!"))))))}
-        :put    {:parameters {:query {:access_token String}
+       {:put    {:parameters {:query {:access_token String}
                               :path {:user-id String}
                               :body (-> schema :user :put)}
                  :response (fn [ctx]
