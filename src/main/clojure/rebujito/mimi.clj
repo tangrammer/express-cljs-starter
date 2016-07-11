@@ -207,18 +207,18 @@
       d*))
 
   (balances [this card-number]
-    (log/info "fetching prod balances for" card-number)
-    (repeat-and-delay
-                       #(d/future
-                          (try
-                            (let [{:keys [status body] :as all} (call-mimi token ((:balances urls) base-url card-number))]
-                              (log/info "mimi balances: " body)
-                              (async/>!! % all))
-                            (catch Exception e (async/>!! % {:status 500
-                                                             :body (.getMessage e)}))
-                            ))
-                       3 100 (fn [res] (merge res {:type :mimi :code "xxxxx" :message "Balances error!"}))
-                       ))
+    (dtry (do (log/info "fetching prod balances for" card-number)
+              (repeat-and-delay
+               #(d/future
+                  (try
+                    (let [{:keys [status body] :as all} (call-mimi token ((:balances urls) base-url card-number))]
+                      (log/info "mimi balances: " body)
+                      (async/>!! % all))
+                    (catch Exception e (async/>!! % {:status 500
+                                                     :body (.getMessage e)}))
+                    ))
+               3 100 (fn [res] (merge res {:type :mimi :code "xxxxx" :message "Balances error!"}))
+               ))))
 
   (get-history [this card-number]
     (log/info "fetching transactions for" card-number)
