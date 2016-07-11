@@ -66,7 +66,6 @@
                  [org.slf4j/jcl-over-slf4j "1.7.21"]
                  [org.slf4j/jul-to-slf4j "1.7.21"]
                  [org.slf4j/log4j-over-slf4j "1.7.21"]
-                 [org.slf4j/slf4j-nop "1.7.21"]
 
                  ;; error monitoring
                  [clj-bugsnag "0.2.5" :exclusions [com.fasterxml.jackson.core/jackson-annotations com.fasterxml.jackson.core/jackson-databind]]
