@@ -52,161 +52,163 @@
       )))
 
 (deftest test-token
-  (time
-   (let
-     [r (-> *system* :docsite-router :routes)
-      port (-> *system*  :webserver :port)
-      account-data #_(g/generate (:post account/schema)) (assoc (new-account-sb)
-                                                                :birthDay "1"
-                                                                :birthMonth "1")
-      new-account (create-account account-data)
-      sig (new-sig)
-      access_token (atom "")
-      refresh_token (atom "")
-      ]
-     (testing ::oauth/token-resource-owner
-       (let [api-id ::oauth/token-resource-owner
-             path (bidi/path-for r api-id)]
-         ;; body conform :token-resource-owner schema
-         ;; :grant_type "password"
-         (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
-                                    {:throw-exceptions false
-                                     :form-params
-                                     (assoc (g/generate (-> oauth/schema :token-resource-owner))
-                                            :grant_type "password"
-                                            :client_id (:key (api-config))
-                                            :client_secret (:secret (api-config))
-                                            :username (:emailAddress account-data)
-                                            :password (:password account-data)
-                                            :risk {}
-                                            )
-                                     :body-encoding "UTF-8"
-                                     :content-type :x-www-form-urlencoded})
-                              body (-> r :body bs/to-string (json/parse-string true))
-;;                              _ (println body)
+  (with-bindings   {#'rebujito.util/*send-bugsnag* false}
+    (time
 
-                              ]
-                          (reset! refresh_token (:refresh_token body))
-                          (reset! access_token (:access_token body))
-                          ;; (println "\n >>>> password access_token "@access_token "\n")
-                          ;; (println "\n >>>> password refresh_token "@refresh_token "\n")
-;                         (println "password access-token " (:access_token body))
-                          r)
-                        :status)))
+    (let
+        [r (-> *system* :docsite-router :routes)
+         port (-> *system*  :webserver :port)
+         account-data #_(g/generate (:post account/schema)) (assoc (new-account-sb)
+                                                                   :birthDay "1"
+                                                                   :birthMonth "1")
+         new-account (create-account account-data)
+         sig (new-sig)
+         access_token (atom "")
+         refresh_token (atom "")
+         ]
+      (testing ::oauth/token-resource-owner
+        (let [api-id ::oauth/token-resource-owner
+              path (bidi/path-for r api-id)]
+          ;; body conform :token-resource-owner schema
+          ;; :grant_type "password"
+          (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                             {:throw-exceptions false
+                                              :form-params
+                                              (assoc (g/generate (-> oauth/schema :token-resource-owner))
+                                                     :grant_type "password"
+                                                     :client_id (:key (api-config))
+                                                     :client_secret (:secret (api-config))
+                                                     :username (:emailAddress account-data)
+                                                     :password (:password account-data)
+                                                     :risk {}
+                                                     )
+                                              :body-encoding "UTF-8"
+                                              :content-type :x-www-form-urlencoded})
+                               body (-> r :body bs/to-string (json/parse-string true))
+                               ;;                              _ (println body)
 
-         ;; body conform :token-resource-owner schema
-         ;; :grant_type ""client_credentials""
-         (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
-                                            {:throw-exceptions false
-                                             :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
-                                                                 :grant_type "client_credentials"
-                                                                 :client_id (:key (api-config))
-                                                                 :client_secret (:secret (api-config))
-                                                                 :risk {})
-                                             :body-encoding "UTF-8"
-                                             :content-type :application/x-www-form-urlencoded})
-                              body (-> r :body bs/to-string (json/parse-string true))
-;;                              _ (println body)
+                               ]
+                           (reset! refresh_token (:refresh_token body))
+                           (reset! access_token (:access_token body))
+                           ;; (println "\n >>>> password access_token "@access_token "\n")
+                           ;; (println "\n >>>> password refresh_token "@refresh_token "\n")
+                                        ;                         (println "password access-token " (:access_token body))
+                           r)
+                         :status)))
 
-                              ]
-;                          (reset! access_token (:access_token body))
-;;                          (println "\n >>>> password client_credentials "@access_token "\n")
-                          r)
-                        :status)))
-         ;; :grant_type ""client_credentials"" wrong client_id invalid hex id
-         (is (= 400 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
-                                            {:throw-exceptions false
-                                             :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
-                                                                 :grant_type "client_credentials"
-                                                                 :client_id "xxx"
-                                                                 :client_secret "xxx"
-                                                                 :risk {})
-                                             :body-encoding "UTF-8"
-                                             :content-type :application/x-www-form-urlencoded})
-                              body (-> r :body bs/to-string (json/parse-string true))]
-                          (println body)
-                          r)
-                        :status)))
+          ;; body conform :token-resource-owner schema
+          ;; :grant_type ""client_credentials""
+          (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                             {:throw-exceptions false
+                                              :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
+                                                                  :grant_type "client_credentials"
+                                                                  :client_id (:key (api-config))
+                                                                  :client_secret (:secret (api-config))
+                                                                  :risk {})
+                                              :body-encoding "UTF-8"
+                                              :content-type :application/x-www-form-urlencoded})
+                               body (-> r :body bs/to-string (json/parse-string true))
+                               ;;                              _ (println body)
 
-                  ;; :grant_type ""client_credentials"" good client_id invalid pw
-         (is (= 400 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
-                                            {:throw-exceptions false
-                                             :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
-                                                                 :grant_type "client_credentials"
-                                                                 :client_id (:key (api-config))
-                                                                 :client_secret "xxx"
-                                                                 :risk {})
-                                             :body-encoding "UTF-8"
-                                             :content-type :application/x-www-form-urlencoded})
-                              body (-> r :body bs/to-string (json/parse-string true))]
-                                                    (println body)
-                          r)
-                        :status)))
+                               ]
+                                        ;                          (reset! access_token (:access_token body))
+                           ;;                          (println "\n >>>> password client_credentials "@access_token "\n")
+                           r)
+                         :status)))
+          ;; :grant_type ""client_credentials"" wrong client_id invalid hex id
+          (is (= 400 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                             {:throw-exceptions false
+                                              :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
+                                                                  :grant_type "client_credentials"
+                                                                  :client_id "xxx"
+                                                                  :client_secret "xxx"
+                                                                  :risk {})
+                                              :body-encoding "UTF-8"
+                                              :content-type :application/x-www-form-urlencoded})
+                               body (-> r :body bs/to-string (json/parse-string true))]
+                           (println body)
+                           r)
+                         :status)))
 
-         ;; body conform :token-resource-owner schema
-         ;; :grant_type "refresh_token"
-         (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
-                                            {:throw-exceptions false
-                                             :form-params
-                                             (assoc (g/generate (-> oauth/schema :token-refresh-token))
-                                                    :grant_type "refresh_token"
-                                                    :client_id (:key (api-config))
-                                                    :client_secret (:secret (api-config))
-                                                    :refresh_token @refresh_token
-                                                    :risk {}
-                                                    )
-                                             :body-encoding "UTF-8"
-                                             :content-type :application/x-www-form-urlencoded})
-                              body (-> r :body bs/to-string (json/parse-string true))
-   _                           (println "-*-" body)
-    _                          (clojure.pprint/pprint body)
-          ;                    _ (println "*******>>>***" r)
+          ;; :grant_type ""client_credentials"" good client_id invalid pw
+          (is (= 400 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                             {:throw-exceptions false
+                                              :form-params (assoc (g/generate (-> oauth/schema :token-client-credentials))
+                                                                  :grant_type "client_credentials"
+                                                                  :client_id (:key (api-config))
+                                                                  :client_secret "xxx"
+                                                                  :risk {})
+                                              :body-encoding "UTF-8"
+                                              :content-type :application/x-www-form-urlencoded})
+                               body (-> r :body bs/to-string (json/parse-string true))]
+                           (println body)
+                           r)
+                         :status)))
 
-                              ]
-                          (reset! access_token (:access_token body))
-                          ;;(println "\n >>>> password refresh_token "@access_token "\n")
-;                          (println "refresh_token access-token " (:access_token body))
-                          r)
-                        :status)))
+          ;; body conform :token-resource-owner schema
+          ;; :grant_type "refresh_token"
+          (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                             {:throw-exceptions false
+                                              :form-params
+                                              (assoc (g/generate (-> oauth/schema :token-refresh-token))
+                                                     :grant_type "refresh_token"
+                                                     :client_id (:key (api-config))
+                                                     :client_secret (:secret (api-config))
+                                                     :refresh_token @refresh_token
+                                                     :risk {}
+                                                     )
+                                              :body-encoding "UTF-8"
+                                              :content-type :application/x-www-form-urlencoded})
+                               body (-> r :body bs/to-string (json/parse-string true))
+                               _                           (println "-*-" body)
+                               _                          (clojure.pprint/pprint body)
+                                        ;                    _ (println "*******>>>***" r)
 
-         ;; GET /logout
-         (is (= 200 (-> (let [r @(http/get (format "http://localhost:%s%s?access_token=%s"  port (bidi/path-for r ::login/logout) @access_token)
+                               ]
+                           (reset! access_token (:access_token body))
+                           ;;(println "\n >>>> password refresh_token "@access_token "\n")
+                                        ;                          (println "refresh_token access-token " (:access_token body))
+                           r)
+                         :status)))
+
+          ;; GET /logout
+          (is (= 200 (-> (let [r @(http/get (format "http://localhost:%s%s?access_token=%s"  port (bidi/path-for r ::login/logout) @access_token)
                                             {:throw-exceptions false
                                              :body-encoding "UTF-8"
                                              :content-type :json})
-                              body (-> r :body bs/to-string (json/parse-string true))
+                               body (-> r :body bs/to-string (json/parse-string true))
                                         ;                    _ (println "*******>>>***" r)
 
-                              ]
-                          ;;(reset! access_token (:access_token body))
-                          ;;(println "\n >>>> password refresh_token "@access_token "\n")
+                               ]
+                           ;;(reset! access_token (:access_token body))
+                           ;;(println "\n >>>> password refresh_token "@access_token "\n")
                                         ;                          (println "refresh_token access-token " (:access_token body))
-                          r)
-                        :status)))
+                           r)
+                         :status)))
 
-         ;; try refresh after logout => 403
-         (is (= 400 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
-                                            {:throw-exceptions false
-                                             :form-params
-                                             (assoc (g/generate (-> oauth/schema :token-refresh-token))
-                                                    :grant_type "refresh_token"
-                                                    :client_id (:key (api-config))
-                                                    :client_secret (:secret (api-config))
-                                                    :refresh_token @refresh_token
-                                                    :risk {}
-                                                    )
-                                             :body-encoding "UTF-8"
-                                             :content-type :application/x-www-form-urlencoded})
-                              body (-> r :body bs/to-string (json/parse-string true))
-          ;                    _ (println "*******>>>***" r)
+          ;; try refresh after logout => 201 ==> client-credentials never expires
+          (is (= 201 (-> (let [r @(http/post (format "http://localhost:%s%s?sig=%s"  port path sig)
+                                             {:throw-exceptions false
+                                              :form-params
+                                              (assoc (g/generate (-> oauth/schema :token-refresh-token))
+                                                     :grant_type "refresh_token"
+                                                     :client_id (:key (api-config))
+                                                     :client_secret (:secret (api-config))
+                                                     :refresh_token @refresh_token
+                                                     :risk {}
+                                                     )
+                                              :body-encoding "UTF-8"
+                                              :content-type :application/x-www-form-urlencoded})
+                               body (-> r :body bs/to-string (json/parse-string true))
+                                        ;                    _ (println "*******>>>***" r)
 
-                              ]
-                          ;;(reset! access_token (:access_token body))
-                          ;;(println "\n >>>> password refresh_token "@access_token "\n")
-;                          (println "refresh_token access-token " (:access_token body))
-                          r)
-                        :status)))
-         )))))
+                               ]
+                           ;;(reset! access_token (:access_token body))
+                           ;;(println "\n >>>> password refresh_token "@access_token "\n")
+                                        ;                          (println "refresh_token access-token " (:access_token body))
+                           r)
+                         :status)))
+          ))))))
 
 (deftest test-get-user
   (time
