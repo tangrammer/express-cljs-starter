@@ -19,11 +19,12 @@
          valid-in-minutes (or valid-in-minutes 0)
          valid-from (.plusMinutes now valid-in-minutes)
          valid-to (.plusMinutes now expire-in-minutes)]
-     (merge data {:iss "rebujito-auth"
-                  :iat now
-                  :nbf valid-from
-                  :exp valid-to
-                  :jti id}))))
+     (merge data (merge {:iss "rebujito-auth"
+                         :iat now
+                         :nbf valid-from
+                         :jti id}
+                        (when (pos? valid-in-minutes)
+                          {:exp valid-to}))))))
 
 (defn jws-sign
   "Signs `claims` with `k` and returns the resulting JWT."

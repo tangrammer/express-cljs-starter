@@ -24,7 +24,9 @@
   (check [this unhash hashed]))
 
 (defprotocol Authorizer
-  (grant [this data scopes])
+  (grant
+    [this data scopes]
+    [this data scopes time-in-minutes])
   (invalidate! [this user-id])
   (protected-data [this refresh-token])
   )

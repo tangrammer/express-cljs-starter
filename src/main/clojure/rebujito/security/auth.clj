@@ -54,9 +54,11 @@
     this)
   (stop [this] this)
   p/Authorizer
-  (grant [_ data scopes]
+  (grant [this data scopes]
+    (p/grant this data scopes 1440))
+  (grant [_ data scopes time-in-minutes]
     (let [data (-> data
-                   (assoc :refresh-token (p/generate-token authenticator {} 1440) ;; we only need a random uuid with a time limit to verify origin and expiration time
+                   (assoc :refresh-token (p/generate-token authenticator {} time-in-minutes) ;; we only need a random uuid with a time limit to verify origin and expiration time
                           :scope scopes
                           :valid true)
                    (?> (:_id data)
@@ -75,7 +77,10 @@
           access-token (p/generate-token authenticator token-stored 60)]
 ;      (log/info "MONGO_TOKEN >" mongo-token)
 
-      access-token ))
+      access-token )
+    )
+
+
   (invalidate! [this token]
     (let [data (p/read-token authenticator token)
           id (:_id data)
