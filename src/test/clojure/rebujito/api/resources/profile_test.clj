@@ -7,10 +7,11 @@
    [schema-generators.generators :as g]
    [rebujito.protocols :as p]
    [taoensso.timbre :as log]
-   [rebujito.api-test :refer (print-body parse-body)]
+   [rebujito.api-test :refer (print-body parse-body create-digital-card*)]
    [rebujito.api.resources.account :as account]
    [rebujito.api.util :as api-util]
    [rebujito.api.resources.card :as card]
+   [rebujito.api.resources.payment :as payment]
    [rebujito.api.resources.addresses :as addresses]
    [rebujito.api.resources.customer-admin :as customer-admin]
    [rebujito.api.resources.profile :as profile]
@@ -35,6 +36,100 @@
                               ["rebujito.mongo.*" :info]
                               ["rebujito.api.*" :info]
                               ["rebujito.api.util" :warn]]))
+
+(deftest customer-admin-disable-autoreload-card
+  (testing ::customer-admin/profile
+    (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+          card (create-digital-card*)
+          card-id (:cardId card)
+          payment-method-id (atom "")
+          ]
+      (let [path (get-path ::payment/methods)
+            {:keys [status body] :as all}
+            (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                            {:throw-exceptions false
+                             :body-encoding "UTF-8"
+                             :body (json/generate-string
+                                    {
+                                     :billingAddressId "string"
+                                     :accountNumber "4000000000000002"
+                                     :default "false"
+                                     :nickname "string"
+                                     :paymentType "visa"
+                                     :cvn "12345"
+                                     :fullName "string"
+                                     :expirationMonth 11
+                                     :expirationYear 2018
+                                     }
+                                    )
+                             :content-type :json}))
+                    _ (is (= status 200))
+            body (-> (bs/to-string body)
+                     (json/parse-string true))]
+
+
+        (is  (:paymentMethodId body))
+        (reset! payment-method-id (:paymentMethodId body))
+        )
+      (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
+        (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                  {:throw-exceptions false
+                                   :body-encoding "UTF-8"
+                                   :body (json/generate-string
+                                          {
+                                           :amount 149.00,
+                                           :autoReloadType "Amount",
+                                           :day 0,
+                                           :paymentMethodId @payment-method-id
+                                           :status "active",
+                                           :triggerAmount 149.00,
+                                           }
+                                          )
+                                   :content-type :json})
+                      (print-body)
+                      :status))))
+
+      (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+          api-id ::profile/me
+          path (bidi/path-for r api-id)
+          res @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :content-type :json})
+          body (parse-body res)]
+      (is (= 200 (-> res :status)))
+      (is  (-> body :starbucksCards first :autoReloadProfile :active))
+      )
+
+      (let [api-id ::customer-admin/card-autoreload-disable
+            user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
+            path (bidi/path-for r api-id :user-id user-id :card-id card-id)
+            ]
+
+        (let [res @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
+                             {:throw-exceptions false
+                              :body-encoding "UTF-8"
+                              :content-type :json})
+              body (parse-body res false)]
+          (is (= 200 (-> res :status)))
+          (is (=  "" body))))
+
+      (let [r (-> *system* :docsite-router :routes)
+          port (-> *system*  :webserver :port)
+          api-id ::profile/me
+          path (bidi/path-for r api-id)
+          res @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                {:throw-exceptions false
+                                 :body-encoding "UTF-8"
+                                 :content-type :json})
+          body (parse-body res)]
+      (is (= 200 (-> res :status)))
+      (is (not (-> body :starbucksCards first :autoReloadProfile :active)))
+      )
+
+)))
 
 (deftest customer-user-update
 (log/set-config! (log-config [["rebujito.*" :warn]
@@ -86,9 +181,6 @@
 
 
         ))))
-
-
-
 
 (deftest customer-forgot-password
 

@@ -374,19 +374,19 @@
 
       (merge (util/common-resource :me/cards))))
 
+(defn autoreload-disable* [ctx user-store user-id card-id]
+  (d/let-flow [disable-reload-data (p/disable-auto-reload user-store user-id card-id)]
+              (util/>200 ctx nil)))
+
 ;; TODO: needs testing in mobile app
-(defn autoreload-disable [user-store mimi payment-gateway app-config]
+(defn autoreload-disable [user-store]
   (-> {:methods
        {:put {:parameters {:query {:access_token String}
                            :path {:card-id String}}
-               :response (fn [ctx]
-                           (-> (d/let-flow [auth-data (util/authenticated-data ctx)
-                                            disable-reload-data (p/disable-auto-reload user-store (:user-id auth-data) (-> ctx :parameters :path :card-id) )]
-
-                                           (util/>200 ctx nil))
-                               (d/catch clojure.lang.ExceptionInfo
-                                   (fn [exception-info]
-                                     (domain-exception ctx (ex-data exception-info))))))}}}
+              :response (fn [ctx]
+                          (dcatch ctx (autoreload-disable* ctx user-store
+                                                           (util/authenticated-user-id ctx)
+                                                           (-> ctx :parameters :path :card-id))))}}}
 
       (merge (util/common-resource :me/cards))))
 
