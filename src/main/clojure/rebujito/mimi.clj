@@ -147,12 +147,13 @@
     (log/info "create-account-mimi: " (format "%s/account" base-url) data)
     (let [d* (d/deferred)]
       (d/future
-        (let [try-type :mimi
+        (let [url ((:create-account urls) base-url)
+              try-type :mimi
               try-id ::create-account
-              try-context '[data]]
+              try-context '[data url]]
           (ddtry d* (do
                       (s/validate CreateAccountSchema data)
-                      (let [{:keys [status body]} (call-mimi token ((:create-account urls) base-url) data)]
+                      (let [{:keys [status body]} (call-mimi token url data)]
                        (log/info "mimi create-account" body)
                        (-> body :customerId vector (conj :prod-mimi))))
                  )))
@@ -173,11 +174,12 @@
     (log/info data)
     (let [d* (d/deferred)]
       (d/future
-        (let [try-type :mimi
+        (let [url ((:link-card urls) base-url)
+              try-type :mimi
               try-id ::register-physical-card
-              try-context '[data]]
+              try-context '[data url]]
           (ddtry d*
-                (let [{:keys [status body]} (call-mimi token ((:link-card urls) base-url) data)]
+                (let [{:keys [status body]} (call-mimi token url data)]
                   (log/info "mimi register-physical-card" status body)
                   (-> [:success]
                       (conj :prod-mimi))))))
@@ -187,7 +189,7 @@
     (log/debug "(increment-balance! [_ card-number amount type])" card-number amount type)
     (let [d* (d/deferred)
           card-type-code (get-code type)
-          try-id ::load-card
+          try-id ::increment-balance
           try-type :mimi
           try-context '[card-number amount card-type-code type]]
       (d/future
@@ -200,57 +202,49 @@
       d*))
 
   (balances [this card-number]
-    (dtry (do (log/info "fetching prod balances for" card-number)
-              (repeat-and-delay
-               #(d/future
-                  (try
-                    (let [{:keys [status body] :as all} (call-mimi token ((:balances urls) base-url card-number))]
-                      (log/info "mimi balances: " body)
-                      (async/>!! % all))
-                    (catch Exception e (async/>!! % {:status 500
-                                                     :body (.getMessage e)}))
-                    ))
-               3 100 (fn [res] (merge res {:type :mimi :code "xxxxx" :message "Balances error!"}))
-               ))))
+    (let [url ((:balances urls) base-url card-number)
+          try-type :mimi
+          try-id ::balances
+          try-context '[url card-number]]
+      (dtry (do (log/info "fetching prod balances for" card-number)
+                (repeat-and-delay
+                 #(d/future
+                    (try
+                      (let [{:keys [status body] :as all} (call-mimi token url)]
+                        (log/info "mimi balances: " body)
+                        (async/>!! % all))
+                      (catch Exception e (async/>!! % {:status 500
+                                                       :body (.getMessage e)}))
+                      ))
+                 3 100 (fn [res] (merge res {:type :mimi :code "xxxxx" :message "Balances error!"}))
+                 )))))
 
   (get-history [this card-number]
     (log/info "fetching transactions for" card-number)
     (let [d* (d/deferred)]
       (d/future
-      (try
-        (let [{:keys [status body]} (call-mimi token ((:transactions urls) base-url card-number))]
-          (log/info "mimi get-history" body)
-          (d/success! d* body))
-        (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
-                                              (d/error! d* (ex-info (str "error!!!" (:status ex))
-                                                                    {:type :mimi
-                                                                      :status (:status ex)
-                                                                      :body (:body ex)}))))
-          (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
-                                                   {:type :mimi
-                                                    :status 500
-                                                    :body (.getMessage e)})))
-        ))
+        (let [url ((:transactions urls) base-url card-number)
+              try-type :mimi
+              try-id ::get-history
+              try-context '[card-number url]]
+          (ddtry d*
+                 (let [{:keys [status body]} (call-mimi token url)]
+                   (log/info "mimi get-history" body)
+                   body))))
       d*))
 
   (transfer [this from to]
     (log/info "transferring card balances from" from "to" to)
     (let [d* (d/deferred)]
-    (d/future
-     (try
-      (let [{:keys [status body]} (call-mimi token ((:transfer-card urls) base-url) {:from from :to to})]
-        (log/info "mimi transfer" body)
-        (d/success! d* body))
-      (catch clojure.lang.ExceptionInfo e (let [ex (ex-data e)]
-                                            (d/error! d* (ex-info (str "error!!!" (:status ex))
-                                                                  {:type :mimi
-                                                                    :status (:status ex)
-                                                                    :body (:body ex)}))))
-      (catch Exception e (d/error! d* (ex-info (str "error!!!" 500)
-                                                 {:type :mimi
-                                                  :status 500
-                                                  :body (.getMessage e)})))
-      ))
+      (d/future
+        (let [url ((:transfer-card urls) base-url)
+              try-type :mimi
+              try-id ::transfer
+              try-context '[url from to]]
+          (ddtry d*
+                 (let [{:keys [status body]} (call-mimi token url {:from from :to to})]
+                   (log/info "mimi transfer" body)
+                   body))))
     d*))
 
   (issue-coupon [this card-number coupon-type]
