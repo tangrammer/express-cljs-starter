@@ -151,11 +151,28 @@ function exportTransactions(customer, txs) {
     table.columns.add('location_id', sql.Int, {nullable: true})
     table.columns.add('program_id', sql.Int, {nullable: true})
     table.columns.add('category_id', sql.Int, {nullable: true})
+    table.columns.add('points', sql.Decimal(19, 2), {nullable: true})
+    table.columns.add('bonus_points', sql.Decimal(19, 2), {nullable: true})
+    table.columns.add('bonus_amount', sql.Decimal(19, 2), {nullable: true})
 
     const request = new sql.Request()
 
     return Promise.each(txs, (tx) => {
-      table.rows.add(tx.id, customer.id, tx.check, tx.amount, tx.balance, tx.description, tx.date, tx.location, tx.program, tx.category)
+      table.rows.add(
+        tx.id,
+        customer.id,
+        tx.check,
+        tx.amount,
+        tx.balance,
+        tx.description,
+        tx.date,
+        tx.location,
+        tx.program,
+        tx.category,
+        tx.points,
+        tx.bonusPoints,
+        tx.bonusAmount
+      )
       return exportCheckItems(tx, tx.items)
     })
     .then(() => request.bulk(table))
