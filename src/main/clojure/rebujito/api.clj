@@ -210,9 +210,6 @@
          [["" (-> (customer-admin/user user-store mimi)
                   (assoc :id ::customer-admin/user
                          :oauth {:put scopes/customer-admin}))]
-          [["/cards/" :card-id "/autoreload/disable"] (-> (customer-admin/cards-autoreload-disable user-store)
-                                                          (assoc :id ::customer-admin/card-autoreload-disable
-                                                                 :oauth {:put scopes/customer-admin}))]
 
           [["/addresses/" :address-id] (-> (customer-admin/address user-store)
                                            (assoc :id ::customer-admin/address

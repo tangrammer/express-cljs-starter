@@ -23,18 +23,6 @@
                             :comment String}})
 
 
-(defn cards-autoreload-disable [user-store]
-  (-> {:methods
-       {:put {:parameters {:query {:access_token String}
-                           :path {:card-id String
-                                  :user-id String}}
-              :response (fn [ctx]
-                          (dcatch ctx (card/autoreload-disable* ctx user-store
-                                                           (-> ctx :parameters :path :user-id)
-                                                           (-> ctx :parameters :path :card-id))))}}}
-
-      (merge (util/common-resource :customer-admin/card-autoreload-disable))))
-
 (defn user [user-store mimi]
   (-> {:methods
        {:put    {:parameters {:query {:access_token String}
@@ -53,7 +41,7 @@
 
                                                     user (when-not email-exists?
                                                            (p/find user-store user-id))
-                                                    mimi-res (when user
+                                                    mimi-res (when (and user (some #(and (some? %) (not= "" %))  (vals payload)))
                                                                (p/update-account mimi user))
                                                     updated? (when mimi-res
                                                                (pos? (.getN (p/update-by-id! user-store user-id payload))))
