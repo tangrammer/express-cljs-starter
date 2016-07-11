@@ -113,13 +113,17 @@
                    (get-in ctx [:parameters :body :client_secret]))
 
                refresh-token (get-in ctx [:parameters :body :refresh_token])
-               protected-data (p/protected-data authorizer refresh-token)]
+               protected-data (p/protected-data authorizer refresh-token)
+               ]
 
               (assert c)
     (if (sec/valid? protected-data)
-      (let [user (p/find user-store (:user-id protected-data))]
-        (>201 ctx  (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})
-                       (sec/jwt authenticator))))
+      (if (:user-id protected-data)
+        (let [user (p/find user-store (:user-id protected-data))]
+          (>201 ctx  (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})
+                         (sec/jwt authenticator))))
+        (>201 ctx (-> (p/grant authorizer {} #{scopes/application} 0)
+                            (sec/jwt authenticator))))
       (>400 ctx {:error 400
                  :message "token expired!"}))))
 
