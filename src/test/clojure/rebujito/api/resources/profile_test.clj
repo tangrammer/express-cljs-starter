@@ -70,7 +70,7 @@
                               :body (json/generate-string (assoc  payload :emailAddress (:emailAddress *user-account-data*)))
                               :content-type :json})
               body (parse-body res false)]
-          (is (= 400 (-> res :status))))
+          (is (= 200 (-> res :status))))
 
         ;; 200 with  valid user logged
         (let [res @(http/put (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)

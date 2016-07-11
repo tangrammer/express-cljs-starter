@@ -144,9 +144,9 @@
 
 
 (defn generate-user-data [readed-jwt sub-market]
-  (log/info (select-keys readed-jwt [:firstName :lastName :emailAddress]))
-  (log/info (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress])))
-  (merge (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress]))
+  (log/info (select-keys readed-jwt [:firstName :lastName :emailAddress :verifiedEmail]))
+  (log/info (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress :verifiedEmail])))
+  (merge (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress :verifiedEmail]))
          {:subMarket sub-market
           :exId nil
           :partner false}

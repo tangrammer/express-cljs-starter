@@ -141,10 +141,8 @@
                                    (s/optional-key :ignore) String}}
               :response (fn [ctx]
                           (dcatch  ctx
-                                   (d/let-flow [auth-data (util/authenticated-data ctx)
-                                                user (p/find user-store (:user-id auth-data))]
-                                               (util/>201 ctx (merge
-                                                               (select-keys user [:verifiedEmail])
-                                                               (util/generate-user-data auth-data (:sub-market app-config)))))))}}}
+                                   (d/let-flow [user-id (util/authenticated-user-id ctx)
+                                                user (p/find user-store user-id)]
+                                               (util/>201 ctx (util/generate-user-data user (:sub-market app-config))))))}}}
 
       (merge (util/common-resource :account))))

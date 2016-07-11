@@ -50,7 +50,8 @@
                                        (d/let-flow [payload (util/remove-nils (-> ctx :parameters :body))
 
                                                     user-id (-> ctx :parameters :path :user-id)
-                                                    email-exists? (when (:emailAddress payload)
+                                                    current-user (p/find user-store user-id)
+                                                    email-exists? (when (and (:emailAddress payload) (not= (:emailAddress payload) (:emailAddress current-user)))
                                                                     (account/check-account-mongo {:emailAddress (:emailAddress payload)} user-store))
 
                                                     user (when-not email-exists?
