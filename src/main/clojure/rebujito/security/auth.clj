@@ -90,7 +90,9 @@
           try-context '[user-id]]
       (log/info "invalidate token for" user-id)
       (util/dtry
-       (do(p/update-by-id! token-store (:_id data) {:valid false})))))
+       (do
+         (log/warn "invalidating this data " data)
+         (p/update-by-id! token-store (:_id data) {:valid false})))))
   (protected-data [this refresh-token]
     (let [refreshable? (p/read-token authenticator refresh-token) ;; checking origin and expiry time
           token-stored (first (p/find token-store {:refresh-token refresh-token}))] ;; checking that exists in db]

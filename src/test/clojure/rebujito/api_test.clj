@@ -77,40 +77,7 @@
                                      :content-type :json})
                         :status)))))
 
-     (testing ::payment/method-detail
-       (let [api-id ::payment/method-detail
-             path (bidi/path-for r api-id :payment-method-id 12345)]
 
-         ;; can't test until we stop stubbing, needs real token ID
-         #_(is (= 200 (-> @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                        {:throw-exceptions false
-                                         :body-encoding "UTF-8"
-                                         :content-type :json})
-                          :status)))
-
-         #_(let [{:keys [status body]}
-                 (-> @(http/put (format "http://localhost:%s%s?access_token=%s"  port path 123)
-                                {:throw-exceptions false
-                                 :body-encoding "UTF-8"
-                                 :body (json/generate-string
-                                        {
-                                         :expirationYear 2018
-                                         :billingAddressId "string"
-                                         :accountNumber "4000000000000002"
-                                         :default "false"
-                                         :nickname "string"
-                                         :paymentType "visa"
-                                         :cvn "12345"
-                                         :fullName "string"
-                                         :expirationMonth 11
-                                         }
-                                        )
-                                 :content-type :json})
-                     )]
-             (is (= status 200))
-             (is (.contains (slurp body) "paymentMethodId"))
-             )
-         ))
 
 
 

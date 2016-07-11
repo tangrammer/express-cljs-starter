@@ -30,6 +30,12 @@
                               ["rebujito.api.util" :debug]]))
 
 (deftest test-auto-reload-profile
+  (log/set-config! (log-config [["rebujito.*" :info]
+                              ["rebujito.security.*" :debug]
+                              ["rebujito.mongo" :debug]
+                              ["rebujito.mongo.*" :debug]
+                              ["rebujito.api.*" :warn]
+                              ["rebujito.api.util" :debug]]))
   (testing :test-auto-reload-profile
     (let [user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
           user (p/find (:user-store *system*) user-id)
@@ -37,22 +43,30 @@
           card-id (:cardId card)
 
           ]
-      (is (p/add-autoreload-profile-card (:user-store *system*) user-id  (assoc (g/generate rs/AutoReloadMongo)
-                                                                                :cardId card-id)))
+      (is (p/add-autoreload-profile-card (:user-store *system*) user-id  (-> (g/generate rs/AutoReloadMongo)
+                                                                             (assoc :cardId card-id)
+                                                                             (dissoc :createdDate))))
 
       (is  (-> (p/find (:user-store *system*) user-id)
                :cards first :autoReloadProfile)))))
 
 
 (deftest user-store
+  (log/set-config! (log-config [["rebujito.*" :info]
+                              ["rebujito.security.*" :debug]
+                              ["rebujito.mongo" :debug]
+                              ["rebujito.mongo.*" :debug]
+                              ["rebujito.api.*" :warn]
+                              ["rebujito.api.util" :debug]]))
   (testing :add-auto-reload
     (let [user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
           card (create-digital-card*)
           card-id (:cardId card)
           ]
       (is (nil? (:autoReloadProfile (first (:cards (p/find (:user-store *system*) user-id))))))
-      (is (p/add-autoreload-profile-card (:user-store *system*) user-id  (assoc (g/generate rs/AutoReloadMongo)
-                                                                                :cardId card-id)))
+      (is (p/add-autoreload-profile-card (:user-store *system*) user-id  (-> (g/generate rs/AutoReloadMongo)
+                                                                             (assoc :cardId card-id)
+                                                                             (dissoc :createdDate))))
                                         ;    (println (p/add-auto-reload (:user-store *system*) user-id {} (g/generate rs/AutoReloadMongo)))
                                         ;    (println user-id)
       (clojure.pprint/pprint (p/find (:user-store *system*) user-id))
@@ -66,11 +80,11 @@
     (let [user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))]
       (is (nil? (:paymentMethods (p/find (:user-store *system*) user-id))))
 
-      (is (p/add-new-payment-method (:user-store *system*) user-id {:expirationYear 25, :paymentMethodId "X", :default "0o*%Y", :paymentType "", :accountNumberLastFour "'7BG\\T0a}M", :nickName [], :routingNumber "M\\T>vm)=8", :expirationMonth -351}))
-
-      (is (:paymentMethods (p/find (:user-store *system*) user-id)))
+      (is (p/add-new-payment-method (:user-store *system*) user-id
+                                    (g/generate rs/PaymentMethodMongo)))
+      (is (= 1 (count  (:paymentMethods (p/find (:user-store *system*) user-id)))))
       (is (p/add-new-payment-method (:user-store *system*) user-id (g/generate rs/PaymentMethodMongo)))
-      (is (:paymentMethods (p/find (:user-store *system*) user-id)))
+      (is (= 2 (count  (:paymentMethods (p/find (:user-store *system*) user-id)))))
       ))
 
   (testing :disable-auto-reload

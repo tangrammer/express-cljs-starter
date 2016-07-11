@@ -32,30 +32,31 @@
     (is (not (.contains body "SOAP-ENV:Fault|payhost:error")))))
 
 (deftest paygateVaultTest ;; create card token
-  (testing "create-token-card"
-    (is (let [r (:card-token @(p/create-card-token (:payment-gateway *system*) {:cardNumber "4000000000000002"
-                                                                               :expirationYear 2018
-                                                                                :expirationMonth 11}))]
-          (println "card-token: " r)
-          r))
+  (with-bindings   {#'rebujito.util/*send-bugsnag* false}
+    (testing "create-token-card"
+     (is (let [r (:card-token @(p/create-card-token (:payment-gateway *system*) {:cardNumber "4000000000000002"
+                                                                                 :expirationYear 2018
+                                                                                 :expirationMonth 11}))]
+           (println "card-token: " r)
+           r))
 
-    (is (let [r (:card-token @(p/create-card-token (:payment-gateway *system*) {:cardNumber "4000000000000002"
-                                                                               :expirationYear 2018
-                                                                                :expirationMonth 6}))]
-          (println "card-token: " r)
-          r))
+     (is (let [r (:card-token @(p/create-card-token (:payment-gateway *system*) {:cardNumber "4000000000000002"
+                                                                                 :expirationYear 2018
+                                                                                 :expirationMonth 6}))]
+           (println "card-token: " r)
+           r))
 
 
-    (let [r (-> (p/create-card-token (:payment-gateway *system*) {:cardNumber "2222222222222222"
-                                                                  :expirationYear 2018
-                                                                  :expirationMonth 6})
-                (d/catch clojure.lang.ExceptionInfo
-                    (fn [exception-info]
-                      (:status (ex-data exception-info))
-                     ))
-                )]
-      (is (= 400 @r))
-      r)))
+     (let [r (-> (p/create-card-token (:payment-gateway *system*) {:cardNumber "2222222222222222"
+                                                                   :expirationYear 2018
+                                                                   :expirationMonth 6})
+                 (d/catch clojure.lang.ExceptionInfo
+                     (fn [exception-info]
+                       (:status (ex-data exception-info))
+                       ))
+                 )]
+       (is (= 400 @r))
+       r))))
 
 (deftest paygatePaymentTest ;; execute payment
 

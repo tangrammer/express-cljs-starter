@@ -302,7 +302,7 @@
                (result payment-method)))))))
   (remove-payment-method [this oid payment-method]
     (let [try-type :store
-          try-id ::add-new-payment-method
+          try-id ::remove-new-payment-method
           try-context '[oid payment-method]]
       (util/dtry
        (do
@@ -331,7 +331,7 @@
   (get-payment-method [this oid payment-method-id]
     (let [user-db  (protocols/find this oid)
           try-type :store
-          try-id ::add-new-payment-method
+          try-id ::get-payment-method
           try-context '[oid payment-method-id user-db]]
       (util/dtry
        (do

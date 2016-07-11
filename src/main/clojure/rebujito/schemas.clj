@@ -5,14 +5,14 @@
 
 (def PaymentMethodMongo
   {
-   (s/optional-key :createdDate) s/Any
+   (s/optional-key :createdDate) (s/maybe String)
    :accountNumberLastFour String
    (s/optional-key :billingAddressId) String
    (s/optional-key :default) String
    :expirationMonth Long
    :expirationYear Long
    (s/optional-key :fullName) String
-   (s/optional-key :nickName) s/Any
+   (s/optional-key :nickName) (s/maybe String)
    :paymentType String
    :paymentMethodId String
    :routingNumber String
@@ -21,7 +21,7 @@
 
 (def AutoReloadMongo
   {
-   (s/optional-key :createdDate) s/Any
+   (s/optional-key :createdDate) (s/maybe String)
    :autoReloadId String
    :cardId String
    :status (s/enum "active" "disabled" "enabled")
@@ -64,7 +64,7 @@
   (merge
    UserProfileData
    {
-    (s/optional-key :createdDate) s/Any
+    (s/optional-key :createdDate) (s/maybe String)
     (s/optional-key :_id) org.bson.types.ObjectId
     :addressLine1 String
     (s/optional-key :addressLine2) String
