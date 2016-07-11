@@ -251,8 +251,7 @@
                           (d/let-flow [body (-> ctx :parameters :body)
                                        user-id (-> ctx :parameters :path :user-id)
                                        user-data (p/find user-store user-id)
-                                       type "BURN001"
-                                       ;  type (or (:couponType body) "BURN001")
+                                       type (or (:couponType body) "FAD001")
                                        comment (:comment body)
                                        category (:category body)
                                        card-number (-> user-data :cards first :cardNumber)
