@@ -1,5 +1,5 @@
 #!/bin/bash
 
+open "https://cows.swarmapps.co.za/env/1a5/apps/stacks/1e14"
 open "https://cloud.docker.com/_/repository/docker/swarmapps/rebujito/builds"
 open "https://cloud.docker.com/_/repository/docker/swarmapps/mimi/builds"
-open "https://cows.swarmapps.co.za/env/1a5/apps/stacks/1e14"
