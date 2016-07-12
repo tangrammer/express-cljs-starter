@@ -154,8 +154,8 @@
         (is (= status 200))
         (is  (:paymentMethodId body))
 
-        (let [path (bidi/path-for (-> *system* :docsite-router :routes) ::payment/delete-method-detail :payment-method-id (:paymentMethodId body))
-              http-response @(http/post (format "http://localhost:%s%s?access_token=%s"  port path  *user-access-token*)
+        (let [path (bidi/path-for (-> *system* :docsite-router :routes) ::payment/method-detail :payment-method-id (:paymentMethodId body))
+              http-response @(http/delete (format "http://localhost:%s%s?access_token=%s"  port path  *user-access-token*)
                                           {:throw-exceptions false
                                            :body-encoding "UTF-8"
                                            :content-type :json})

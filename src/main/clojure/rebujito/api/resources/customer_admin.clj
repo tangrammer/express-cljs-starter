@@ -41,14 +41,16 @@
 
                                                     user (when-not email-exists?
                                                            (p/find user-store user-id))
-                                                    mimi-res (when (and user (some #(and (some? %) (not= "" %))  (vals payload)))
+
+                                                    mimi-res (when (and user
+                                                                        (some #(and (some? %) (not= "" %))  (vals payload)))
                                                                (p/update-account mimi user))
                                                     updated? (when mimi-res
                                                                (pos? (.getN (p/update-by-id! user-store user-id payload))))
 
                                                     ]
 
-                                                   (if updated?
+                                                   (if (or updated? (nil? mimi-res))
                                                      (util/>200 ctx nil)
                                                      (util/>500 ctx "we couldn't update the account"))))))}}
        }
