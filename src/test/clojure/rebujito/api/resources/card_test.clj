@@ -24,6 +24,21 @@
         r (-> *system* :docsite-router :routes)
         ]
 
+    (testing ::card/history
+      (let [path (get-path ::card/history)
+            {:keys [status body]}
+            (-> @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                        {:throw-exceptions false
+                                         :body-encoding "UTF-8"
+                                         :content-type :json}))
+            _ (is (= status 200))
+            body (-> (bs/to-string body)
+                     (json/parse-string true))]
+
+        (clojure.pprint/pprint body)
+        (is (= {:paging {:total 0, :returned 0, :offset 0, :limit 50},
+                :historyItems []} body))))
+
     (testing ::card/get-cards2
       (let [path (get-path ::card/get-cards)
             {:keys [status body]}

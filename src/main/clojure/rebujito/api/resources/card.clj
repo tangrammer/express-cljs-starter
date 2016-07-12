@@ -298,7 +298,7 @@
   )
 
 (defn history* [user-store mimi ctx user-id]
-  (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
+  (d/let-flow [card-data (get-card-data user-store user-id)
                card-number (-> card-data :cardNumber)
                                         ; some numbers to test history
                                         ;  card-number "9623570800007"
@@ -307,8 +307,11 @@
                                         ;  card-number "9623570900005"
                                         ;  card-number "9623570900007"
                                         ;  card-number "9623570900010"
-               history-data (p/get-history mimi card-number)
-               txs (filter-history history-data)]
+               history-data (when card-number
+                              (p/get-history mimi card-number))
+               txs (if history-data
+                     (filter-history history-data)
+                     [])]
               (util/>200 ctx {:paging {:total (count txs)
                                        :returned (count txs)
                                        :offset 0
