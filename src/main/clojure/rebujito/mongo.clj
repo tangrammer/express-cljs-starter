@@ -165,12 +165,19 @@
 
 (defn- search* [firstName lastName emailAddress cardNumber]
   (let [conj-or (-> []
-                    (optional-conj-or firstName :firstName)
-                    (optional-conj-or lastName :lastName)
                     (optional-conj-or emailAddress :emailAddress))
         conj-or (if (and cardNumber (not= cardNumber ""))
                   (conj conj-or {:cards {$elemMatch {:cardNumber {$regex cardNumber}}}})
-                  conj-or)]
+                  conj-or)
+       conj-or (if (and firstName (not= firstName ""))
+                  (conj conj-or {:addresses {$elemMatch {:firstName {$regex firstName}}}})
+                  conj-or)
+       conj-or (if (and lastName (not= lastName ""))
+                  (conj conj-or {:addresses {$elemMatch {:lastName {$regex lastName}}}})
+                  conj-or)
+
+
+        ]
     (if (empty? conj-or)
       nil
       conj-or)))

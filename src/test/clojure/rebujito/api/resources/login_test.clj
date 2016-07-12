@@ -161,10 +161,25 @@
         (is (= 200 (-> http-response :status)))
         (is (= "" (-> http-response :body bs/to-string)))
         (let [user-by-email (first (p/find (-> *system* :user-store) {:emailAddress new-email}))]
+          #_(is (=  [(-> *user-account-data*
+                     (select-keys  [:addressLine1 :city :addressId :firstName :type :addressLine2 :lastName :postalCode :country])
+                     (assoc :type "Registration")
+                     )
+
+                 ]  (update-in (vec  body) [0] #(dissoc % :addressId))))
           (is (=  (-> *user-account-data*
-                      (dissoc  :_id :password :birthDay :birthMonth)
-                      (assoc  :emailAddress new-email :verifiedEmail true ))
-                  (dissoc user-by-email :_id :password :birthMonth :birthDay :createdDate)))))
+                      (dissoc  :_id :password :birthDay :birthMonth :addressLine1 :city :addressId :firstName :type :addressLine2 :lastName :postalCode :country)
+                      (assoc  :emailAddress new-email :verifiedEmail true )
+                      (assoc :addresses [(-> *user-account-data*
+                     (select-keys  [:addressLine1 :city :addressId :firstName :type :addressLine2 :lastName :postalCode :country])
+                     (assoc :type "Registration")
+                     )])
+                      )
+
+                  (-> user-by-email
+                      (dissoc  :_id :password :birthMonth :birthDay :createdDate)
+                      (update-in [:addresses 0] #(dissoc % :addressId))
+                      )))))
 
 
       ;; OPT checks

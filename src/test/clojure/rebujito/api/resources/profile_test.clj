@@ -419,7 +419,10 @@
         (is (= 200 (-> res :status)))
                                         ;        (is (s/validate customer-admin/PagingSchema (:paging
         (s/validate customer-admin/PagingSchema (:paging body))
-        (s/validate [customer-admin/SearchSchema] (:customers body))
+
+        (try  (s/validate [customer-admin/SearchSchema] (:customers body))
+              (catch Exception e (is (= nil (.getMessage e))))
+              )
         (is (pos?  (count (:customers body))))
         (is (pos?  (count (:customers body2))))
         (pprint  body)

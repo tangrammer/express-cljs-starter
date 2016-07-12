@@ -47,8 +47,6 @@
 
 (def UserProfileData
   {:emailAddress String
-   :firstName String
-   :lastName String
    (s/optional-key  :verifiedEmail)  Boolean
    }
   )
@@ -60,22 +58,31 @@
    (s/optional-key :birthDay) (s/conditional number? Integer :else String)
    (s/optional-key :birthMonth) (s/conditional number? Integer :else String)})
 
+
+(def MongoCreateAccountAddress
+  {:firstName String
+    :lastName String
+    :addressLine1 String
+    (s/optional-key :addressLine2) String
+   :city String
+   :postalCode String
+    :country String})
+
 (def MongoUser
   (merge
    UserProfileData
    {
     (s/optional-key :createdDate) (s/maybe String)
     (s/optional-key :_id) org.bson.types.ObjectId
-    :addressLine1 String
-    (s/optional-key :addressLine2) String
+
     :birthDay (s/conditional number? Integer :else String)
     :birthMonth (s/conditional number? Integer :else String)
-    :city String
+
     :market String
-    :country String
+
     :countrySubdivision String
     :password String
-    :postalCode String
+
     :receiveStarbucksEmailCommunications Boolean
     :registrationSource String
     (s/optional-key :verifiedEmail) Boolean

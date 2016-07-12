@@ -11,7 +11,7 @@
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
    [rebujito.api-test :refer (print-body create-digital-card* parse-body)]
-   [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
+   [rebujito.base-test :refer (*user-account-data* system-fixture *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
    [aleph.http :as http]
    [rebujito.api.resources
     [payment :as payment]
@@ -38,7 +38,12 @@
             body (parse-body http-response)
             ]
         (is (= 200 (-> http-response :status)))
-        (is (= [] body)))
+        (is (=  [(-> *user-account-data*
+                     (select-keys  [:addressLine1 :city :addressId :firstName :type :addressLine2 :lastName :postalCode :country])
+                     (assoc :type "Registration")
+                     )
+
+                 ]  (update-in (vec  body) [0] #(dissoc % :addressId)))))
 
       ;; create!
       (let [path (get-path ::addresses/addresses)

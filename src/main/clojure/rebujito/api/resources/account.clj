@@ -57,24 +57,44 @@
     500 (util/>500 ctx body)))
 
 
+
 (defn create-account-mongo! [data-account mimi-res user-store crypto]
   (let [mimi-id (first mimi-res)
         mongo-id (p/generate-id user-store mimi-id)
-        mongo-account-data (-> data-account
-                               (assoc :_id mongo-id)
-                               (assoc :password (p/sign crypto (:password data-account)))
-                               (assoc :verifiedEmail false)
-                               (assoc :birthDay (-> data-account :birthDay Integer.))
-                               (assoc :birthMonth (-> data-account :birthMonth Integer.))
-                               (dissoc :createDigitalCard :risk :reputation))
+        mongo-account-data (merge
+                            ;data-account
+
+                            (select-keys data-account [
+                                                       :emailAddress :market :countrySubdivision :registrationSource :receiveStarbucksEmailCommunications])
+                            (->  {}
+                                 (assoc :_id mongo-id)
+                                 (assoc :password (p/sign crypto (:password data-account)))
+                                 (assoc :verifiedEmail false)
+                                 (assoc :birthDay (-> data-account :birthDay Integer.))
+                                 (assoc :birthMonth (-> data-account :birthMonth Integer.))
+                                 (dissoc :createDigitalCard :risk :reputation)))
         try-id ::create-account-mongo
         try-type :store
         try-context '[mimi-id mongo-id mongo-account-data]
         ]
     (dtry
      (do
-       (s/validate MongoUser mongo-account-data)
-       (p/get-and-insert! user-store mongo-account-data)))))
+;;       (s/validate MongoUser mongo-account-data)
+
+       (let [user (p/get-and-insert! user-store mongo-account-data)
+             address-id (p/insert-address user-store mongo-id
+                                            (-> data-account
+                                                (select-keys  [:firstName :lastName :addressLine1 :addressLine2 :city :postalCode :country])
+                                                (assoc :type "Registration")
+                                                )
+                                            )
+             ]
+         user
+
+         )
+
+
+       ))))
 
 (defn check-account-mongo [data-account user-store]
   (log/debug "(check-account-mongo [data-account user-store])" " data-account " data-account)

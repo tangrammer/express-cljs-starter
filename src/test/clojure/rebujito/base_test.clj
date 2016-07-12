@@ -6,7 +6,7 @@
    [clojure.repl :refer (pst)]
    [bidi.bidi :as bidi]
    [rebujito.logging :as log-levels]
-   [rebujito.schemas :refer (MongoUser MimiUser)]
+   [rebujito.schemas :refer (MongoUser MimiUser MongoCreateAccountAddress)]
    [rebujito.protocols :as p]
    [com.stuartsierra.component :as component]
                [rebujito.system.dev-system :as dev]
@@ -70,7 +70,7 @@
    :postalCode "41003",
    :country "Spain"})
 
-(s/validate MongoUser (new-account-sb))
+(s/validate (merge MongoUser MongoCreateAccountAddress) (new-account-sb))
 
 (defn api-config []
   (-> (config :test) :monks :api))

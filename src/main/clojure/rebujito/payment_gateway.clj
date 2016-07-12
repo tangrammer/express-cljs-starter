@@ -101,7 +101,7 @@
          (ddtry d*
                 (do
                   (s/validate {(s/optional-key :firstName) String
-                               :lastName String
+                               (s/optional-key :lastName) String
                                :emailAddress String
                                :routingNumber String
                                :cvn String
