@@ -194,6 +194,7 @@
 
 (def optional-risk {(s/optional-key :risk) {(s/optional-key :platform) String
                                             (s/optional-key :reputation) {(s/optional-key :IPAddress) String
+                                                                          (s/optional-key :ipAddress) String
                                                                           (s/optional-key :deviceFingerprint ) String}}})
 
 
