@@ -177,7 +177,7 @@
                       )
 
                   (-> user-by-email
-                      (dissoc  :_id :password :birthMonth :birthDay :createdDate)
+                      (dissoc  :_id :password :birthMonth :birthDay :createdDate :firstName :lastName)
                       (update-in [:addresses 0] #(dissoc % :addressId))
                       )))))
 
