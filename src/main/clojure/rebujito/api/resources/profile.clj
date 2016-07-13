@@ -37,6 +37,7 @@
                                  {:user (merge
                                          {:verifiedEmail false}
                                          (select-keys user-data [:firstName :lastName :emailAddress :createdDate :birthDay :birthMonth :verifiedEmail])
+                                         (select-keys (-> user-data :addresses first) [:firstName :lastName])
 
                                          {:email (:emailAddress user-data)}
                                          {:exId nil

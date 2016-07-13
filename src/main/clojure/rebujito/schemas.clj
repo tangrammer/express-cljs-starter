@@ -48,6 +48,8 @@
 (def UserProfileData
   {:emailAddress String
    (s/optional-key  :verifiedEmail)  Boolean
+   (s/optional-key :firstName) String
+   (s/optional-key :lastName) String
    }
   )
 

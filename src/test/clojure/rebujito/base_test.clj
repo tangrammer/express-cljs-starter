@@ -70,7 +70,7 @@
    :postalCode "41003",
    :country "Spain"})
 
-(s/validate (merge MongoUser MongoCreateAccountAddress) (new-account-sb))
+(s/validate (merge MongoUser (dissoc MongoCreateAccountAddress :firstName :lastName)) (new-account-sb))
 
 (defn api-config []
   (-> (config :test) :monks :api))
