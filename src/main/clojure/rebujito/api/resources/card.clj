@@ -221,7 +221,7 @@
      :currency "ZAR"
      :localCurrency "ZAR"
      :totalAmount amount
-     :localTotalAmount 0
+     :localTotalAmount amount
      :points [{
        :pointType "Default"
        :promotionName "Default"
