@@ -31,7 +31,6 @@
    (assoc resource :methods {:post delete})))
 
 (defn api [mimi
-           token-store
            user-store
            authorizer
            crypto
@@ -276,7 +275,7 @@
 (s/defrecord ApiComponent [app-config mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store webhook-store]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (dynamic-resource (api mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store webhook-store) authenticator authorizer token-store)))
+    (assoc component :routes (dynamic-resource (api mimi user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store webhook-store) authenticator authorizer token-store)))
   (stop [component]
         component))
 
