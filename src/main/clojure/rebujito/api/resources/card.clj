@@ -255,7 +255,7 @@
    :currency "ZAR"
    :localCurrency "ZAR"
    :totalAmount (:amount mimi-tx)
-   :localTotalAmount 0
+   :localTotalAmount (:amount mimi-tx)
    :points nil
    :coupon nil
    :svcTransaction {
