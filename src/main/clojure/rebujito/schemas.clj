@@ -26,7 +26,7 @@
    :cardId String
    :status (s/enum "active" "disabled" "enabled")
    :autoReloadType (s/enum "Date" "Amount")
-   :day s/Num
+   (s/optional-key :day) s/Num
    :triggerAmount s/Num
    :amount s/Num
    :paymentMethodId String
