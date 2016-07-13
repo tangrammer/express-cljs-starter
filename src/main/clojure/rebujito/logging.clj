@@ -181,3 +181,22 @@ output-fn <opts-map>)`."
 
 ;(timbre/set-config! dev-config)
 ;(timbre/debug "Timbre configured!")
+
+
+(defn log-config [config-data]
+  (-> timbre-info-config
+      (assoc  :level :debug
+              :output-fn default-output-fn
+              :middleware [(fn [{:keys [level vargs ?ns-str ] :as data}]
+                             (let [should-log? (log? [?ns-str  level] config-data)]
+                                        ;                                                (println ?ns-str level should-log?)
+                               (when should-log?
+                                 data)))])
+
+      (update-in [:ns-blacklist]
+                 (fn [c]
+                   (conj c
+                         "org.mongodb.driver.cluster"
+                         "org.mongodb.driver.connection"
+                         "org.mongodb.driver.protocol.*"
+                         "io.netty.buffer.PoolThreadCache"))) ))
