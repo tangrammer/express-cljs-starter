@@ -31,9 +31,6 @@
    :amount s/Num
    :paymentMethodId String
    :active Boolean
-;  :disableUntilDate Date value that indicates when the status of the AutoReload profile will be set to active.
-; :stoppedDate Date value that indicates when the status of the AutoReload profile was set to disabled.
-
    })
 
 (def PaymentMethodRes
@@ -60,7 +57,6 @@
    (s/optional-key :birthDay) (s/conditional number? Integer :else String)
    (s/optional-key :birthMonth) (s/conditional number? Integer :else String)})
 
-
 (def MongoCreateAccountAddress
   {:firstName String
     :lastName String
@@ -79,7 +75,6 @@
 
     :birthDay (s/conditional number? Integer :else String)
     :birthMonth (s/conditional number? Integer :else String)
-
     :market String
 
     :countrySubdivision String
