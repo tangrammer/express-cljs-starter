@@ -124,9 +124,37 @@ You can configure `timbre` levels in the same way as you do with log4j in java
 TODO: bugsnag
 
 
-# authentication and authorisation
+# OAUTH: authentication and authorisation
 
-## :authorizer and :authenticator
+Security checks are implemented on top of [acccess_token query parameter](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L88-L92)
+
+Previous fn dispatch to [verify](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L128-L135) definition in each yada resource
+
+You can realise that the `verify` fn can return something or nothing. And depending [the result](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L99-L117) we return `401` in case we don't have a readable jwt result or `403` if this jwt result doesn't have enough roles for this resource
+
+
+Besides that, we can double (double because we have time expiration limit in the jwt token) check the live  of this token making an [extra query](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L132) to the token-store to know if the token keeps valid. This extra check is added in `rebujito.api` resource definition with the extra flag `:check-valid-token-store true` as you can see [here](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api.clj#L73) 
+
+
+The jwt token can only be generated using **:authorizer** component  `(p/grant (:authorizer system) {:your-data ""})`
+
+
+
+
+## :authenticator
+JWT Authenticator Impl
+
+```clojure
+(defprotocol Authenticator
+  (read-token [this token])
+  (generate-token [this data minutes]))
+
+```
+
+
+## :authorizer 
+
+Oauth impl
 
 ```clojure
 (defprotocol Authorizer
@@ -134,16 +162,20 @@ TODO: bugsnag
     [this data scopes]
     [this data scopes time-in-minutes])
   (invalidate! [this user-id])
-  (protected-data [this refresh-token])
-  )
-
-(defprotocol Authenticator
-  (read-token [this token])
-  (generate-token [this data minutes]))
-
+  (protected-data [this refresh-token]))
 ```
 
-TODO: 
+** :authorizer depends_on/uses both :authenticator and :token-store**
+
+
+Basically :authorizer functionality is used by following endpoints
+
++  `POST /oauth/token` impl in `rebujito.api.resources.oauth/token` 
++  `POST /account/create` impl in `rebujito.api.resources.account/create` 
++  `GET /me/logout` impl in `rebujito.api.resources.login/logout`
+
+
+and in all 
 
 
 # Components used directly from api/resources
