@@ -61,7 +61,7 @@
   (let [program  (first (filter #(= (:program %) STORED_VALUE_PROGRAM) (:programs balances)))]
               (or (:balance program) 0)))
 
-(defn- get-card-data [user-store user-id]
+(defn get-card-data [user-store user-id]
   (comment rebujito.store.mocks/card)
   (let [cards (:cards (p/find user-store user-id))]
     (when (>  (count cards) 1)
@@ -475,3 +475,18 @@
                                           ))}}}
 
     (merge (util/common-resource :me/cards))))
+
+(defn transfer-legacy [user-store mimi]
+  (-> {:methods
+        {:post {:parameters {:query {:access_token String}
+                             :body s/Any}
+                :response (fn [ctx]
+                            (log/error "......................." 123)
+                            (transfer_to* ctx
+                                          (:user-id (util/authenticated-data ctx))
+                                          user-store
+                                          mimi
+                                          (-> ctx :parameters :body :sourceCardNumber)
+                                          (-> ctx :parameters :body :sourceCardPin)
+                                          ))}}}
+     (merge (util/common-resource :me/cards))))

@@ -129,7 +129,39 @@
                                                  :cardPin "???"})
                                          :content-type :json}))]
        (is (= 200 status))))
+    )
+)
 
+;; TODO
+;; add a test to fail on add 2 cards
+
+(deftest test-transfer-legacy
+  (let [port (-> *system*  :webserver :port)
+        r (-> *system* :docsite-router :routes)
+        user-id "00000000000000000007a51e"]
+
+    ; TODO
+    ; add-card for user-id
+    ;
+
+    (testing "get-card-data"
+      (is (= {}
+             (card/get-card-data (-> *system* :user-store) user-id)))
     )
 
-)
+    ; (testing ::card/transfer-legacy
+    ;   (let [api-id ::card/transfer-legacy
+    ;         path (bidi/path-for r api-id)
+    ;         {:keys [status body]}
+    ;         (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+    ;                                     {:throw-exceptions false
+    ;                                      :body-encoding "UTF-8"
+    ;                                      :body (json/generate-string
+    ;                                             {:sourceCardNumber "80008000"
+    ;                                              :sourceCardPin "1234"
+    ;                                              :targetCardNumber "80008000"
+    ;                                              :goldCardActivation false})
+    ;                                      :content-type :json}))]
+    ;     (is (= 200 status))
+    ;     ))
+))

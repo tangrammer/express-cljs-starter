@@ -152,6 +152,10 @@
                                      (assoc :id ::card/transfer
                                             :oauth {:post scopes/user}))]
 
+                 ["/transfercard" (-> (card/transfer-legacy user-store mimi)
+                                      (assoc :id ::card/transfer-legacy
+                                             :oauth {:post scopes/user}))]
+
                  ["/" [
                        [
                         ["" :card-id] [
