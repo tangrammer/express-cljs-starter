@@ -4,7 +4,7 @@
    [rebujito.payment-gateway :refer (new-mock-payment-gateway)]
    [com.stuartsierra.component :as component :refer (using)]
    [rebujito.config :refer (config)]
-   [rebujito.store :refer (new-mock-store)]
+
    [rebujito.mimi.mocks :refer (new-mock-mimi)]
    [taoensso.timbre :as log]
    [rebujito.mailer :refer (new-mock-mailer)]
@@ -14,12 +14,7 @@
 (def mod-defs
   {:system-mods
    {
-    :+mock-store
-    (fn [config]
-      (log/warn "using :+mock-store profile in dev-system")
-      (fn [system-map]
-        (-> system-map
-            (assoc :store (new-mock-store)))))
+
     :+mock-mailer
     (fn [config]
       (log/warn "using :+mock-mailer profile in dev-system")
@@ -51,11 +46,7 @@
             (-> system-map
                 (assoc :payment-gateway (new-mock-payment-gateway (:payment-gateway config))))))}
    :dependency-mods
-   {:+mock-store (fn [config]
-                   (fn [dependency-map]
-;                     (println "using :mock-store  in dependency dev-system")
-                     dependency-map))
-    :+mock-mimi (fn [config]
+   {:+mock-mimi (fn [config]
                    (fn [dependency-map]
  ;                    (println "using :mock-mimi  in dependency dev-system")
                      dependency-map))
@@ -68,7 +59,7 @@
 
 (defn new-dev-system
   "Create a development system"
-  ([] (new-dev-system #{:+mock-mimi :+mock-store :+ephemeral-db :+mock-mailer}))
+  ([] (new-dev-system #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
   ([opts]  (new-dev-system opts (config :dev)))
   ([opts config]
    (component/system-using

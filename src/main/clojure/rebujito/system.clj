@@ -15,7 +15,6 @@
    [rebujito.security.auth :as oauth ]
    [rebujito.security.encrypt :as encrypt]
    [rebujito.security.jwt :as jwt ]
-   [rebujito.store :as store]
    [rebujito.webserver.handler :as wh]
    [taoensso.timbre :as log]
    )
@@ -50,7 +49,6 @@
 
                   :mailer (new-sendgrid-mailer (-> config :mailer))
 
-                  :store (store/new-prod-store)
 
                   :counter-store (new-counter-store (:auth config) false {:digital-card-number (read-string (format "96235709%05d" 0))})
 
@@ -96,8 +94,7 @@
    :user-store [:db-conn]
    :api-client-store [:db-conn]
    :authorizer [:authenticator :token-store]
-   :store []
-   :api [:store :mimi :token-store :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store :webhook-store]
+   :api [:mimi :token-store :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store :webhook-store]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

@@ -18,7 +18,7 @@
                     :applicationId String
                     (s/optional-key s/Keyword) s/Any}})
 
-(defn register [store ]
+(defn register []
  (-> {:methods
       {:post {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
@@ -30,7 +30,7 @@
 
      (merge (common-resource :devices))))
 
-(defn report [store]
+(defn report []
   (-> {:methods
        {:post {:parameters {:query {:access_token String
                                     (s/optional-key :select) String

@@ -68,7 +68,7 @@
              )
       (dissoc :nickName)))
 
-(defn method-detail [user-store store payment-gateway]
+(defn method-detail [user-store  payment-gateway]
   (->
    {:methods
     {:get {:parameters {:query {:access_token String (s/optional-key :select) String (s/optional-key :ignore) String}

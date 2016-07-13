@@ -30,7 +30,7 @@
  (let [delete (-> resource :methods :delete)]
    (assoc resource :methods {:post delete})))
 
-(defn api [store mimi
+(defn api [mimi
            token-store
            user-store
            authorizer
@@ -61,7 +61,7 @@
 
         [["/settings/" :platform "/" :version "/" :market] (yada/handler content/settings-json)]
 
-        ["/account/create" (-> (account/create store mimi user-store crypto mailer authorizer app-config)
+        ["/account/create" (-> (account/create  mimi user-store crypto mailer authorizer app-config)
                                (assoc :id ::account/create
                                       :oauth {:post scopes/application}))]
         ["/oauth/token" (->  (oauth/token-resource-owner token-store user-store authenticator authorizer crypto api-client-store app-config)
@@ -87,10 +87,10 @@
                                       (assoc :id ::login/change-email
                                              :oauth {:put scopes/change-email}
                                              :check-valid-token-store true))]
-        ["/devices/register" (-> (devices/register store)
+        ["/devices/register" (-> (devices/register )
                                  (assoc :id ::devices/register))]
         ["/me"[
-               ["" (-> (account/me store mimi user-store app-config)
+               ["" (-> (account/me mimi user-store app-config)
                        (assoc :id ::account/me
                               :oauth {:get scopes/user}))]
                ["/addresses" [
@@ -178,10 +178,10 @@
                ]
 
                ["/devices" [
-                            ["/register" (-> (devices/register store )
+                            ["/register" (-> (devices/register  )
                                              (assoc :id ::devices/me/register
                                                     :oauth {:post scopes/user}))]
-                            ["/reporting/report" (-> (devices/report store)
+                            ["/reporting/report" (-> (devices/report )
                                                      (assoc :id ::devices/me/report
                                                             :oauth {:post scopes/user}))]
                ]]
@@ -190,12 +190,12 @@
                                            (assoc :id ::payment/methods
                                                   :oauth {:get  scopes/user
                                                           :post scopes/user}))]
-                                   [["/" :payment-method-id] [["" (-> (payment/method-detail user-store store payment-gateway)
+                                   [["/" :payment-method-id] [["" (-> (payment/method-detail user-store payment-gateway)
                                                                       (assoc :id ::payment/method-detail
                                                                              :oauth {:delete scopes/user
                                                                                      :get scopes/user
                                                                                      :put scopes/user}))]
-                                                               ["/delete" (-> (payment/method-detail user-store store payment-gateway)
+                                                               ["/delete" (-> (payment/method-detail user-store  payment-gateway)
                                                                               (rewrite-methods)
                                                                               (assoc :id ::payment/delete-method-detail
                                                                                      :oauth {:post scopes/user}))]]
@@ -273,10 +273,10 @@
                        data)))
       %) d))
 
-(s/defrecord ApiComponent [app-config store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store webhook-store]
+(s/defrecord ApiComponent [app-config mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store webhook-store]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (dynamic-resource (api store mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store webhook-store) authenticator authorizer token-store)))
+    (assoc component :routes (dynamic-resource (api mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store webhook-store) authenticator authorizer token-store)))
   (stop [component]
         component))
 

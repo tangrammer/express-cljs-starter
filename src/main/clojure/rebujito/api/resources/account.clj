@@ -107,7 +107,7 @@
                                 :body  "Account Management Service returns error that email address is already taken"
                                 }))))
 
-(defn create [store mimi user-store crypto mailer authorizer app-config]
+(defn create [ mimi user-store crypto mailer authorizer app-config]
   (-> {:methods
        {:post {:parameters {:query {:access_token String
                                     :market String
@@ -152,7 +152,7 @@
                              ))}}}
       (merge (util/common-resource :account))))
 
-(defn me [store mimi user-store app-config]
+(defn me [mimi user-store app-config]
   (-> {:methods
        {:get {:parameters {:query {:access_token String
                                    (s/optional-key :select) String
