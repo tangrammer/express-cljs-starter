@@ -44,11 +44,9 @@
 
 (def UserProfileData
   {:emailAddress String
-   (s/optional-key  :verifiedEmail)  Boolean
-   (s/optional-key :firstName) String
-   (s/optional-key :lastName) String
-   }
-  )
+   :firstName String
+   :lastName String
+   (s/optional-key  :verifiedEmail)  Boolean })
 
 (def UpdateMongoUser
   {(s/optional-key :emailAddress) (s/maybe String)
