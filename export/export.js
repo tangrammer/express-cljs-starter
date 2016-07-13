@@ -40,6 +40,10 @@ sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
     idx++
     console.log(`starting ${accountNumber} ${idx}/${accountNumbers.length}`)
     return exportCustomer(accountNumber)
+    .catch(e => {
+      console.error(`culprit: ${accountNumber}`)
+      throw e
+    })
   }, {concurrency: 10})
 })
 .catch(err => console.error(err.stack))

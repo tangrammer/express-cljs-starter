@@ -26,14 +26,11 @@
    :cardId String
    :status (s/enum "active" "disabled" "enabled")
    :autoReloadType (s/enum "Date" "Amount")
-   :day s/Num
+   (s/optional-key :day) s/Num
    :triggerAmount s/Num
    :amount s/Num
    :paymentMethodId String
    :active Boolean
-;  :disableUntilDate Date value that indicates when the status of the AutoReload profile will be set to active.
-; :stoppedDate Date value that indicates when the status of the AutoReload profile was set to disabled.
-
    })
 
 (def PaymentMethodRes
@@ -47,9 +44,9 @@
 
 (def UserProfileData
   {:emailAddress String
-   (s/optional-key  :verifiedEmail)  Boolean
-   }
-  )
+   :firstName String
+   :lastName String
+   (s/optional-key  :verifiedEmail)  Boolean })
 
 (def UpdateMongoUser
   {(s/optional-key :emailAddress) (s/maybe String)
@@ -57,7 +54,6 @@
    (s/optional-key  :lastName) (s/maybe String)
    (s/optional-key :birthDay) (s/conditional number? Integer :else String)
    (s/optional-key :birthMonth) (s/conditional number? Integer :else String)})
-
 
 (def MongoCreateAccountAddress
   {:firstName String
@@ -77,7 +73,6 @@
 
     :birthDay (s/conditional number? Integer :else String)
     :birthMonth (s/conditional number? Integer :else String)
-
     :market String
 
     :countrySubdivision String

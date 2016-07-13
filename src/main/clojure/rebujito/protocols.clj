@@ -2,7 +2,6 @@
   (:refer-clojure :exclude (find send deref)))
 
 (defprotocol PaymentGateway
-;  (ping [this data])
   (create-card-token [this data])
   (delete-card-token [this data])
   (execute-payment [this data]))
@@ -60,7 +59,6 @@
 
 (defprotocol WebhookStore
   (webhook-uuid [this uuid])
-  (get-current [this webhook-uuid])
   (change-state [this webhook-uuid state])
   (current [this webhook-uuid]))
 

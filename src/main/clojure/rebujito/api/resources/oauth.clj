@@ -117,7 +117,7 @@
                ]
 
               (assert c)
-    (if (sec/valid? protected-data)
+    (if (sec/valid? protected-data refresh-token token-store)
       (if (:user-id protected-data)
         (let [user (p/find user-store (:user-id protected-data))]
           (>201 ctx  (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})

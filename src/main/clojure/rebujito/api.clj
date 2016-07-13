@@ -64,7 +64,7 @@
         ["/account/create" (-> (account/create  mimi user-store crypto mailer authorizer app-config)
                                (assoc :id ::account/create
                                       :oauth {:post scopes/application}))]
-        ["/oauth/token" (->  (oauth/token-resource-owner token-store user-store authenticator authorizer crypto api-client-store app-config)
+        ["/oauth/token" (->  (oauth/token-resource-owner  token-store user-store authenticator authorizer crypto api-client-store app-config)
                              (assoc :id ::oauth/token-resource-owner))]
 
         ["/login/verify-email" (-> (login/verify-email authorizer user-store)
@@ -83,7 +83,7 @@
                                               :oauth {:put scopes/reset-password}
                                               :check-valid-token-store true))]
 
-        ["/login/change-email" (-> (login/change-email authorizer authenticator user-store token-store)
+        ["/login/change-email" (-> (login/change-email authorizer authenticator user-store )
                                       (assoc :id ::login/change-email
                                              :oauth {:put scopes/change-email}
                                              :check-valid-token-store true))]
