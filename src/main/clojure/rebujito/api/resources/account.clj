@@ -72,6 +72,8 @@
                                  (assoc :verifiedEmail false)
                                  (assoc :birthDay (-> data-account :birthDay Integer.))
                                  (assoc :birthMonth (-> data-account :birthMonth Integer.))
+                                 (assoc :firstName (-> data-account :firstName))
+                                 (assoc :lastName (-> data-account :lastName))
                                  (dissoc :createDigitalCard :risk :reputation)))
         try-id ::create-account-mongo
         try-type :store
