@@ -54,11 +54,11 @@
 
 (defmulti get-token
   "OAuth Token methods: dispatch on grant_type"
-  (fn [ctx  user-store authenticator authorizer crypto api-client-store app-config]
+  (fn [ctx token-store user-store authenticator authorizer crypto api-client-store app-config]
     (keyword (-> ctx :parameters :body :grant_type))))
 
 (defmethod get-token :client_credentials ; docs -> http://bit.ly/1sLcJZO
-  [ctx  user-store authenticator authorizer crypto api-client-store app-config]
+  [ctx token-store user-store authenticator authorizer crypto api-client-store app-config]
   (d/let-flow [api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
                                    (get-in ctx [:parameters :body :client_secret]))
@@ -74,7 +74,7 @@
 (defn- customer-admin? [ctx app-config]
   (>= (.indexOf (get-in ctx [:parameters :body :username]) (:customer-admin app-config)) 0))
 (defmethod get-token :password ; docs -> http://bit.ly/1sLd3YB
-  [ctx  user-store authenticator authorizer crypto api-client-store app-config]
+  [ctx token-store user-store authenticator authorizer crypto api-client-store app-config]
   (d/let-flow [
                api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
@@ -102,7 +102,7 @@
 (defmethod get-token :refresh_token ; docs -> http://bit.ly/1sLcWfw
   ; TODO verify refresh token #39
   ; https://github.com/naartjie/rebujito/issues/39
-  [ctx  user-store authenticator authorizer crypto api-client-store app-config]
+  [ctx token-store user-store authenticator authorizer crypto api-client-store app-config]
   (d/let-flow [
                api-client (p/login api-client-store
                                    (get-in ctx [:parameters :body :client_id])
@@ -117,7 +117,7 @@
                ]
 
               (assert c)
-    (if (sec/valid? protected-data)
+    (if (sec/valid? protected-data refresh-token token-store)
       (if (:user-id protected-data)
         (let [user (p/find user-store (:user-id protected-data))]
           (>201 ctx  (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})
@@ -131,7 +131,7 @@
   (let [map (clojure.walk/keywordize-keys map)]
     (= ((keyword key) map) value)))
 
-(defn token-resource-owner [ user-store authenticator authorizer crypto api-client-store app-config]
+(defn token-resource-owner [token-store user-store authenticator authorizer crypto api-client-store app-config]
   (-> {:methods
        {:post {:parameters {:query {:sig String
                                     (s/optional-key :platform) String}
@@ -148,6 +148,6 @@
 
                :response (fn [ctx]
                            (dcatch ctx
-                                   (get-token ctx  user-store authenticator authorizer crypto api-client-store app-config)))}}}
+                                   (get-token ctx token-store user-store authenticator authorizer crypto api-client-store app-config)))}}}
 
       (merge (common-resource :oauth))))

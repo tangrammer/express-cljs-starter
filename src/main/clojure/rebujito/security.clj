@@ -9,16 +9,18 @@
 (defn extract-data [user]
   (select-keys user [:_id :firstName :lastName :emailAddress :verifiedEmail]))
 
-(defn valid? [protected-data]
+(some? (:a {:a false}))
+
+(defn valid? [protected-data token token-store]
   (log/warn protected-data)
+
+  ;; this only works for token not for refresh-tokens
   #_(s/validate (assoc auth/OauthValidData
                        s/Any s/Any) protected-data)
 
-  (:valid protected-data)
-
-  ;; this only works for token not for refresh-tokens
-  ;; TODO review the way that we invalidate tokens
-  true)
+  (if (some? (:valid protected-data))
+    (:valid protected-data)
+    (:valid (first (p/find token-store {:refresh-token token})))))
 
 (defn jwt [access-token authenticator]
   (let [refresh-token (:refresh-token (p/read-token authenticator access-token))]
