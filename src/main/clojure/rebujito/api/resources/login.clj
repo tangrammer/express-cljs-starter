@@ -34,7 +34,7 @@
       user
       nil)))
 
-(defn change-email [authorizer authenticator user-store token-store]
+(defn change-email [authorizer authenticator user-store ]
   (-> {:methods
        {:put {:parameters {:query {:access_token String}}
               :response (fn [ctx]
