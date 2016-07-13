@@ -126,6 +126,11 @@ TODO: bugsnag
 
 # OAUTH: authentication and authorisation
 
+Security is applied in `rebujito.api` specifying in a [declarative way](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api.clj#L103-L105) the `method` and `roles` to check.
+
+Available roles are specified in [`rebujito.scopes`](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/scopes.clj)
+
+
 Security checks are implemented on top of [acccess_token query parameter](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L88-L92)
 
 Previous fn dispatch to [verify](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L128-L135) definition in each yada resource
@@ -136,21 +141,14 @@ You can realise that the `verify` fn can return something or nothing. And depend
 Besides that, we can double (double because we have time expiration limit in the jwt token) check the live  of this token making an [extra query](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L132) to the token-store to know if the token keeps valid. This extra check is added in `rebujito.api` resource definition with the extra flag `:check-valid-token-store true` as you can see [here](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api.clj#L73) 
 
 
-The jwt token can only be generated using **:authorizer** component  `(p/grant (:authorizer system) {:your-data ""})`
+The jwt token can only be generated using **:authorizer** component.    
+
+Example:  `(p/grant (:authorizer system) {:your-data ""} #{scopes/verify-email scopes/application})`
 
 
 
 
-## :authenticator
-JWT Authenticator Impl
-
-```clojure
-(defprotocol Authenticator
-  (read-token [this token])
-  (generate-token [this data minutes]))
-
-```
-
+# Components used directly from api/resources
 
 ## :authorizer 
 
@@ -175,10 +173,16 @@ Basically :authorizer functionality is used by following endpoints
 +  `GET /me/logout` impl in `rebujito.api.resources.login/logout`
 
 
-and in all 
+## :authenticator
+JWT Authenticator Impl
 
+```clojure
+(defprotocol Authenticator
+  (read-token [this token])
+  (generate-token [this data minutes]))
 
-# Components used directly from api/resources
+```
+
 
 ## :mimi
 
