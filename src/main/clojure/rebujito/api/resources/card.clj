@@ -481,7 +481,6 @@
         {:post {:parameters {:query {:access_token String}
                              :body s/Any}
                 :response (fn [ctx]
-                            (log/error "......................." 123)
                             (transfer_to* ctx
                                           (:user-id (util/authenticated-data ctx))
                                           user-store
