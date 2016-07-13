@@ -60,7 +60,6 @@
 
 (defprotocol WebhookStore
   (webhook-uuid [this uuid])
-  (get-current [this webhook-uuid])
   (change-state [this webhook-uuid state])
   (current [this webhook-uuid]))
 
