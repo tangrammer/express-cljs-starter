@@ -65,8 +65,10 @@
       (log/info "create customer")
       (prn customer-data)
       (if (or validation-errors (not valid-birthday))
-        (.json (.status res 400)
-           (clj->js (assoc invalid-payload :details (or validation-errors validation-birthday))))
+        (do
+          (log/warn "validation errors" (or validation-errors validation-birthday))
+          (.json (.status res 400)
+             (clj->js (assoc invalid-payload :details (or validation-errors validation-birthday)))))
         (let [customer-data-js (clj->js customer-data)]
           (log/info "create-micros-customer" customer-data-js)
           (create-micros-customer customer-data-js
