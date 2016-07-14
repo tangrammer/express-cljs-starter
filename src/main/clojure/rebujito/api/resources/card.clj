@@ -209,7 +209,7 @@
     "44921" "Head Office - Test Store"
     ""))
 
-(def points-per-star 5)
+(def rand-per-stars 2)
 
 (defn- mimi-earn-to-rebujito-tx [mimi-tx]
   (let [amount (-> mimi-tx :amount Math/abs)]
@@ -225,7 +225,7 @@
      :points [{
        :pointType "Default"
        :promotionName "Default"
-       :pointsEarned (-> amount (/ points-per-star) double Math/round)
+       :pointsEarned (-> amount (/ rand-per-stars) double Math/round)
        :localAmount 0.0,
        :localCurrency 0.0,
      }]
