@@ -11,4 +11,6 @@
 
 (def info (partial logit stdout "info:"))
 
+(def warn (partial logit stdout "warn:"))
+
 (def error (partial stderr "error:"))
