@@ -66,7 +66,7 @@
       (prn customer-data)
       (if (or validation-errors (not valid-birthday))
         (do
-          (log/warn "validation errors" (or validation-errors validation-birthday))
+          (log/warn "validation errors" (clj->js (or validation-errors validation-birthday)))
           (.json (.status res 400)
              (clj->js (assoc invalid-payload :details (or validation-errors validation-birthday)))))
         (let [customer-data-js (clj->js customer-data)]
@@ -90,7 +90,10 @@
       (log/info "link card")
       (prn payload)
       (if validation-errors
-        (.json (.status res 400) (clj->js (assoc invalid-payload :details validation-errors)))
+        (do
+          (log/warn "validation errors" (clj->js validation-errors))
+          (.status res 400)
+          (.json res (clj->js (assoc invalid-payload :details validation-errors))))
         (let [p1 (.ensureAccountExists starbucks-micros card-number)]
           (log/info "creating accounts for" card-number)
 
