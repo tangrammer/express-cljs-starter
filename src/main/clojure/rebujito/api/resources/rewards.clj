@@ -64,11 +64,12 @@
   :expirationDate (or (:validUntilDate mimi-coupon) "2999-12-31T00:00:00.0000000Z")
   })
 
-
+(defn empty-str-as-nil [str]
+  (if (empty? str) nil str))
 
 (defn translate-mimi-rewards [rewards-response]
   (let [tier-name (util/get-tier-name rewards-response)
-        tier-date (or (-> rewards-response :tier :date ) (t/today))
+        tier-date (or (-> rewards-response :tier :date empty-str-as-nil) (t/today))
         points-balance (or (-> rewards-response :tier :balance) 0)
         coupons (or (-> rewards-response :coupons) [])]
 
