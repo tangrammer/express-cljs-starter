@@ -16,7 +16,7 @@
         api-id ::content/terms-json]
 
     (testing "path media monks send us"
-      (let [path (bidi/path-for r api-id :market "FR" :whatever "3rd%20Party%20Mobile%20Content" :mediamonks-weirdness "iOS-Account%2FTerms%20of%20Use")]
+      (let [path (bidi/path-for r api-id :market "FR" :path-part1 "3rd%20Party%20Mobile%20Content" :path-catch-incorrect-encoding "iOS-Account%2FTerms%20of%20Use")]
         (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s" port path *app-access-token*)
                                   {:throw-exceptions false
                                    :body-encoding "UTF-8"
@@ -24,7 +24,7 @@
                        :status)))))
 
      (testing "a more sane path"
-       (let [path (bidi/path-for r api-id :market "FR" :whatever "3rd%20Party%20Mobile%20Content" :mediamonks-weirdness "iOS-Account/Terms%20of%20Use")]
+       (let [path (bidi/path-for r api-id :market "FR" :path-part1 "3rd%20Party%20Mobile%20Content" :path-catch-incorrect-encoding "iOS-Account/Terms%20of%20Use")]
          (is (= 200 (-> @(http/get (format "http://localhost:%s%s?access_token=%s" port path *app-access-token*)
                                    {:throw-exceptions false
                                     :body-encoding "UTF-8"

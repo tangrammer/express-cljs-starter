@@ -54,7 +54,7 @@
 
         [["/content/sitecore/content/"
             ; FR/3rd Party Mobile Content/iOS-Account/Terms of Use
-            :market "/" [#".+" :whatever] "/" [#"iOS-Account(%2F|\/)Terms(%20)of(%20)Use" :mediamonks-weirdness]]
+            :market "/" [#".+" :path-part1] "/" [#"iOS-Account(%2F|\/)Terms(%20)of(%20)Use" :path-catch-incorrect-encoding]]
          (-> (yada/handler content/terms-json)
              (assoc :id ::content/terms-json)
              )]
