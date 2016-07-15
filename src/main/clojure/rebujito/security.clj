@@ -22,7 +22,7 @@
     (:valid protected-data)
     (:valid (first (p/find token-store {:refresh-token token})))))
 
-(defn jwt [access-token authenticator]
+(defn jwt [access-token authenticator expires-in-minutes]
   (let [refresh-token (:refresh-token (p/read-token authenticator access-token))]
     {:extended nil
      :access_token access-token
@@ -30,5 +30,5 @@
      :return_type "json"
      :state nil
      :token_type "bearer"
-     :expires_in 3600
+     :expires_in (* 60 expires-in-minutes)
      :uri nil}))

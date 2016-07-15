@@ -47,6 +47,7 @@
                       OauthValidData
                       {:refresh-token String}))
 
+(def one-day-in-minutes 1440)
 
 (defrecord OauthAuthorizer [authenticator token-store]
   component/Lifecycle
@@ -55,10 +56,10 @@
   (stop [this] this)
   p/Authorizer
   (grant [this data scopes]
-    (p/grant this data scopes 1440))
+    (p/grant this data scopes one-day-in-minutes))
   (grant [_ data scopes time-in-minutes]
     (let [data (-> data
-                   (assoc :refresh-token (p/generate-token authenticator {} time-in-minutes) ;; we only need a random uuid with a time limit to verify origin and expiration time
+                   (assoc :refresh-token (p/generate-token authenticator {} 0) ;; we only need a random uuid with a time limit to verify origin and expiration time
                           :scope scopes
                           :valid true)
                    (?> (:_id data)
@@ -74,8 +75,7 @@
                            )
                          (p/get-and-insert! token-store data))
 
-          access-token (p/generate-token authenticator token-stored 60)]
-;      (log/info "MONGO_TOKEN >" mongo-token)
+          access-token (p/generate-token authenticator token-stored time-in-minutes)]
 
       access-token )
     )

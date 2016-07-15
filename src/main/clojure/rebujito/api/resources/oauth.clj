@@ -16,6 +16,8 @@
    [buddy.core.codecs :refer (bytes->hex)]
    ))
 
+(def one-day-in-minutes 1440)
+
 (def schema {:token-refresh-token  (s/schema-with-name {:grant_type String
                                                         :refresh_token String
                                                         :client_id String
@@ -67,8 +69,8 @@
                    (get-in ctx [:parameters :body :client_id])
                    (get-in ctx [:parameters :body :client_secret]))]
               (log/debug "inside (get-token [ ....] :client_credentials) api-client " api-client " deferred-check " c)
-              (>201 ctx (-> (p/grant authorizer {} #{scopes/application} 0)
-                            (sec/jwt authenticator))))
+              (>201 ctx (-> (p/grant authorizer {} #{scopes/application} one-day-in-minutes)
+                            (sec/jwt authenticator one-day-in-minutes))))
 )
 
 (defn- customer-admin? [ctx app-config]
@@ -92,8 +94,8 @@
                 (>201 ctx (-> (p/grant authorizer (sec/extract-data user) (let [scopes* #{scopes/application scopes/user}]
                                                                             (if (customer-admin? ctx app-config)
                                                                               (conj  scopes* scopes/customer-admin)
-                                                                              scopes*)))
-                              (sec/jwt authenticator)))
+                                                                              scopes*)) one-day-in-minutes)
+                              (sec/jwt authenticator one-day-in-minutes)))
 
                 (>400 ctx {:error "invalid_grant"
                            :description "Resource owner credentials could not be validated."})
@@ -120,10 +122,10 @@
     (if (sec/valid? protected-data refresh-token token-store)
       (if (:user-id protected-data)
         (let [user (p/find user-store (:user-id protected-data))]
-          (>201 ctx  (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user})
-                         (sec/jwt authenticator))))
-        (>201 ctx (-> (p/grant authorizer {} #{scopes/application} 0)
-                            (sec/jwt authenticator))))
+          (>201 ctx  (-> (p/grant authorizer (sec/extract-data user) #{scopes/application scopes/user} one-day-in-minutes)
+                         (sec/jwt authenticator one-day-in-minutes))))
+        (>201 ctx (-> (p/grant authorizer {} #{scopes/application} one-day-in-minutes)
+                            (sec/jwt authenticator one-day-in-minutes))))
       (>400 ctx {:error 400
                  :message "token expired!"}))))
 
