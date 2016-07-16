@@ -440,8 +440,8 @@
 
    (merge (util/common-resource :me/cards))))
 
-(defn transfer_to* [ctx user-id user-store mimi to-card-number to-pin]
-  (log/info "transfer_to* [_ _ _ _ to-card-number to-pin]" to-card-number to-pin)
+(defn transfer-to* [ctx user-id user-store mimi to-card-number to-pin]
+  (log/info "transfer-to* [_ _ _ _ to-card-number to-pin]" to-card-number to-pin)
   (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
                _ (log/debug "card-data::" card-data)
                from (:cardNumber card-data)
@@ -466,7 +466,7 @@
         {:post {:parameters {:query {:access_token String}
                              :body (-> schema :transfer-to :post) }
                 :response (fn [ctx]
-                            (transfer_to* ctx
+                            (transfer-to* ctx
                                           (:user-id (util/authenticated-data ctx))
                                           user-store
                                           mimi
@@ -481,7 +481,7 @@
         {:post {:parameters {:query {:access_token String}
                              :body s/Any}
                 :response (fn [ctx]
-                            (transfer_to* ctx
+                            (transfer-to* ctx
                                           (:user-id (util/authenticated-data ctx))
                                           user-store
                                           mimi

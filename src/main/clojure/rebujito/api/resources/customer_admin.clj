@@ -99,7 +99,7 @@
                                      (let [user-id (-> ctx :parameters :path :user-id)
                                            card (card/register-digital-card* counter-store user-store
                                                                              mimi user-id nil)]
-                                       (card/transfer_to* ctx
+                                       (card/transfer-to* ctx
                                                           user-id
                                                           user-store
                                                           mimi
@@ -132,7 +132,7 @@
                            (let [try-id ::transfer-to
                                  try-type :api]
                              (dcatch ctx
-                                     (card/transfer_to* ctx
+                                     (card/transfer-to* ctx
                                                         (-> ctx :parameters :path :user-id)
                                                         user-store
                                                         mimi
