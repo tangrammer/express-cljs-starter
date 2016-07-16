@@ -46,6 +46,7 @@ sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
     })
   }, {concurrency: 10})
 })
+.then(() => console.log('export finished'))
 .catch(err => console.error(err.stack))
 
 function exportCustomer(accountNumber) {
