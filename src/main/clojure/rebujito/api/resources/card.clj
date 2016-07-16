@@ -147,7 +147,7 @@
                                        user-id (:user-id auth-data)
                                        card-id @(d/chain
                                                  (p/register-card mimi {:cardNumber card-number
-                                                                                 :customerId (id>mimi-id user-id)})
+                                                                        :customerId (id>mimi-id user-id)})
                                                  (fn [_]
                                                    (p/increment-balance! mimi card-number 50 :loyalty))
                                                  (fn [_]
