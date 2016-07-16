@@ -146,7 +146,7 @@
                                        auth-data (util/authenticated-data ctx)
                                        user-id (:user-id auth-data)
                                        card-id @(d/chain
-                                                 (p/register-physical-card mimi {:cardNumber card-number
+                                                 (p/register-card mimi {:cardNumber card-number
                                                                                  :customerId (id>mimi-id user-id)})
                                                  (fn [_]
                                                    (p/increment-balance! mimi card-number 50 :loyalty))
@@ -169,7 +169,7 @@
    (blank-card-data)
    @(d/let-flow [card-number (str (p/increment! counter-store :digital-card-number))]
                                                            (d/chain
-                                                            (p/register-physical-card mimi {:cardNumber card-number
+                                                            (p/register-card mimi {:cardNumber card-number
                                                                                             :customerId  (id>mimi-id user-id)})
                                                             (fn [_]
                                                               (when points?

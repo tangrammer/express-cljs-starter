@@ -169,18 +169,18 @@
 
 
       ; TODO rename to link-card
-  (register-physical-card [this data]
+  (register-card [this data]
     (log/info (format "%s/account/card" base-url))
     (log/info data)
     (let [d* (d/deferred)]
       (d/future
         (let [url ((:link-card urls) base-url)
               try-type :mimi
-              try-id ::register-physical-card
+              try-id ::register-card
               try-context '[data url]]
           (ddtry d*
                 (let [{:keys [status body]} (call-mimi token url data)]
-                  (log/info "mimi register-physical-card" status body)
+                  (log/info "mimi register-card" status body)
                   (-> [:success]
                       (conj :prod-mimi))))))
       d*))

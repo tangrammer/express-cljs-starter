@@ -97,8 +97,8 @@
            :meta {:context {:data data}}})
     true)
 
-  (register-physical-card [this data]
-    (log/info "(register-physical-card [this data])" " to url: "(format "%s/account/card" base-url))
+  (register-card [this data]
+    (log/info "(register-card [this data])" " to url: "(format "%s/account/card" base-url))
     (log/debug data)
 
     (let [d* (d/deferred)]

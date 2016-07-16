@@ -5,7 +5,7 @@ Backend API (written in clojure) ([wiki](https://github.com/naartjie/rebujito/wi
 
 ## config files
 + `src/main/resources/config.edn`
- 
+
 Environment values automatically switched based on [aero](https://github.com/juxt/aero)
 
 
@@ -14,7 +14,7 @@ Environment values automatically switched based on [aero](https://github.com/jux
 ## Webserver
 [aleph](https://github.com/ztellman/aleph) => [netty](https://github.com/netty/netty)
 
-## Database 
+## Database
 Mongo
 
 ## System
@@ -25,7 +25,7 @@ Production system components and their dependencies are defined in [src/main/clo
 ## Async
 The asynchronous communication is solved most of the time based in [ztellman/manifold](https://github.com/ztellman/manifold) specifically with its [deferred](https://github.com/ztellman/manifold/blob/master/docs/deferred.md) functionality
 
-TODO: 
+TODO:
 
 
 ### development flow
@@ -36,7 +36,7 @@ Following previous link documentation and to get into development you need to se
 ```
 lein repl
 user> (dev)
-dev> 
+dev>
 ```
 
 Then, to reload and start the system just type `(reset)`
@@ -47,7 +47,7 @@ dev> (reset)
 
 Once that you get `(reset)` with no errors, you can use your system directly from your repl    
 
-Example using the system: 
+Example using the system:
 
 ```
 dev> (:keys system)
@@ -77,7 +77,7 @@ dev> (open-app)
 ### Development system configuration: mock vs prod components
 You can change your system configuration in development with `(set-env! & modifiers)` fn
 
-Currently there are the following [modifiers](https://github.com/naartjie/rebujito/blob/3ce3489da60e1db8be87dc9fe3c939dc02af1068/src/main/clojure/rebujito/system/dev_system.clj#L15-L47):` :+mock-mailer :+ephemeral-db :+mock-mimi :+mock-payment-gateway` 
+Currently there are the following [modifiers](https://github.com/naartjie/rebujito/blob/3ce3489da60e1db8be87dc9fe3c939dc02af1068/src/main/clojure/rebujito/system/dev_system.clj#L15-L47):` :+mock-mailer :+ephemeral-db :+mock-mimi :+mock-payment-gateway`
 
 Example of using mock-mailer   `(set-env! :+mock-mailer)`  & `(reset)`
 
@@ -99,8 +99,8 @@ To remove current env modifiers just type  `(set-env!)`  & `(reset)`
 ```
  dev> (set-env!)
  dev> (reset)
- => :ready 
-``` 
+ => :ready
+```
 
 
 # Logging
@@ -108,7 +108,7 @@ To remove current env modifiers just type  `(set-env!)`  & `(reset)`
 
 You can configure `timbre` levels in the same way as you do with log4j in java
 
-```clojure 
+```clojure
 (taoensso.timbre/set-config!
  (rebujito.logging/log-config [["rebujito.*" :warn]
                                ["rebujito.security.*" :warn]
@@ -138,7 +138,7 @@ Previous fn dispatch to [verify](https://github.com/naartjie/rebujito/blob/7edde
 You can realise that the `verify` fn can return something or nothing. And depending [the result](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L99-L117) we return `401` in case we don't have a readable jwt result or `403` if this jwt result doesn't have enough roles for this resource
 
 
-Besides that, we can double (double because we have time expiration limit in the jwt token) check the live  of this token making an [extra query](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L132) to the token-store to know if the token keeps valid. This extra check is added in `rebujito.api` resource definition with the extra flag `:check-valid-token-store true` as you can see [here](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api.clj#L73) 
+Besides that, we can double (double because we have time expiration limit in the jwt token) check the live  of this token making an [extra query](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api/util.clj#L132) to the token-store to know if the token keeps valid. This extra check is added in `rebujito.api` resource definition with the extra flag `:check-valid-token-store true` as you can see [here](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/api.clj#L73)
 
 
 The jwt token can only be generated using **:authorizer** component.    
@@ -150,7 +150,7 @@ Example:  `(p/grant (:authorizer system) {:your-data ""} #{scopes/verify-email s
 
 # Components used directly from api/resources
 
-## :authorizer 
+## :authorizer
 
 Oauth impl
 
@@ -168,8 +168,8 @@ Oauth impl
 
 Basically :authorizer functionality is used by following endpoints
 
-+  `POST /oauth/token` impl in `rebujito.api.resources.oauth/token` 
-+  `POST /account/create` impl in `rebujito.api.resources.account/create` 
++  `POST /oauth/token` impl in `rebujito.api.resources.oauth/token`
++  `POST /account/create` impl in `rebujito.api.resources.account/create`
 +  `GET /me/logout` impl in `rebujito.api.resources.login/logout`
 
 
@@ -186,13 +186,13 @@ JWT Authenticator Impl
 
 ## :mimi
 
-This component wraps the http calls to the nodejs micro services 
+This component wraps the http calls to the nodejs micro services
 
 ```clojure
 (defprotocol Mimi
   (create-account [this data])
   (update-account [this data])
-  (register-physical-card [this data])
+  (register-card [this data])
   (increment-balance! [this card-number amount type])
   (balances [this data])
   (get-history [this card-number])
@@ -203,7 +203,7 @@ This component wraps the http calls to the nodejs micro services
 
 ## :payment-gateway
 
-This component wraps the http calls to the webservices payment-gateway service 
+This component wraps the http calls to the webservices payment-gateway service
 
 
 ```clojure
@@ -214,7 +214,7 @@ This component wraps the http calls to the webservices payment-gateway service
 ```
 
 ## :crypto
-new-sha256-encrypter that implememts 
+new-sha256-encrypter that implememts
 
 ```clojure
 (defprotocol Encrypter
@@ -230,7 +230,7 @@ A sendgrid impl mailer that accomplish following protocol
   (send [this data]))
 ```
 
-Global config for this component is inside `config.edn` 
+Global config for this component is inside `config.edn`
 ```
 :mailer {:from "info@swarmloyalty.co.za"
           :api {:url "https://api.sendgrid.com/v3/mail/send"
@@ -241,7 +241,7 @@ An schema validation for each data mail is included [too](https://github.com/naa
 
 Also there's a [mock](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/mailer.clj#L62-L72) version of this MailService protocol used in tests or in dev `(set-env! :+mock-mailer)`
 
-Notice that there is an optional `hidden` [field](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/mailer.clj#L18) for testing purposes (i.e verifing token-links ). 
+Notice that there is an optional `hidden` [field](https://github.com/naartjie/rebujito/blob/7edde51b929b54faa7222877de01924dfb91aeec/src/main/clojure/rebujito/mailer.clj#L18) for testing purposes (i.e verifing token-links ).
 
 ## :user-store
 This mongo storage implements besides basic protocols/MutableStorate following ones:
@@ -281,13 +281,13 @@ This mongo storage implements besides basic protocols/MutableStorate following o
 
 Just used to manage "api-keys" mongo collection and following protocol (besides protocols/MutableStorate)
 
-```clojure 
+```clojure
 (defprotocol ApiClient
   (login [this id pw]))
 ```
 
 ## :webhook-store
-This mongo storage implements besides basic protocols/MutableStorate , the protocols/WebhookStore to manage running webhooks process states in `rebujito.api.resources.card.reload/check` fn called from `GET /check-reload/{card-number}` 
+This mongo storage implements besides basic protocols/MutableStorate , the protocols/WebhookStore to manage running webhooks process states in `rebujito.api.resources.card.reload/check` fn called from `GET /check-reload/{card-number}`
 
 ```clojure
 (defprotocol WebhookStore
@@ -312,10 +312,10 @@ Basically the internal logic for this webhook [card.reload/check](https://github
 
 This component has to include in the construcor a map with the counter-ids and counter-initial-values
  `{:digital-card-number 100 :other 35 :more 45}`
- 
+
 Then you can use the protocol/Counter with this component
 
-```clojure 
+```clojure
 
 (defprotocol Counter
   (increment! [this counter-name])
