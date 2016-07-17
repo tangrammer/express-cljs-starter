@@ -410,22 +410,22 @@
              }}}
    (merge (util/common-resource :me/cards))))
 
-(defn transfer-from* [ctx user-id user-store mimi]
+(defn checkout-card-with-pin [card-number pin]
+  true)
+
+(defn transfer-from* [ctx user-id user-store mimi from-card-number pin]
+  (log/info "transfer-from* [_ _ _ _ from-card-number pin]" from-card-number pin)
   (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
                _ (log/debug "card-data::" card-data)
+               pin-ok? (checkout-card-with-pin from-card-number pin)
                to (:cardNumber card-data)
-               from (-> ctx :parameters :body :cardNumber)
-               ;; TODO verify pin
-               ;; TODO check from card isn't linked to a customer
-               fromPin (-> ctx :parameters :body :cardPin)
-               mimi-res (p/transfer mimi from to)
-               _ (log/debug "mimi success?" mimi-res from to fromPin)
+               mimi-res (p/transfer mimi from-card-number to)
+               _ (log/debug "mimi success?" mimi-res from-card-number to)
                ]
               (if mimi-res
                 (util/>200 ctx {:status "ok"})
                 (util/>500 ctx {:status "error"}))
-              )
-  )
+              ))
 
 (defn transfer-from [user-store mimi]
   (-> {:methods
@@ -433,23 +433,23 @@
                             :body (-> schema :transfer-from :post)}
                :response (fn [ctx]
                            (transfer-from* ctx
-                                           (:user-id (util/authenticated-data ctx))
+                                           (util/authenticated-user-id ctx)
                                            user-store
-                                           mimi))}}}
+                                           mimi
+                                           (-> ctx :parameters :body :cardNumber)
+                                           (-> ctx :parameters :body :cardPin)
+                                           ))}}}
 
    (merge (util/common-resource :me/cards))))
 
-(defn transfer-to* [ctx user-id user-store mimi to-card-number to-pin]
-  (log/info "transfer-to* [_ _ _ _ to-card-number to-pin]" to-card-number to-pin)
+(defn transfer-to* [ctx user-id user-store mimi to-card-number pin]
+  (log/info "transfer-to* [_ _ _ _ to-card-number pin]" to-card-number pin)
   (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
                _ (log/debug "card-data::" card-data)
                from (:cardNumber card-data)
-
-               ;; TODO verify pin
-               ;; TODO check to card isn't linked to a customer
-
+               pin-ok? (checkout-card-with-pin to-card-number pin)
                mimi-res (p/transfer mimi from to-card-number)
-               _ (log/debug "mimi success?" mimi-res to-card-number from to-pin)
+               _ (log/debug "mimi success?" mimi-res to-card-number from pin)
                updated? (when mimi-res
                           (let [res (p/update-card-number user-store user-id from to-card-number)]
                             (log/debug "mongo-update-card-number-res" res)
@@ -477,14 +477,23 @@
 
 (defn transfer-legacy [user-store mimi]
   (-> {:methods
-        {:post {:parameters {:query {:access_token String}
-                             :body s/Any}
-                :response (fn [ctx]
-                            (transfer-to* ctx
-                                          (:user-id (util/authenticated-data ctx))
-                                          user-store
-                                          mimi
-                                          (-> ctx :parameters :body :sourceCardNumber)
-                                          (-> ctx :parameters :body :sourceCardPin)
-                                          ))}}}
-     (merge (util/common-resource :me/cards))))
+       {:post {:parameters {:query {:access_token String}
+                            :body {:sourceCardNumber String
+                                   :sourceCardPin String
+                                   (s/optional-key :targetCardNumber) String
+                                   (s/optional-key :goldCardActivation) Boolean}}
+               :response   (fn [ctx]
+                             (let [user-id (util/authenticated-user-id ctx)
+                                   tx-card-number (-> ctx :parameters :body :sourceCardNumber)
+                                   tx-card-pin (-> ctx :parameters :body :sourceCardPin)
+                                   target-card-param (-> ctx :parameters :body :targetCardNumber)
+                                   transfer-to? (= tx-card-number target-card-param)
+                                   transfer-fn (if transfer-to? transfer-to* transfer-from*)]
+                                (transfer-fn
+                                    ctx
+                                    user-id
+                                    user-store
+                                    mimi
+                                    tx-card-number
+                                    tx-card-pin)))}}}
+      (merge (util/common-resource :me/cards))))
