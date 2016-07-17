@@ -446,6 +446,8 @@
                from (:cardNumber card-data)
                pin-ok? (checkout-card-with-pin to-card-number pin)
                mimi-res (p/transfer mimi from to-card-number)
+               mimi-res (and mimi-res (p/register-card mimi {:cardNumber to-card-number
+                                                             :customerId (id>mimi-id user-id)}))
                _ (log/debug "mimi success?" mimi-res to-card-number from pin)
                updated? (when mimi-res
                           (let [res (p/update-card-number user-store user-id from to-card-number)]
