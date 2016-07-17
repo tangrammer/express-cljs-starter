@@ -167,8 +167,6 @@
            :meta {:context {:data data}}})
     true)
 
-
-      ; TODO rename to link-card
   (register-card [this data]
     (log/info (format "%s/account/card" base-url))
     (log/info data)
