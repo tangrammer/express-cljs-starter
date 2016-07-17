@@ -443,14 +443,14 @@
   (log/info "transfer-to* [_ _ _ _ to-card-number pin]" to-card-number pin)
   (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
                _ (log/debug "card-data::" card-data)
-               from (:cardNumber card-data)
+               from-card-number (:cardNumber card-data)
                pin-ok? (checkout-card-with-pin to-card-number pin)
-               mimi-res (p/transfer mimi from to-card-number)
+               mimi-res (p/transfer mimi from-card-number to-card-number)
                mimi-res (and mimi-res (p/register-card mimi {:cardNumber to-card-number
                                                              :customerId (id>mimi-id user-id)}))
-               _ (log/debug "mimi success?" mimi-res to-card-number from pin)
+               _ (log/debug "mimi success?" mimi-res from-card-number to-card-number)
                updated? (when mimi-res
-                          (let [res (p/update-card-number user-store user-id from to-card-number)]
+                          (let [res (p/update-card-number user-store user-id from-card-number to-card-number)]
                             (log/debug "mongo-update-card-number-res" res)
                             (pos? (.getN res))))]
               (log/info "transferred" updated?)
