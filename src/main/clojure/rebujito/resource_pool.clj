@@ -18,8 +18,9 @@
   (checkout-physical-card [this card-number pin]
     (d/future
       (Thread/sleep 100)
-      (comment throw (ex-info "pin doesn't match" {:status 409 :body {:code "400" :message "pin doesn't match"}}))
-      {:ok :ok}))
+      #_(throw (ex-info "pin doesn't match" {:status 409 :body {:code "400" :message "pin doesn't match"}}))
+      {:ok :ok}
+      ))
     )
 
 (defn new-prod-card-resource-pool [config]
