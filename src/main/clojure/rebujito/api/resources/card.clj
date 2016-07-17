@@ -62,7 +62,6 @@
               (or (:balance program) 0)))
 
 (defn get-card-data [user-store user-id]
-  (comment rebujito.store.mocks/card)
   (let [cards (:cards (p/find user-store user-id))]
     (when (>  (count cards) 1)
       (clj-bugsnag.core/notify
