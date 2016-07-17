@@ -13,7 +13,7 @@
    [yada.resource :refer [resource]]))
 
 (def schema {:post {:addressLine1 String
-                    :addressLine2 String
+                    (s/optional-key :addressLine2) String
                     :city String
                     :country String
                     :firstName String
@@ -23,7 +23,7 @@
                     :type String}
 
              :put {:addressLine1 String
-                   :addressLine2 String
+                   (s/optional-key :addressLine2) String
                    :city String
                    :country String
                    :firstName String
@@ -36,7 +36,7 @@
                    (s/optional-key :addressId) String}
 
              :response {:post {:addressLine1 String
-                               :addressLine2 String
+                               (s/optional-key :addressLine2) String
                                :city String
                                :country String
                                :firstName String
