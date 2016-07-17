@@ -119,7 +119,9 @@
                                      (card/transfer-from* ctx
                                                         (-> ctx :parameters :path :user-id)
                                                         user-store
-                                                        mimi))))}}}
+                                                        mimi
+                                                        (-> ctx :parameters :body :cardNumber)
+                                                        (-> ctx :parameters :body :cardPin)))))}}}
 
    (merge (util/common-resource :customer-admin))))
 
