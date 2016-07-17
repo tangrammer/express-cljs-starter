@@ -28,7 +28,8 @@
 (deftest address-testing
   (testing ::addresses/addresses
     (let [port (-> *system*  :webserver :port)
-          address-id (atom "")]
+          address-id (atom "")
+          generated-address (g/generate (:post addresses/schema))]
       ;; get all
       (let [path (get-path ::addresses/addresses)
             http-response @(http/get (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -50,10 +51,7 @@
             http-res @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                  {:throw-exceptions false
                                   :body-encoding "UTF-8"
-                                  :body (json/generate-string
-                                         (g/generate (:post addresses/schema))
-
-                                         )
+                                  :body (json/generate-string generated-address)
                                   :content-type :json})
             _ (is (= (:status http-res) 201))
             body (parse-body http-res)]
@@ -72,7 +70,7 @@
             body (parse-body http-response)
             ]
         (is (= 200 (-> http-response :status)))
-        (is (= '(:addressLine1 :city :addressId :firstName :type :addressLine2 :lastName :postalCode :phoneNumber :country) (keys body))))
+        (is (= (dissoc body :addressId) generated-address)))
 
       ;; delete
       (let [path (bidi/path-for (-> *system* :docsite-router :routes) ::addresses/get :address-id @address-id)
