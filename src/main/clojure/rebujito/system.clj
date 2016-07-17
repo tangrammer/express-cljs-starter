@@ -18,8 +18,7 @@
    [rebujito.webserver.handler :as wh]
    [rebujito.resource-pool :as resource-pool]
    [taoensso.timbre :as log]
-   )
-  (:import [java.util Date]))
+   ))
 
 (defn swagger-ui-components [system]
   (assoc system
