@@ -129,12 +129,12 @@
   ([token url-method data]
    (http-c/request (merge url-method
                     {:headers {"Authorization" (format "Bearer %s" token)}
-                    :form-params data
-                    :insecure? true
-                    :content-type :json
-                    :accept :json
-                    :as :json
-                    :throw-exceptions true
+                     :form-params data
+                     :insecure? true
+                     :content-type :json
+                     :accept :json
+                     :as :json
+                     :throw-exceptions true
                     }))))
 
 (defrecord ProdMimi [base-url token]
