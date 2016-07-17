@@ -14,8 +14,7 @@
    [yada.resource :refer [resource]]))
 
 (def schema {:register-physical {:post {:cardNumber String
-                                        :pin String}
-                                 :pin String}
+                                        :pin String}}
 
              :transfer-from {:post {:cardNumber String
                                     :cardPin String}}
