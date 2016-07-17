@@ -407,24 +407,29 @@
              }}}
    (merge (util/common-resource :me/cards))))
 
-(defn checkout-card-with-pin [card-number pin]
-  true)
+;(defn checkout-card-with-pin [card-number pin]
+;  (d/future
+;    (Thread/sleep 100)
+;    (comment throw (ex-info "pin doesn't match" {:status 409 :body {:code "400" :message "pin doesn't match"}}))
+;    {:ok :ok}))
 
-(defn transfer-from* [ctx user-id user-store mimi from-card-number pin]
+(defn transfer-from* [ctx user-id user-store mimi resource-pool from-card-number pin]
   (log/info "transfer-from* [_ _ _ _ from-card-number pin]" from-card-number pin)
   (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
                _ (log/debug "card-data::" card-data)
-               pin-ok? (checkout-card-with-pin from-card-number pin)
-               to (:cardNumber card-data)
-               mimi-res (p/transfer mimi from-card-number to)
-               _ (log/debug "mimi success?" mimi-res from-card-number to)
-               ]
-              (if mimi-res
+               to-card-number (:cardNumber card-data)
+               updated? (d/chain
+                          (p/checkout-physical-card resource-pool from-card-number pin)
+                          (fn [_]
+                            (p/transfer mimi from-card-number to-card-number)
+                            ))]
+              _ (log/debug "transfer success?" updated?)
+              (if updated?
                 (util/>200 ctx {:status "ok"})
                 (util/>500 ctx {:status "error"}))
               ))
 
-(defn transfer-from [user-store mimi]
+(defn transfer-from [user-store mimi resource-pool]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body (-> schema :transfer-from :post)}
@@ -433,33 +438,37 @@
                                            (util/authenticated-user-id ctx)
                                            user-store
                                            mimi
+                                           resource-pool
                                            (-> ctx :parameters :body :cardNumber)
                                            (-> ctx :parameters :body :cardPin)
                                            ))}}}
 
    (merge (util/common-resource :me/cards))))
 
-(defn transfer-to* [ctx user-id user-store mimi to-card-number pin]
+(defn transfer-to* [ctx user-id user-store mimi resource-pool to-card-number pin]
   (log/info "transfer-to* [_ _ _ _ to-card-number pin]" to-card-number pin)
   (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
                _ (log/debug "card-data::" card-data)
                from-card-number (:cardNumber card-data)
-               pin-ok? (checkout-card-with-pin to-card-number pin)
-               mimi-res (p/transfer mimi from-card-number to-card-number)
-               mimi-res (and mimi-res (p/register-card mimi {:cardNumber to-card-number
-                                                             :customerId (id>mimi-id user-id)}))
-               _ (log/debug "mimi success?" mimi-res from-card-number to-card-number)
-               updated? (when mimi-res
-                          (let [res (p/update-card-number user-store user-id from-card-number to-card-number)]
-                            (log/debug "mongo-update-card-number-res" res)
-                            (pos? (.getN res))))]
-              (log/info "transferred" updated?)
+               updated? (d/chain
+                 (p/checkout-physical-card resource-pool to-card-number pin)
+                 (fn [_]
+                   (p/transfer mimi from-card-number to-card-number))
+                 (fn [_]
+                   (p/register-card mimi {:cardNumber to-card-number
+                                          :customerId (id>mimi-id user-id)}))
+                 (fn [_]
+                   (let [res (p/update-card-number user-store user-id from-card-number to-card-number)]
+                     (log/debug "mongo-update-card-number-res" res)
+                     (pos? (.getN res))))
+                 )]
+              (log/info "transfer success?" updated?)
               (if updated?
                 (util/>200 ctx {:status "ok"})
                 (util/>500 ctx {:status "error"}))
               ))
 
-(defn transfer-to [user-store mimi]
+(defn transfer-to [user-store mimi resource-pool]
   (-> {:methods
         {:post {:parameters {:query {:access_token String}
                              :body (-> schema :transfer-to :post) }
@@ -468,13 +477,14 @@
                                           (:user-id (util/authenticated-data ctx))
                                           user-store
                                           mimi
+                                          resource-pool
                                           (-> ctx :parameters :body :cardNumber)
                                           (-> ctx :parameters :body :cardPin)
                                           ))}}}
 
     (merge (util/common-resource :me/cards))))
 
-(defn transfer-legacy [user-store mimi]
+(defn transfer-legacy [user-store mimi resource-pool]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :body {:sourceCardNumber String
@@ -493,6 +503,7 @@
                                     user-id
                                     user-store
                                     mimi
+                                    resource-pool
                                     tx-card-number
                                     tx-card-pin)))}}}
       (merge (util/common-resource :me/cards))))

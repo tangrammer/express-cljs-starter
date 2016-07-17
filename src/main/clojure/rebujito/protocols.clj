@@ -17,6 +17,11 @@
   (issue-coupon [this card-number coupon-type])
   )
 
+(defprotocol CardResourcePool
+  (checkout-physical-card [this card-number pin])
+  #_(:TODO next-digital-card-number)
+  )
+
 (defprotocol Encrypter
   (sign [_ data])
   (check [this unhash hashed]))

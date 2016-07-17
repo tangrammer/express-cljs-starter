@@ -41,7 +41,8 @@
            mailer
            app-config
            counter-store
-           webhook-store]
+           webhook-store
+           resource-pool]
 
   [""  [[["/check-reload/" :card-number]  (-> (card-reload/check user-store mimi payment-gateway app-config mailer webhook-store)
                                                 (assoc :id ::card-reload/check))]
@@ -144,15 +145,15 @@
                                           (assoc :id ::card/register-digital-cards
                                                  :oauth {:post scopes/user}))]
 
-                 ["/transfer/from" (-> (card/transfer-from user-store mimi)
+                 ["/transfer/from" (-> (card/transfer-from user-store mimi resource-pool)
                                        (assoc :id ::card/transfer
                                               :oauth {:post scopes/user}))]
 
-                 ["/transfer/to" (-> (card/transfer-to user-store mimi)
+                 ["/transfer/to" (-> (card/transfer-to user-store mimi resource-pool)
                                      (assoc :id ::card/transfer
                                             :oauth {:post scopes/user}))]
 
-                 ["/transfercard" (-> (card/transfer-legacy user-store mimi)
+                 ["/transfercard" (-> (card/transfer-legacy user-store mimi resource-pool)
                                       (assoc :id ::card/transfer-legacy
                                              :oauth {:post scopes/user}))]
 
@@ -222,10 +223,10 @@
                                   (assoc :id ::customer-admin/forgot-password
                                          :oauth {:post scopes/customer-admin}))]
 
-          ["/transfer" [["/to" (-> (customer-admin/transfer-to mimi user-store)
+          ["/transfer" [["/to" (-> (customer-admin/transfer-to mimi user-store resource-pool)
                                    (assoc :id ::customer-admin/transfer-to
                                           :oauth {:post scopes/customer-admin}))]
-                        ["/from" (-> (customer-admin/transfer-from mimi user-store)
+                        ["/from" (-> (customer-admin/transfer-from mimi user-store resource-pool)
                                      (assoc :id ::customer-admin/transfer-from
                                             :oauth {:post scopes/customer-admin}))]
                         #_["/to-new-digital" (-> (customer-admin/transfer-to-new-digital mimi user-store counter-store)
@@ -277,10 +278,10 @@
                        data)))
       %) d))
 
-(s/defrecord ApiComponent [app-config mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store webhook-store]
+(s/defrecord ApiComponent [app-config mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer counter-store webhook-store resource-pool]
   component/Lifecycle
   (start [component]
-    (assoc component :routes (dynamic-resource (api mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store webhook-store) authenticator authorizer token-store)))
+    (assoc component :routes (dynamic-resource (api mimi token-store user-store authorizer crypto authenticator payment-gateway api-client-store mailer app-config counter-store webhook-store resource-pool) authenticator authorizer token-store)))
   (stop [component]
         component))
 

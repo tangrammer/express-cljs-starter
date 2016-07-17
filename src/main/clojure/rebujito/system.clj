@@ -16,6 +16,7 @@
    [rebujito.security.encrypt :as encrypt]
    [rebujito.security.jwt :as jwt ]
    [rebujito.webserver.handler :as wh]
+   [rebujito.resource-pool :as resource-pool]
    [taoensso.timbre :as log]
    )
   (:import [java.util Date]))
@@ -49,7 +50,6 @@
 
                   :mailer (new-sendgrid-mailer (-> config :mailer))
 
-
                   :counter-store (new-counter-store (:auth config) false {:digital-card-number (read-string (format "96235709%05d" 0))})
 
                   :token-store (new-token-store (:auth config))
@@ -61,6 +61,8 @@
                   :api-client-store (new-api-key-store (:auth config))
 
                   :mimi (mimi/new-prod-mimi (:mimi config))
+
+                  :resource-pool (resource-pool/new-prod-card-resource-pool (:resource-pool config))
 
                   :crypto (encrypt/new-sha256-encrypter (:auth config))
 
@@ -94,7 +96,7 @@
    :user-store [:db-conn]
    :api-client-store [:db-conn]
    :authorizer [:authenticator :token-store]
-   :api [:mimi :token-store :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store :webhook-store]
+   :api [:mimi :token-store :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store :webhook-store :resource-pool]
    :yada [:api]
    :docsite-router [:swagger-ui :yada :jquery]})
 

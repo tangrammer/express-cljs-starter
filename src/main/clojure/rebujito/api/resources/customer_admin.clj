@@ -107,7 +107,7 @@
                                                           nil)))))}}}
       (merge (util/common-resource :customer-admin))))
 
-(defn transfer-from [mimi user-store]
+(defn transfer-from [mimi user-store resource-pool]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:user-id String}
@@ -120,12 +120,13 @@
                                                         (-> ctx :parameters :path :user-id)
                                                         user-store
                                                         mimi
+                                                        resource-pool
                                                         (-> ctx :parameters :body :cardNumber)
                                                         (-> ctx :parameters :body :cardPin)))))}}}
 
    (merge (util/common-resource :customer-admin))))
 
-(defn transfer-to [mimi user-store ]
+(defn transfer-to [mimi user-store resource-pool]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:user-id String}
@@ -138,6 +139,7 @@
                                                         (-> ctx :parameters :path :user-id)
                                                         user-store
                                                         mimi
+                                                        resource-pool
                                                         (-> ctx :parameters :body :cardNumber)
                                                         (-> ctx :parameters :body :cardPin)))))}}}
       (merge (util/common-resource :customer-admin))))
