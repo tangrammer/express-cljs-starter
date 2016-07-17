@@ -13,15 +13,13 @@
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
+(def transfer-card-schema {:cardNumber String
+                           :cardPin String})
+
 (def schema {:register-physical {:post {:cardNumber String
                                         :pin String}}
-
-             :transfer-from {:post {:cardNumber String
-                                    :cardPin String}}
-
-             :transfer-to {:post {:cardNumber String
-                                  :cardPin String}}
-
+             :transfer-from {:post transfer-card-schema}
+             :transfer-to {:post transfer-card-schema}
              :autoreload {:post {:status (s/enum "active" "disabled")
                                  :autoReloadType (s/enum "Amount")
                                  (s/optional-key :day) (s/enum nil "")
