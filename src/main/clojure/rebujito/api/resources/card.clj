@@ -434,14 +434,15 @@
        {:post {:parameters {:query {:access_token String}
                             :body (-> schema :transfer-from :post)}
                :response (fn [ctx]
-                           (transfer-from* ctx
-                                           (util/authenticated-user-id ctx)
-                                           user-store
-                                           mimi
-                                           resource-pool
-                                           (-> ctx :parameters :body :cardNumber)
-                                           (-> ctx :parameters :body :cardPin)
-                                           ))}}}
+                           (dcatch ctx
+                             (transfer-from* ctx
+                                             (util/authenticated-user-id ctx)
+                                             user-store
+                                             mimi
+                                             resource-pool
+                                             (-> ctx :parameters :body :cardNumber)
+                                             (-> ctx :parameters :body :cardPin)))
+                          )}}}
 
    (merge (util/common-resource :me/cards))))
 
@@ -473,14 +474,15 @@
         {:post {:parameters {:query {:access_token String}
                              :body (-> schema :transfer-to :post) }
                 :response (fn [ctx]
-                            (transfer-to* ctx
-                                          (:user-id (util/authenticated-data ctx))
-                                          user-store
-                                          mimi
-                                          resource-pool
-                                          (-> ctx :parameters :body :cardNumber)
-                                          (-> ctx :parameters :body :cardPin)
-                                          ))}}}
+                            (dcatch ctx
+                              (transfer-to* ctx
+                                            (:user-id (util/authenticated-data ctx))
+                                            user-store
+                                            mimi
+                                            resource-pool
+                                            (-> ctx :parameters :body :cardNumber)
+                                            (-> ctx :parameters :body :cardPin)))
+                            )}}}
 
     (merge (util/common-resource :me/cards))))
 
@@ -492,18 +494,20 @@
                                    (s/optional-key :targetCardNumber) String
                                    (s/optional-key :goldCardActivation) Boolean}}
                :response   (fn [ctx]
-                             (let [user-id (util/authenticated-user-id ctx)
-                                   tx-card-number (-> ctx :parameters :body :sourceCardNumber)
-                                   tx-card-pin (-> ctx :parameters :body :sourceCardPin)
-                                   target-card-param (-> ctx :parameters :body :targetCardNumber)
-                                   transfer-to? (= tx-card-number target-card-param)
-                                   transfer-fn (if transfer-to? transfer-to* transfer-from*)]
-                                (transfer-fn
-                                    ctx
-                                    user-id
-                                    user-store
-                                    mimi
-                                    resource-pool
-                                    tx-card-number
-                                    tx-card-pin)))}}}
+                             (dcatch ctx
+                                     (let [user-id (util/authenticated-user-id ctx)
+                                           tx-card-number (-> ctx :parameters :body :sourceCardNumber)
+                                           tx-card-pin (-> ctx :parameters :body :sourceCardPin)
+                                           target-card-param (-> ctx :parameters :body :targetCardNumber)
+                                           transfer-to? (= tx-card-number target-card-param)
+                                           transfer-fn (if transfer-to? transfer-to* transfer-from*)]
+                                       (transfer-fn
+                                         ctx
+                                         user-id
+                                         user-store
+                                         mimi
+                                         resource-pool
+                                         tx-card-number
+                                         tx-card-pin))
+                                     ))}}}
       (merge (util/common-resource :me/cards))))
