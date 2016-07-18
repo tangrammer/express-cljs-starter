@@ -120,7 +120,7 @@
             (is false)))
          (d/catch clojure.lang.ExceptionInfo (fn [e]
 
-                                               (is (re-find #"invalid_client api client-id" (:body (ex-data e))) ))))
+                                               (is (re-find #"invalid_client api client-id" (:message (ex-data e))) ))))
 
 
 
@@ -131,7 +131,7 @@
             (is false)))
          (d/catch clojure.lang.ExceptionInfo (fn [e]
 
-                                               (is (re-find #"invalid_client api client-id" (:body (ex-data e))) ))))
+                                               (is (re-find #"invalid_client api client-id" (:message (ex-data e))) ))))
 
         (->
          (p/login (:api-client-store *system*) (:key api-config) (:secret api-config))

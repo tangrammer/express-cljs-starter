@@ -50,9 +50,9 @@
                              :content-type :json})]
 
         (is (= 400  (-> res :status)))
-        (is (= {:code 111027,
-                :body "Account Management Service returns error that email address is already taken"}
-               (select-keys (-> res parse-body) [:code :body]))))
+        (is (= {:code 111027
+                :message (str "Email address " (:emailAddress account-data) " is not unique")}
+               (select-keys (-> res parse-body) [:code :message]))))
       ;; doesn't mail again thus an error happen
       (is (= 3 (count (deref(:mails (-> *system*  :mailer))))))
       (is (= (count (seq (p/find (-> *system*  :user-store)))) (inc (count users))))))
