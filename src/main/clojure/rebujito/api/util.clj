@@ -1,7 +1,7 @@
 (ns rebujito.api.util
   (:require [clj-bugsnag.core :as bugsnag]
             [rebujito.config :as config]
-
+            [plumbing.core :refer [?>]]
             [manifold.deferred :as d]
             [rebujito.schemas :refer (UserProfileData)]
             [rebujito.protocols :as p]
@@ -13,8 +13,10 @@
 
 (defn >base [ctx status body]
 ;  (log/info "base response >>>> " status body)
-  (-> ctx :response (assoc :status status)
-      (assoc :body body)))
+  (-> ctx :response
+      (assoc :status status)
+      (?> body (assoc :body body))
+      ))
 
 (defn >400 [ctx body]
   (>base ctx 400 body))

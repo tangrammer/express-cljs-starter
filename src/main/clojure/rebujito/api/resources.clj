@@ -12,11 +12,11 @@
     (:type ex-data)))
 
 
-(defn- all-domain-exception [ctx {:keys [status body code message] :as ex-data}]
+(defn- all-domain-exception [ctx {:keys [status code message] :as ex-data}]
   (condp = status
-    400 (>400* ctx {:code code :message message :body body})
-    401 (>400* ctx {:code code :message message :body body})
-    500 (new>500* ctx {:status 500 :code code :message message :body body})
+    400 (>400* ctx {:code code :message message})
+    401 (>400* ctx {:code code :message message})
+    500 (new>500* ctx {:status 500 :code code :message message})
     :else (do
             (log/error ":else " ex-data)
             (d/error-deferred (ex-info message ex-data)))))

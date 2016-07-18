@@ -87,9 +87,9 @@
                                             :fn (:body ex#))
                             :keys   (quote ~('map 'symbol ks))
                             :context-keys   (keys local-context#)
-                            :body (str ~status " :: " (:body ex#) " :: " ~code " :: " (name ~message))
                             :code ~code
-                            :message (:body ex#)})))
+                            :message (name ~message)
+                            })))
 
 (defmacro error* [status [code message] & ks]
   `(manifold.deferred/error-deferred (base-error* ~status [~code ~message] ~ks))
