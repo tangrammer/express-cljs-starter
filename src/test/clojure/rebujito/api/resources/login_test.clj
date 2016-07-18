@@ -320,3 +320,23 @@
         (is (= 200 (-> http-response :status)))
         (is (= nil body)))
  )))
+
+(deftest resend-verify-email
+  (testing ::login/resend-verify-email
+    (let [port (-> *system*  :webserver :port)
+          path (get-path ::login/resend-verify-email)
+          request-resend @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
+                                    {:throw-exceptions false
+                                     :body-encoding "UTF-8"
+                                     :body nil
+                                     :content-type :json})
+          token (last (clojure.string/split (-> *system* :mailer :mails deref last :hidden) #"/"))
+          path (get-path ::login/verify-email)
+          verify-response @(http/put (format "http://localhost:%s%s?access_token=%s"  port path token)
+                                   {:throw-exceptions false
+                                    :body-encoding "UTF-8"
+                                    :content-type :json})]
+      (is (= 200 (:status request-resend)))
+      (is (= "" (bs/to-string (:body request-resend))))
+      (is (= 200 (:status verify-response)))
+      )))

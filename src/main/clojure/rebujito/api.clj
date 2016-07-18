@@ -122,6 +122,10 @@
                                              (assoc :id ::login/me-change-password
                                              :oauth {:post scopes/user}))]
 
+               ["/login/resend-verify-email" (-> (login/resend-verify-email authorizer mailer app-config)
+                                                 (assoc :id ::login/resend-verify-email
+                                                        :oauth {:post scopes/user}))]
+
                ["/profile"  (-> (profile/profile mimi user-store app-config)
                                 (assoc :id ::profile/me
                                        :oauth {:get scopes/user}))]

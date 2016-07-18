@@ -117,6 +117,36 @@
                                      (util/>403 ctx {:message (str "Forbidden: " "password doesn't match")}))))}}}
       (merge (util/common-resource :login))))
 
+(defn resend-verify-email [authorizer mailer app-config]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}}
+               :response (fn [ctx]
+                           (dcatch ctx
+                              (d/let-flow [user-data (util/authenticated-data ctx)
+                                           email-address (:emailAddress user-data)
+                                           access-token (p/grant authorizer
+                                                                 {:_id (:user-id user-data)
+                                                                  :emailAddress email-address}
+                                                                 #{scopes/verify-email})
+                                           link (format "%s/verify-new-user-email/%s"
+                                                        (:client-url app-config)
+                                                        access-token)
+
+                                           send (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
+                                                                :to email-address
+                                                                :content-type "text/html"
+                                                                :hidden link
+                                                                :content (template/render-file
+                                                                          "templates/email/verify_email.html"
+                                                                          (merge
+                                                                            (select-keys user-data [:firstName :lastName])
+                                                                            {:link link}))})
+                                           ]
+                                          (util/>200 ctx nil)
+                                          )
+                                   ))}}}
+      (merge (util/common-resource :login))))
+
 (defn set-new-password [user-store crypto authorizer]
   (-> {:methods
        {:put {:parameters {:query {:access_token String}
