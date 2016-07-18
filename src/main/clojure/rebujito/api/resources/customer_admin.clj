@@ -87,7 +87,7 @@
                                      (addresses/update-address* ctx payload user-id address-id user-store)))))}}}
       (merge (util/common-resource :customer-admin))))
 
-(defn transfer-to-new-digital [mimi user-store counter-store ]
+(defn transfer-to-new-digital [mimi user-store counter-store resource-pool]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:user-id String}}
@@ -103,6 +103,7 @@
                                                           user-id
                                                           user-store
                                                           mimi
+                                                          resource-pool
                                                           (:cardNumber card)
                                                           nil)))))}}}
       (merge (util/common-resource :customer-admin))))
