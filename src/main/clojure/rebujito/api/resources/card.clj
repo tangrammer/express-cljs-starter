@@ -166,7 +166,7 @@
    @(d/let-flow [card-number (str (p/increment! counter-store :digital-card-number))]
                                                            (d/chain
                                                             (p/register-card mimi {:cardNumber card-number
-                                                                                            :customerId  (id>mimi-id user-id)})
+                                                                                   :customerId  (id>mimi-id user-id)})
                                                             (fn [_]
                                                               (when points?
                                                                 (p/increment-balance! mimi card-number points? :loyalty)))
