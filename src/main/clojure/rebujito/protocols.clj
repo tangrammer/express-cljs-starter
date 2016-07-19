@@ -105,3 +105,8 @@
 
 (defprotocol MailService
   (send [this data]))
+
+(defprotocol EventStore
+  (log [this type data])
+  ;(log-error [this type tx-id data err-info])
+  )

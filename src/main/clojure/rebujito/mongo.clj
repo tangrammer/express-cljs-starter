@@ -101,10 +101,10 @@
   )
 
 
-(defn- insert!* [this data]
+(defn insert!* [this data]
   (mc/insert (:db this) (:collection this) (assoc data :createdDate (t/now))))
 
-(defn- start* [this]
+(defn start* [this]
       (let [c (assoc this
                    :db (:db (:db-conn this))
                    :collection (if (keyword? (:collection this))

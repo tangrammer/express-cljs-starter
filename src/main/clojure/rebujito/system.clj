@@ -2,7 +2,7 @@
   "Components and their dependency reationships"
   (:refer-clojure :exclude (read))
   (:require
-   [com.stuartsierra.component :refer [system-map system-using using] :as component]
+   [com.stuartsierra.component :refer [system-map system-using using]]
    [modular.aleph :refer [new-webserver]]
    [modular.bidi :refer [new-router new-web-resources new-redirect]]
    [modular.mongo :refer [new-mongo-database new-mongo-connection]]
@@ -17,7 +17,7 @@
    [rebujito.security.jwt :as jwt ]
    [rebujito.webserver.handler :as wh]
    [rebujito.resource-pool :as resource-pool]
-   [taoensso.timbre :as log]
+   [rebujito.event-store :as event-store]
    ))
 
 (defn swagger-ui-components [system]
@@ -77,6 +77,8 @@
 
                   :webserver  (webserver config)
 
+                  :event-store (event-store/new-event-store)
+
                   :jquery (new-web-resources
                            :key :jquery
                            :uri-context "/jquery"
@@ -97,6 +99,7 @@
    :authorizer [:authenticator :token-store]
    :api [:mimi :token-store :user-store :authorizer :crypto :authenticator :payment-gateway :api-client-store :mailer :counter-store :webhook-store :resource-pool]
    :yada [:api]
+   :event-store [:db-conn]
    :docsite-router [:swagger-ui :yada :jquery]})
 
 (defn new-production-system
