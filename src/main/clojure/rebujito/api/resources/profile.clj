@@ -59,9 +59,14 @@
                                 (merge
                                  {:user (merge
                                          {:verifiedEmail false}
-                                         (select-keys user-data [:firstName :lastName :emailAddress :createdDate :birthDay :birthMonth :verifiedEmail :receiveStarbucksEmailCommunications])
-                                         (select-keys (-> user-data :addresses first) [:firstName :lastName])
-
+                                         (select-keys user-data [:firstName
+                                                                 :lastName
+                                                                 :emailAddress
+                                                                 :createdDate
+                                                                 :birthDay
+                                                                 :birthMonth
+                                                                 :verifiedEmail
+                                                                 :receiveStarbucksEmailCommunications])
                                          {:email (:emailAddress user-data)}
                                          {:exId nil
                                           :subMarket "ZA"
