@@ -5,7 +5,7 @@
    [rebujito.protocols :as p]
    [schema-generators.generators :as g]
    [rebujito.api.util :as util]
-   [rebujito.api-test :refer (print-body parse-body)]
+   [rebujito.api-test :refer (print-body parse-body create-digital-card*)]
    [rebujito.api.resources.account :as account]
    [rebujito.api.resources.card :as card]
    [rebujito.base-test :refer (system-fixture *app-access-token* *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
@@ -163,3 +163,40 @@
         (is (= 200 status))
         ))
 ))
+
+
+(deftest transfer-to-new-digital
+  (testing ::card/transfer-to-new-digital
+    (let [
+          port (-> *system*  :webserver :port)
+          user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
+          path (get-path ::card/transfer-to-new-digital)
+          _ (create-digital-card*)
+          ]
+
+      ;; unauthenticated
+      (is (= 401 (-> @(http/post (format "http://localhost:%s%s?access_token=%s" port path "invalid-token")
+                                 {:throw-exceptions false
+                                  :body-encoding "UTF-8"
+                                  :content-type :json})
+                     print-body
+                     :status)))
+
+      (let [original-user (p/find (:user-store *system*) user-id)
+            old-card-number (-> original-user :cards first :cardNumber)
+            res @(http/post (format "http://localhost:%s%s?access_token=%s" port path *user-access-token*)
+                            {:throw-exceptions false
+                             :body-encoding "UTF-8"
+                             :content-type :json})]
+        (is (= 200 (-> res :status)))
+        (is (= {:status "ok"} (parse-body res)))
+        (is (= 1 (-> original-user :cards count)))
+        (let [new-user (p/find (:user-store *system*) user-id)
+              new-card-number (-> new-user :cards first :cardNumber)]
+          (is (not (= original-user new-user)))
+          (is (not (= old-card-number new-card-number)))
+          (is (= 1 (-> new-user :cards count)))
+          )
+        ))
+    )
+  )
