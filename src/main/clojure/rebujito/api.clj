@@ -188,10 +188,10 @@
 
                ["/devices" [
                             ["/register" (-> (devices/register  )
-                                             (assoc :id ::devices/me/register
+                                             (assoc :id ::devices/register
                                                     :oauth {:post scopes/user}))]
                             ["/reporting/report" (-> (devices/report )
-                                                     (assoc :id ::devices/me/report
+                                                     (assoc :id ::devices/report
                                                             :oauth {:post scopes/user}))]
                ]]
 
