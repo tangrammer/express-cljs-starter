@@ -9,6 +9,8 @@
    [rebujito.api.resources.rewards :as rewards]
    [rebujito.api.resources.card :as card]
    [rebujito.api.resources.payment :as payment]
+   [rebujito.api.resources.account :as account]
+   [rebujito.schemas :refer (UpdateMongoUser)]
    [cheshire.core :as json]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
@@ -18,6 +20,27 @@
                         :addresses []
                         :socialProfile {}
                         :tippingPreferences {}})
+
+(defn update-user [ctx user-id user-store mimi]
+  (d/let-flow [payload (util/remove-nils (-> ctx :parameters :body))
+               current-user (p/find user-store user-id)
+               email-exists? (when (and (:emailAddress payload) (not= (:emailAddress payload) (:emailAddress current-user)))
+                               (account/check-account-mongo {:emailAddress (:emailAddress payload)} user-store))
+
+               user (when-not email-exists?
+                      (p/find user-store user-id))
+
+               mimi-res (when (and user
+                                   (some #(and (some? %) (not= "" %))  (vals payload)))
+                          (p/update-account mimi user))
+               updated? (when mimi-res
+                          (pos? (.getN (p/update-by-id! user-store user-id payload))))
+               ]
+
+              (if (or updated? (nil? mimi-res))
+                (util/>200 ctx nil)
+                (util/>500 ctx "we couldn't update the account")))
+  )
 
 (defn load-profile [ctx mimi user-store user-id]
  (d/let-flow [user-data (p/find user-store user-id)
@@ -64,5 +87,10 @@
                             (dcatch ctx
                                     (do
                                       (let [user-id (util/authenticated-user-id ctx)]
-                                        (load-profile ctx mimi user-store user-id))))))}}}
+                                        (load-profile ctx mimi user-store user-id))))))}
+        :put {:parameters {:query {:access_token String}
+                           :body UpdateMongoUser}
+              :response (fn [ctx]
+                          (dcatch ctx
+                             (update-user ctx (util/authenticated-user-id ctx) user-store mimi)))}}}
       (merge (util/common-resource :profile))))

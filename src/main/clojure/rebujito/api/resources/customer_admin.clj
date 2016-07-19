@@ -22,37 +22,19 @@
                             :category String
                             :comment String}})
 
-
 (defn user [user-store mimi]
   (-> {:methods
-       {:put    {:parameters {:query {:access_token String}
-                              :path {:user-id String}
-                              :body (-> schema :user :put)}
-                 :response (fn [ctx]
-                             (let [try-id ::user
-                                   try-type :api]
-                               (dcatch ctx
-                                       (d/let-flow [payload (util/remove-nils (-> ctx :parameters :body))
-
-                                                    user-id (-> ctx :parameters :path :user-id)
-                                                    current-user (p/find user-store user-id)
-                                                    email-exists? (when (and (:emailAddress payload) (not= (:emailAddress payload) (:emailAddress current-user)))
-                                                                    (account/check-account-mongo {:emailAddress (:emailAddress payload)} user-store))
-
-                                                    user (when-not email-exists?
-                                                           (p/find user-store user-id))
-
-                                                    mimi-res (when (and user
-                                                                        (some #(and (some? %) (not= "" %))  (vals payload)))
-                                                               (p/update-account mimi user))
-                                                    updated? (when mimi-res
-                                                               (pos? (.getN (p/update-by-id! user-store user-id payload))))
-
-                                                    ]
-
-                                                   (if (or updated? (nil? mimi-res))
-                                                     (util/>200 ctx nil)
-                                                     (util/>500 ctx "we couldn't update the account"))))))}}
+       {:put {:parameters {:query {:access_token String}
+                           :path  {:user-id String}
+                           :body  (-> schema :user :put)}
+              :response   (fn [ctx]
+                            (let [try-id ::user
+                                  try-type :api
+                                  user-id (-> ctx :parameters :path :user-id)
+                                  ]
+                              (dcatch ctx
+                                      (profile/update-user ctx user-id user-store mimi)
+                                      )))}}
        }
       (merge (util/common-resource :customer-admin))))
 
