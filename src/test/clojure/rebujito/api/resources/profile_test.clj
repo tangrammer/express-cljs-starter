@@ -316,8 +316,7 @@
           api-id ::customer-admin/transfer-to-new-digital
           user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
           path (bidi/path-for r api-id :user-id user-id)
-          card (create-digital-card*)
-          card-id (:cardId card)
+          _ (create-digital-card*)
           ]
 
       ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
