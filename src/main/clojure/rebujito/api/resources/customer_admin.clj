@@ -87,7 +87,7 @@
                                      (addresses/update-address* ctx payload user-id address-id user-store)))))}}}
       (merge (util/common-resource :customer-admin))))
 
-(defn transfer-to-new-digital [mimi user-store counter-store resource-pool]
+(defn transfer-to-new-digital [mimi user-store counter-store]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:user-id String}}
@@ -96,16 +96,8 @@
                            (let [try-id ::transfer-to
                                  try-type :api]
                              (dcatch ctx
-                                     (let [user-id (-> ctx :parameters :path :user-id)
-                                           card (card/register-digital-card* counter-store user-store
-                                                                             mimi user-id nil)]
-                                       (card/transfer-to* ctx
-                                                          user-id
-                                                          user-store
-                                                          mimi
-                                                          resource-pool
-                                                          (:cardNumber card)
-                                                          nil)))))}}}
+                               (card/transfer-to-new-digital* ctx (-> ctx :parameters :path :user-id) user-store mimi counter-store)
+                          )))}}}
       (merge (util/common-resource :customer-admin))))
 
 (defn transfer-from [mimi user-store resource-pool]

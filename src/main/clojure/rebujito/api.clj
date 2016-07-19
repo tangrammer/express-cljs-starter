@@ -150,12 +150,16 @@
                                                  :oauth {:post scopes/user}))]
 
                  ["/transfer/from" (-> (card/transfer-from user-store mimi resource-pool)
-                                       (assoc :id ::card/transfer
+                                       (assoc :id ::card/transfer-from
                                               :oauth {:post scopes/user}))]
 
                  ["/transfer/to" (-> (card/transfer-to user-store mimi resource-pool)
-                                     (assoc :id ::card/transfer
+                                     (assoc :id ::card/transfer-to
                                             :oauth {:post scopes/user}))]
+
+                 ["/transfer/to-new-digital" (-> (card/transfer-to-new-digital user-store mimi counter-store)
+                                                 (assoc :id ::card/transfer-to-new-digital
+                                                        :oauth {:post scopes/user}))]
 
                  ["/transfercard" (-> (card/transfer-legacy user-store mimi resource-pool)
                                       (assoc :id ::card/transfer-legacy
@@ -233,7 +237,7 @@
                         ["/from" (-> (customer-admin/transfer-from mimi user-store resource-pool)
                                      (assoc :id ::customer-admin/transfer-from
                                             :oauth {:post scopes/customer-admin}))]
-                        #_["/to-new-digital" (-> (customer-admin/transfer-to-new-digital mimi user-store counter-store resource-pool)
+                        ["/to-new-digital" (-> (customer-admin/transfer-to-new-digital mimi user-store counter-store)
                                              (assoc :id ::customer-admin/transfer-to-new-digital
                                                     :oauth {:post scopes/customer-admin}))]]]
 

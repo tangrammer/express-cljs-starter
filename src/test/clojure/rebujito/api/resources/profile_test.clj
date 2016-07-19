@@ -309,13 +309,16 @@
     )
   )
 
-#_(deftest customer-admin-transfer-to-new-digital
+(deftest customer-admin-transfer-to-new-digital
   (testing ::customer-admin/transfer-to-new-digital
     (let [r (-> *system* :docsite-router :routes)
           port (-> *system*  :webserver :port)
           api-id ::customer-admin/transfer-to-new-digital
           user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
-          path (bidi/path-for r api-id :user-id user-id)]
+          path (bidi/path-for r api-id :user-id user-id)
+          card (create-digital-card*)
+          card-id (:cardId card)
+          ]
 
       ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
       (is (= 403 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -325,17 +328,21 @@
                      print-body
                      :status)))
 
-
       (let [user-to-find (p/find (:user-store *system*)
                                  (:user-id (p/read-token (:authenticator *system*) *user-access-token*)))
-            card-number (->  user-to-find :cards first :cardNumber)
+            old-card-number (->  user-to-find :cards first :cardNumber)
             res @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *customer-admin-access-token*)
                                 {:throw-exceptions false
                                  :body-encoding "UTF-8"
-
                                  :content-type :json})]
         (is (= 200 (-> res :status)))
         (is (= {:status "ok"} (parse-body res)))
+        (let [user-to-find (p/find (:user-store *system*)
+                                   (:user-id (p/read-token (:authenticator *system*) *user-access-token*)))
+              new-card-number (->  user-to-find :cards first :cardNumber)]
+          (is (not (= old-card-number new-card-number)))
+          (is (= 1 (->  user-to-find :cards count)))
+          )
         ))
     )
   )

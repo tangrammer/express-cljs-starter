@@ -486,6 +486,39 @@
 
     (merge (util/common-resource :me/cards))))
 
+(defn transfer-to-new-digital* [ctx user-id user-store mimi counter-store]
+  (log/info "transfer-to-new-digital")
+  (d/let-flow [
+               from-card-number (:cardNumber (get-card-data-deferred-exception user-store user-id))
+               to-card-number (p/increment! counter-store :digital-card-number)
+               updated? (d/chain
+                 (fn [_]
+                   (p/transfer mimi from-card-number to-card-number))
+                 (fn [_]
+                   (p/register-card mimi {:cardNumber to-card-number
+                                          :customerId (id>mimi-id user-id)}))
+                 (fn [_]
+                   (let [res (p/update-card-number user-store user-id from-card-number to-card-number)]
+                     (log/debug "mongo-update-card-number-res" res)
+                     (pos? (.getN res))))
+                 )
+               ]
+      (if updated?
+        (util/>200 ctx {:status "ok"})
+        (util/>500 ctx nil))
+  ))
+
+(defn transfer-to-new-digital [user-store mimi counter-store]
+  (-> {:methods
+       {:post {:parameters {:query {:access_token String}
+                            :body (-> schema :transfer-to :post) }
+               :response (fn [ctx]
+                           (dcatch ctx
+                             (transfer-to-new-digital* ctx (util/authenticated-user-id ctx) user-store mimi counter-store))
+                           )}}}
+      (merge (util/common-resource :me/cards))))
+
+
 (defn transfer-legacy [user-store mimi resource-pool]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
