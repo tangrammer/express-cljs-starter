@@ -46,7 +46,8 @@
   {:emailAddress String
    :firstName String
    :lastName String
-   (s/optional-key  :verifiedEmail)  Boolean })
+   :receiveStarbucksEmailCommunications Boolean
+   (s/optional-key  :verifiedEmail)  Boolean})
 
 (def UpdateMongoUser
   {(s/optional-key :emailAddress) (s/maybe String)
@@ -70,19 +71,13 @@
    {
     (s/optional-key :createdDate) (s/maybe String)
     (s/optional-key :_id) org.bson.types.ObjectId
-
     :birthDay (s/conditional number? Integer :else String)
     :birthMonth (s/conditional number? Integer :else String)
     :market String
-
     :countrySubdivision String
     :password String
-
-    :receiveStarbucksEmailCommunications Boolean
     :registrationSource String
-    (s/optional-key :verifiedEmail) Boolean
-    }))
-
+    (s/optional-key :verifiedEmail) Boolean}))
 
 (def MimiUser
   {

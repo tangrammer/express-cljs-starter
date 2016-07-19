@@ -144,17 +144,17 @@
 (defn authenticated-user-id [ctx]
   (:user-id (authenticated-data ctx)))
 
-
-(defn generate-user-data [readed-jwt sub-market]
-  (log/info (select-keys readed-jwt [:firstName :lastName :emailAddress :verifiedEmail]))
-  (log/info (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress :verifiedEmail])))
-  (merge (s/validate UserProfileData (select-keys readed-jwt [:firstName :lastName :emailAddress :verifiedEmail]))
-         {:subMarket sub-market
-          :exId nil
-          :partner false}
-         (when (:user-id readed-jwt)
-           {:user-id (:user-id readed-jwt)})))
-
+(defn generate-user-data [user-data sub-market]
+  (let [user-data-selected (select-keys user-data [:firstName :lastName :emailAddress :verifiedEmail :receiveStarbucksEmailCommunications])]
+    (log/info user-data-selected)
+    (s/validate UserProfileData user-data-selected)
+    (merge user-data-selected
+           {:subMarket sub-market
+            :exId nil
+            :partner false}
+           (when (:user-id user-data)
+             {:user-id (:user-id user-data)}))
+    ))
 
 (defn user-profile-data [ctx user-store submarket]
   (let [auth-user-id (authenticated-user-id ctx)
