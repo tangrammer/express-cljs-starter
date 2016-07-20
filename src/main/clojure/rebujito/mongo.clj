@@ -7,7 +7,7 @@
    [com.stuartsierra.component  :as component]
    [monger.collection :as mc]
    [monger.conversion :refer [from-db-object]]
-   [monger.operators :refer [$inc $set $push $pull $elemMatch $or $regex]]
+   [monger.operators :refer [$inc $set $push $pull $elemMatch $or $regex $options]]
    [monger.core :as mg]
    [monger.json :as mj]
    [monger.query :as mq]
@@ -169,11 +169,11 @@
         conj-or (if (and cardNumber (not= cardNumber ""))
                   (conj conj-or {:cards {$elemMatch {:cardNumber {$regex cardNumber}}}})
                   conj-or)
-       conj-or (if (and firstName (not= firstName ""))
-                  (conj conj-or {:addresses {$elemMatch {:firstName {$regex firstName}}}})
+        conj-or (if (and firstName (not= firstName ""))
+                  (conj conj-or {:addresses {$elemMatch {:firstName {$regex firstName $options "i"}}}})
                   conj-or)
-       conj-or (if (and lastName (not= lastName ""))
-                  (conj conj-or {:addresses {$elemMatch {:lastName {$regex lastName}}}})
+        conj-or (if (and lastName (not= lastName ""))
+                  (conj conj-or {:addresses {$elemMatch {:lastName {$regex lastName $options "i"}}}})
                   conj-or)
 
 

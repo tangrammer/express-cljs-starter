@@ -210,10 +210,7 @@
 
                                                  adapt-users (mapv #(let [d %]
                                                                       (merge
-                                                                       (-> (select-keys d [:emailAddress])
-                                                                           (assoc :lastName (-> d :addresses first :lastName))
-                                                                           (assoc :firstName (-> d :addresses first :firstName)))
-
+                                                                       (select-keys d [:emailAddress :firstName :lastName])
                                                                        (hash-map :customerId (:_id d)
                                                                                  :cardNumber (or (-> d :cards first :cardNumber) ""))))
                                                                    (seq users))]
