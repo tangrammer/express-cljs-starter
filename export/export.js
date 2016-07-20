@@ -5,11 +5,11 @@ const sql = require('mssql')
 const micros = require('micros')
 const moment = require('moment')
 const _ = require('lodash')
-const mongo = require('mongojs')
+const mongojs = require('mongojs')
 
 micros.setBrand('starbucks')
 
-const users = mongo('rebujito').collection('users')
+const users = mongojs('rebujito').collection('users')
 
 const
   database = 'SCV_HUB',
