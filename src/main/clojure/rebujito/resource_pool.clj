@@ -33,16 +33,17 @@
     (log/info "checkout-physical-card" card-number pin)
     (let [d* (d/deferred)]
       (d/future
-        (let [url-method {:url "http://localhost:3001/starbucks/test/physical-card" :method :delete}
+        (let [url-method {:url "http://swarm-sandbox-2.appspot.com/pool/dev/starbucks/cards/physical" :method :post}
               try-type :resource-pool
               try-id ::cheackout-physical-card
-            try-context '[url card-number pin]]
+              try-context '[url card-number pin]]
           (ddtry d* (do
                       ;(s/validate CreateAccountSchema data)
-                      (let [{:keys [status body]} (if (= pin "1234") [200 nil] [403 nil]) #_(call-resource-pool token url-method {:cardNumber card-number :pin pin})]
+                      (let [{:keys [status body]} (call-resource-pool token url-method {:cardNumber card-number :pin pin})]
                         (log/info "checkout-physical-card response" status body)
                         (condp = status
                            200 body
+                           400 (derror* d* 400 [400 "can't validate card number and pin"])
                            403 (derror* d* 400 [400 "invalid pin"])
                            404 (derror* d* 400 [400 "card not found"])
                            410 (derror* d* 400 [400 "card has been used"])
