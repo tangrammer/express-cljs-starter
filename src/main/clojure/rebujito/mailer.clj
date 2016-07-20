@@ -50,8 +50,8 @@
                                :headers {"Authorization" (format "Bearer %s" (-> config :api :token))
                                          "Content-Type" "application/json"}
                                :body (json/generate-string
-                                      {:personalizations [{:to (generate-to (:to data))}
-                                                          {:bcc [{:email "marcin@swarmloyalty.co.za"}]}]
+                                      {:personalizations [{:to (generate-to (:to data))
+                                                           :bcc [{:email "marcin@swarmloyalty.co.za"}]}]
                                        :from {:email (:from data)}
                                        :subject (:subject data)
                                        :content [{:type (or (:content-type data) "text/plain")
