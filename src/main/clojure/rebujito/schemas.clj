@@ -51,19 +51,19 @@
 
 (def UpdateMongoUser
   {(s/optional-key :emailAddress) (s/maybe String)
-   (s/optional-key  :firstName) (s/maybe String)
-   (s/optional-key  :lastName) (s/maybe String)
+   (s/optional-key :firstName) (s/maybe String)
+   (s/optional-key :lastName) (s/maybe String)
    (s/optional-key :birthDay) (s/conditional number? Integer :else String)
    (s/optional-key :birthMonth) (s/conditional number? Integer :else String)})
 
 (def MongoCreateAccountAddress
   {:firstName String
-    :lastName String
-    :addressLine1 String
-    (s/optional-key :addressLine2) String
+   :lastName String
+   :addressLine1 String
+   (s/optional-key :addressLine2) String
    :city String
    :postalCode String
-    :country String})
+   :country String})
 
 (def MongoUser
   (merge
@@ -80,8 +80,7 @@
     (s/optional-key :verifiedEmail) Boolean}))
 
 (def MimiUser
-  {
-   :firstName String
+  {:firstName String
    :lastName  String
    :email     String
    :postalcode String
