@@ -33,7 +33,9 @@
     (log/info "checkout-physical-card" card-number pin)
     (let [d* (d/deferred)]
       (d/future
-        (let [url-method {:url "http://swarm-sandbox-2.appspot.com/pool/dev/starbucks/cards/physical" :method :post}
+        (let [url-method {:url "https://swarm-sandbox-2.appspot.com/pool/dev/starbucks/cards/physical"
+                          ; :url "http://localhost:3001/pool/dev/starbucks/cards/physical"
+                          :method :post}
               try-type :resource-pool
               try-id ::cheackout-physical-card
               try-context '[url card-number pin]]

@@ -138,8 +138,7 @@
             :response (fn [ctx]
                         (dcatch  ctx
                                  (let [card-number (-> ctx :parameters :body :cardNumber)
-                                       card-number "9623570900100"
-                                       card-pin (-> ctx :parameters :body :cardPin)
+                                       card-pin (-> ctx :parameters :body :pin)
                                        card (new-physical-card {:cardNumber card-number})
                                        auth-data (util/authenticated-data ctx)
                                        user-id (:user-id auth-data)
