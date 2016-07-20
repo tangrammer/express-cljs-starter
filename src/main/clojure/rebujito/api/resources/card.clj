@@ -130,7 +130,7 @@
                                             (util/>200 ctx card-data)))))}}}
    (merge (util/common-resource :me/cards))))
 
-(defn register-physical [user-store mimi]
+(defn register-physical [user-store mimi resource-pool]
   (->
    {:methods
     {:post {:parameters {:query {:access_token String}
@@ -138,12 +138,16 @@
             :response (fn [ctx]
                         (dcatch  ctx
                                  (let [card-number (-> ctx :parameters :body :cardNumber)
+                                       card-number "9623570900100"
+                                       card-pin (-> ctx :parameters :body :cardPin)
                                        card (new-physical-card {:cardNumber card-number})
                                        auth-data (util/authenticated-data ctx)
                                        user-id (:user-id auth-data)
                                        card-id @(d/chain
-                                                 (p/register-card mimi {:cardNumber card-number
-                                                                        :customerId (id>mimi-id user-id)})
+                                                 (p/checkout-physical-card resource-pool card-number card-pin)
+                                                 (fn [_]
+                                                   (p/register-card mimi {:cardNumber card-number
+                                                     :customerId (id>mimi-id user-id)}))
                                                  (fn [_]
                                                    (p/increment-balance! mimi card-number 50 :loyalty))
                                                  (fn [_]

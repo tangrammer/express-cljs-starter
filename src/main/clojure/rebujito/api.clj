@@ -143,7 +143,7 @@
                       (assoc :id ::card/history
                              :oauth {:get scopes/user}))]
                  ["/register"
-                  (-> (card/register-physical user-store mimi)
+                  (-> (card/register-physical user-store mimi resource-pool)
                       (assoc :id ::card/register-physical
                              :oauth {:post scopes/user}))]
 
