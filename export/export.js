@@ -5,8 +5,11 @@ const sql = require('mssql')
 const micros = require('micros')
 const moment = require('moment')
 const _ = require('lodash')
+const mongo = require('mongojs')
 
 micros.setBrand('starbucks')
+
+const users = mongo('rebujito').collection('users')
 
 const
   database = 'SCV_HUB',
@@ -73,12 +76,20 @@ function getAccounts() {
   return micros.get('Customer', {condition: '', values: [], resultCols: ['primaryposref']})
 }
 
+function microsToMongoId(id) {
+  //TK
+  return toHexString(id)
+}
+
 function exportCustomerProfile(customer) {
 
   console.log(`exporting ${customer.primaryposref} [${customer.id}]`)
 
   return sql.query `delete from customers where id = ${customer.id}`
-  .then(() => {
+  then(() => {
+    return users.findAsync({_id: microsToMongoId(customer.id)})
+  })
+  .then((custInMongo) => {
 
     const ps = new sql.PreparedStatement()
 
@@ -98,18 +109,19 @@ function exportCustomerProfile(customer) {
                                         first_name,
                                         last_name,
                                         email,
-                                        city,
-                                        province,
-                                        created
+                                        created,
+                                        birth_month,
+                                        birth_day
                                       )
                               values(@id,
                                      @primaryposref,
                                      @first_name,
                                      @last_name,
                                      @email,
-                                     @city,
-                                     @province,
-                                     @created)`, err => {
+                                     @created,
+                                     @birth_month,
+                                     @birth_day
+                                   )`, err => {
 
         if (err) throw err
 
@@ -119,9 +131,9 @@ function exportCustomerProfile(customer) {
           'first_name': customer.firstname,
           'last_name': customer.lastname,
           email: customer.emailaddress,
-          city: customer.city,
-          province: customer.region,
           created: moment(customer.signupdate, 'YYYY-MM-DD hh:mm:ss.S').toDate(),
+          'birth_month': custInMongo.birthMonth,
+          'birth_day': custInMongo.birthDay
         }, (err, recordsets, affected) => {
 
           if (err) return reject(err)
@@ -134,6 +146,34 @@ function exportCustomerProfile(customer) {
         })
       })
     })
+  })
+}
+
+function exportAddresses(customer, custInMongo) {
+
+  const {addresses} = custInMongo
+  if (!addresses) return
+  console.log(`${customer.primaryposref} exoprting ${addresses.length} addresses`)
+
+  return sql.query `delete from addresses where customer_id = ${customer.id}`
+  .then(() => {
+    const table = new sql.Table('addresses')
+    table.create = true
+
+    table.columns.add('id', sql.Int, {nullable: false})
+    table.columns.add('customer_id', sql.Int, {nullable: false})
+    table.columns.add('type', sql.VarChar(128), {nullable: true})
+    table.columns.add('first_name', sql.VarChar(128), {nullable: false})
+    table.columns.add('last_name', sql.VarChar(128), {nullable: false})
+    table.columns.add('phone_number', sql.VarChar(128), {nullable: true})
+    table.columns.add('address_line_1', sql.VarChar(128), {nullable: false})
+    table.columns.add('address_line_2', sql.VarChar(128), {nullable: true})
+    table.columns.add('city', sql.VarChar(128), {nullable: false})
+    table.columns.add('postal_code', sql.VarChar(128), {nullable: false})
+    table.columns.add('country', sql.VarChar(128), {nullable: false})
+
+    const request = new sql.Request()
+    return request.bulk(table)
   })
 }
 
