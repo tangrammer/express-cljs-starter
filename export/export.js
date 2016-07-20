@@ -15,12 +15,14 @@ Promise.promisifyAll([
 
 micros.setBrand('starbucks')
 
-const users = mongojs('localhost:1234/rebujito').collection('users')
-
 const
   database = 'SCV_HUB',
   username = 'SCV_SWARM',
-  password = '$35L$3a9w'
+  password = '$35L$3a9w',
+  sqlServerUrl = `mssql://${username}:${password}@localhost:1433/${database}`,
+  mongoUrl = 'localhost:1234/rebujito'
+
+const users = mongojs(mongoUrl).collection('users')
 
 const cols = [
   'firstname',
@@ -32,7 +34,7 @@ const cols = [
   'signupdate',
 ]
 
-sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
+sql.connect(sqlServerUrl)
 .then(getAccounts)
 .then(accounts => {
 
