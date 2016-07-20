@@ -411,12 +411,6 @@
              }}}
    (merge (util/common-resource :me/cards))))
 
-;(defn checkout-card-with-pin [card-number pin]
-;  (d/future
-;    (Thread/sleep 100)
-;    (comment throw (ex-info "pin doesn't match" {:status 409 :body {:code "400" :message "pin doesn't match"}}))
-;    {:ok :ok}))
-
 (defn transfer-from* [ctx user-id user-store mimi resource-pool from-card-number pin]
   (log/info "transfer-from* [_ _ _ _ from-card-number pin]" from-card-number pin)
   (d/let-flow [card-data (get-card-data-deferred-exception user-store user-id)
