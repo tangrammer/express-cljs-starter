@@ -12,19 +12,19 @@
 (def goldImageUrls
   (json/parse-string "{\"imageUrls\": [
         {
-          \"uri\" : \"https://globalassets.starbucks.com/images/cardimages/card_goldt3_88.png\",
+          \"uri\" : \"https://cldup.com/ivlBmVpqNk.png\",
           \"imageType\" : \"ImageIcon\"
         },
         {
-          \"uri\" : \"https://globalassets.starbucks.com/images/cardimages/card_goldt3_115.png\",
+          \"uri\" : \"https://cldup.com/rwQzGBtOuX.png\",
           \"imageType\" : \"ImageSmall\"
         },
         {
-          \"uri\" : \"https://globalassets.starbucks.com/images/cardimages/card_goldt3_165.png\",
+          \"uri\" : \"https://cldup.com/BJgLO8JhnI.png\",
           \"imageType\" : \"ImageMedium\"
         },
         {
-          \"uri\" : \"https://globalassets.starbucks.com/images/cardimages/card_goldt3_261.png\",
+          \"uri\" : \"https://cldup.com/IEyZmJFeGz.png\",
           \"imageType\" : \"ImageLarge\"
         },
         {
