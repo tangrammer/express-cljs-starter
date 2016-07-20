@@ -28,6 +28,10 @@
           \"imageType\" : \"ImageLarge\"
         },
         {
+          \"uri\" : \"https://cldup.com/HP_2M4e6qm.png\",
+          \"imageType\" : \"ImageStrip\"
+        },
+        {
           \"uri\" : \"https://globalassets.starbucks.com/images/mobilev3/card_goldt3_thumb_82.png\",
           \"imageType\" : \"iosThumb\"
         },
