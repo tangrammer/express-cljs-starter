@@ -53,7 +53,7 @@ sql.connect(`mssql://${username}:${password}@localhost:1433/${database}`)
       console.error(`culprit: ${accountNumber}`)
       throw e
     })
-  }, {concurrency: 10})
+  }, {concurrency: 20})
 })
 .then(() => console.log('export finished'))
 .catch(err => console.error(err.stack))
@@ -83,20 +83,17 @@ function getAccounts() {
 }
 
 function microsToMongoId(id) {
-  return (_.repeat('0', 24) + id.toString(16)).slice(-24)
+  return (_.repeat('0', 24) + Number(id).toString(16)).slice(-24)
 }
 
-function exportCustomerProfile(customer) {
+function exportCustomerProfile(custInMicros) {
 
-  console.log(`exporting ${customer.primaryposref} [${customer.id}]`)
+  console.log(`exporting ${custInMicros.primaryposref} [${custInMicros.id}]`)
 
-  return sql.query `delete from customers where id = ${customer.id}`
-  // return Promise.resolve()
-  .then(() => users.findOneAsync({_id: microsToMongoId(customer.id)}))
-  .then((custInMongo) => exportAddresses(custInMongo))
+  return sql.query `delete from customers where id = ${custInMicros.id}`
+  .then(() => users.findOneAsync({_id: mongojs.ObjectId(microsToMongoId(custInMicros.id))}))
+  .then((custInMongo) => exportAddresses(custInMicros, custInMongo))
   .then((custInMongo) => {
-
-    console.log('mongo', custInMongo)
 
     const ps = new sql.PreparedStatement()
 
@@ -138,12 +135,12 @@ function exportCustomerProfile(customer) {
         if (err) throw err
 
         ps.execute({
-          id: customer.id,
-          primaryposref: customer.primaryposref,
-          'first_name': customer.firstname,
-          'last_name': customer.lastname,
-          email: customer.emailaddress,
-          created: moment(customer.signupdate, 'YYYY-MM-DD hh:mm:ss.S').toDate(),
+          id: custInMicros.id,
+          primaryposref: custInMicros.primaryposref,
+          'first_name': custInMicros.firstname,
+          'last_name': custInMicros.lastname,
+          email: custInMicros.emailaddress,
+          created: moment(custInMicros.signupdate, 'YYYY-MM-DD hh:mm:ss.S').toDate(),
           'birth_month': custInMongo ? custInMongo.birthMonth : null,
           'birth_day': custInMongo ? custInMongo.birthDay : null,
           'receive_starbucks_email_communications': custInMongo ? custInMongo.receiveStarbucksEmailCommunications : null,
@@ -151,7 +148,7 @@ function exportCustomerProfile(customer) {
 
           if (err) return reject(err)
 
-          console.log(`inserted customer ${customer.primaryposref}`)
+          console.log(`inserted customer ${custInMicros.primaryposref}`)
 
           ps.unprepare(err => {
             resolve()
@@ -162,30 +159,43 @@ function exportCustomerProfile(customer) {
   })
 }
 
-function exportAddresses(customer, custInMongo) {
+function exportAddresses(custInMicros, custInMongo) {
 
   if (!custInMongo) return
 
   const {addresses} = custInMongo
   if (!addresses) return
-  console.log(`${customer.primaryposref} exoprting ${addresses.length} addresses`)
+  console.log(`${custInMicros.primaryposref} exoprting ${addresses.length} address(es)`)
 
-  return sql.query `delete from addresses where customer_id = ${customer.id}`
+  return sql.query `delete from addresses where customer_id = ${custInMicros.id}`
   .then(() => {
     const table = new sql.Table('addresses')
     table.create = true
 
-    table.columns.add('id', sql.Int, {nullable: false})
+    table.columns.add('id', sql.VarChar(128), {nullable: false})
     table.columns.add('customer_id', sql.Int, {nullable: false})
     table.columns.add('type', sql.VarChar(128), {nullable: false})
     table.columns.add('first_name', sql.VarChar(128), {nullable: false})
     table.columns.add('last_name', sql.VarChar(128), {nullable: false})
-    table.columns.add('phone_number', sql.VarChar(128), {nullable: false})
+    table.columns.add('phone_number', sql.VarChar(128), {nullable: true})
     table.columns.add('address_line_1', sql.VarChar(128), {nullable: false})
     table.columns.add('address_line_2', sql.VarChar(128), {nullable: true})
     table.columns.add('city', sql.VarChar(128), {nullable: false})
     table.columns.add('postal_code', sql.VarChar(128), {nullable: false})
     table.columns.add('country', sql.VarChar(128), {nullable: false})
+
+    addresses.forEach(address => table.rows.add(
+                                  address.addressId,
+                                  custInMicros.id,
+                                  address.type,
+                                  address.firstName,
+                                  address.lastName,
+                                  address.phoneNumber,
+                                  address.addressLine1,
+                                  address.addressLine2,
+                                  address.city,
+                                  address.postalCode,
+                                  address.country))
 
     const request = new sql.Request()
     return request.bulk(table)
