@@ -160,7 +160,7 @@
   )
 (defn- optional-conj-or [v x kw]
   (if (and x (not= x ""))
-      (conj v {kw {$regex x}})
+      (conj v {kw {$regex x $options "i"}})
       v))
 
 (defn- search* [firstName lastName emailAddress cardNumber]
@@ -170,10 +170,10 @@
                   (conj conj-or {:cards {$elemMatch {:cardNumber {$regex cardNumber}}}})
                   conj-or)
         conj-or (if (and firstName (not= firstName ""))
-                  (conj conj-or {:addresses {$elemMatch {:firstName {$regex firstName $options "i"}}}})
+                  (conj conj-or {:firstName {$regex firstName $options "i"}})
                   conj-or)
         conj-or (if (and lastName (not= lastName ""))
-                  (conj conj-or {:addresses {$elemMatch {:lastName {$regex lastName $options "i"}}}})
+                  (conj conj-or {:lastName {$regex lastName $options "i"}})
                   conj-or)
 
 
