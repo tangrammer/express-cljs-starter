@@ -103,6 +103,9 @@ function exportCustomerProfile(customer) {
       ps.input('city', sql.VarChar(128))
       ps.input('province', sql.VarChar(128))
       ps.input('created', sql.DateTime())
+      ps.input('birth_month', sql.Int)
+      ps.input('birth_day', sql.Int)
+      ps.input('receive_starbucks_email_communications', sql.Boolean)
 
       ps.prepare(`insert into customers(id,
                                         primaryposref,
@@ -111,7 +114,8 @@ function exportCustomerProfile(customer) {
                                         email,
                                         created,
                                         birth_month,
-                                        birth_day
+                                        birth_day,
+                                        receive_starbucks_email_communications
                                       )
                               values(@id,
                                      @primaryposref,
@@ -120,7 +124,8 @@ function exportCustomerProfile(customer) {
                                      @email,
                                      @created,
                                      @birth_month,
-                                     @birth_day
+                                     @birth_day,
+                                     @receive_starbucks_email_communications
                                    )`, err => {
 
         if (err) throw err
@@ -133,7 +138,8 @@ function exportCustomerProfile(customer) {
           email: customer.emailaddress,
           created: moment(customer.signupdate, 'YYYY-MM-DD hh:mm:ss.S').toDate(),
           'birth_month': custInMongo.birthMonth,
-          'birth_day': custInMongo.birthDay
+          'birth_day': custInMongo.birthDay,
+          'receive_starbucks_email_communications': custInMongo.receiveStarbucksEmailCommunications
         }, (err, recordsets, affected) => {
 
           if (err) return reject(err)
