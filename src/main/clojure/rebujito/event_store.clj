@@ -1,7 +1,6 @@
 (ns rebujito.event-store
   (:require
     [com.stuartsierra.component :as component]
-    [clj-time.core :as t]
     [schema.core :as s]
     [rebujito.protocols :as protocols]
     [rebujito.mongo :as mongo]))
@@ -18,7 +17,6 @@
   protocols/EventStore
   (log [this event-type data]
     (let [mongo-record {:type event-type
-                        :created-at (t/now)
                         :data data}]
       (s/validate (apply s/enum allowed-event-types) (keyword event-type))
       (mongo/insert!* this mongo-record)))
