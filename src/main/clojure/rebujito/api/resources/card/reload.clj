@@ -76,7 +76,7 @@
                                                                                           (d/catch clojure.lang.ExceptionInfo
                                                                                               (fn [e]
                                                                                                 (p/change-state webhook-store webhook-uuid :error)
-                                                                                                (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
+                                                                                                (p/send mailer {:to [(:emailAddress user)]
                                                                                                                 :subject "IMPORTANT INFORMATION REGARDING YOUR STARBUCKS CARD SUBSCRIPTION"
                                                                                                                 :content-type "text/html"
                                                                                                                 :content (template/render-file "templates/email/reload_payment_failed.html" {})})
@@ -87,14 +87,14 @@
                                                                                               (d/catch clojure.lang.ExceptionInfo
                                                                                                   (fn [e]
                                                                                                     (p/change-state webhook-store webhook-uuid :error)
-                                                                                                    (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
+                                                                                                    (p/send mailer {:to [(:emailAddress user)]
                                                                                                                     :subject "IMPORTANT INFORMATION REGARDING YOUR STARBUCKS CARD SUBSCRIPTION"
                                                                                                                     :content-type "text/html"
                                                                                                                     :content (template/render-file "templates/email/reload_micros_failed.html" {})})
                                                                                                     (manifold.deferred/error-deferred e)))))
 
                                                                          send-mail (when (and payment-data mimi-card-data)
-                                                                                     (p/send mailer {:to [(:emailAddress user) (:admin-contact app-config)]
+                                                                                     (p/send mailer {:to [(:emailAddress user)]
                                                                                                      :subject "Confirmation of Starbucks Card Automatic Reload"
                                                                                                      :content-type "text/html"
                                                                                                      :content (template/render-file

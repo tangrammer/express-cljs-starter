@@ -1,7 +1,6 @@
 {
  :app-config {:sub-market #profile {:default "ZA"}
               :currency-code  #profile {:default "ZAR"}
-              :admin-contact "marcin@swarmloyalty.co.za"
               :client-url "http://197.85.186.216:82/#"
               :customer-admin "agent1@starbucks.co.za"
               }
