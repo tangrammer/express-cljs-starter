@@ -133,7 +133,7 @@
             token (last (clojure.string/split
                          (:hidden verify-email) #"/")) ]
         (is (= 3 (count mails)))
-        (is (= {:subject "Verify your Starbucks Rewards email"
+        (is (= {:subject "Welcome to Starbucks Rewards, please verify your email"
                 :to (:emailAddress account-data)}
                (select-keys verify-email [:subject :to])))
 

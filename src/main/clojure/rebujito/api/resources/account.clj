@@ -134,12 +134,12 @@
                                                    link (format "%s/verify-new-user-email/%s" (:client-url app-config) access-token)
 
                                                    send (when mongo-account
-                                                          (p/send mailer {:subject (format "Verify your Starbucks Rewards email" )
+                                                          (p/send mailer {:subject "Welcome to Starbucks Rewards, please verify your email"
                                                                           :to (:emailAddress mongo-account)
                                                                           :content-type "text/html"
                                                                           :hidden link
                                                                           :content (template/render-file
-                                                                                    "templates/email/verify_email.html"
+                                                                                    "templates/email/welcome_verify.html"
                                                                                     (merge
                                                                                      (select-keys mongo-account [:firstName :lastName])
                                                                                      {:link link}))}))
