@@ -129,7 +129,8 @@
 
                ["/profile"  (-> (profile/profile mimi user-store app-config)
                                 (assoc :id ::profile/me
-                                       :oauth {:get scopes/user}))]
+                                       :oauth {:get scopes/user
+                                               :put scopes/user}))]
                ["/rewards" (-> (rewards/me-rewards mimi user-store)
                                (assoc :id ::profile/me-rewards
                                       :oauth {:get scopes/user}))]
