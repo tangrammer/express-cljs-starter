@@ -23,7 +23,7 @@
    [clojure.test :refer :all]))
 
 
-(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
+(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer :+mock-resource-pool}))
 
 
 

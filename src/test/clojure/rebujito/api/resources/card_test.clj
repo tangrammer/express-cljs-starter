@@ -17,7 +17,7 @@
     [reload :as card-reload]]
    ))
 
-(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
+(use-fixtures :each (system-fixture #{:+mock-mimi :+ephemeral-db :+mock-mailer :+mock-resource-pool}))
 
 (deftest test-cards
   (let [port (-> *system*  :webserver :port)

@@ -8,6 +8,7 @@
    [rebujito.mimi.mocks :refer (new-mock-mimi)]
    [taoensso.timbre :as log]
    [rebujito.mailer :refer (new-mock-mailer)]
+   [rebujito.resource-pool :as pool]
    [rebujito.system :refer (new-system-map new-dependency-map)]))
 
 
@@ -39,6 +40,12 @@
       (fn [system-map]
         (-> system-map
             (assoc :mimi (new-mock-mimi (:mimi config))))))
+    :+mock-resource-pool
+    (fn [config]
+      (log/warn "using :+mock-resource-pool")
+      (fn [system-map]
+        (-> system-map
+            (assoc :resource-pool (pool/new-mock-card-resource-pool (:resource-pool config))))))
     :+mock-payment-gateway
     (fn [config]
         (log/warn "using :+mock-payment-gateway profile in dev-system")
@@ -53,13 +60,17 @@
     :+mock-payment-gateway (fn [config]
                     (fn [dependency-map]
   ;                      (println "using :mock-payment-gateway  in dependency dev-system")
-                      dependency-map))}})
+                      dependency-map))
+    :+mock-resource-pool (fn [config]
+                            (fn [dependency-map]
+                              dependency-map))
+                      }})
 
 
 
 (defn new-dev-system
   "Create a development system"
-  ([] (new-dev-system #{:+mock-mimi :+ephemeral-db :+mock-mailer}))
+  ([] (new-dev-system #{:+mock-mimi :+ephemeral-db :+mock-mailer :+mock-resource-pool}))
   ([opts]  (new-dev-system opts (config :dev)))
   ([opts config]
    (component/system-using

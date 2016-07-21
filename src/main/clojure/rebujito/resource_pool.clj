@@ -57,3 +57,16 @@
 
 (defn new-prod-card-resource-pool [config]
   (map->ProdCardResourcePool config))
+
+(defrecord MockCardResourcePool []
+  component/Lifecycle
+  (start [this] this)
+  (stop [this] this)
+  protocols/CardResourcePool
+  (checkout-physical-card [this card-number pin]
+    (let [d* (d/deferred)]
+      (d/success! d* [200 {:status "ok"}])
+      d*)))
+
+(defn new-mock-card-resource-pool [opts]
+  (map->MockCardResourcePool opts))
