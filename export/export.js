@@ -57,7 +57,10 @@ sql.connect(sqlServerUrl)
     })
   }, {concurrency: 20})
 })
-.then(() => console.log('export finished'))
+.then(() => {
+  console.log('export finished')
+  process.exit()
+})
 .catch(err => console.error(err.stack))
 
 function exportCustomer(accountNumber) {
