@@ -489,8 +489,7 @@
                from-card-number (:cardNumber (get-card-data-deferred-exception user-store user-id))
                to-card-number (str (p/increment! counter-store :digital-card-number))
                updated? (d/chain
-                 (fn [_]
-                   (p/transfer mimi from-card-number to-card-number))
+                 (p/transfer mimi from-card-number to-card-number)
                  (fn [_]
                    (p/register-card mimi {:cardNumber to-card-number
                                           :customerId (id>mimi-id user-id)}))
