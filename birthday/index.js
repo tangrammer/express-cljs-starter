@@ -6,6 +6,7 @@ const moment = require('moment')
 const micros = require('micros')
 const sendGrid = require('sendgrid').SendGrid('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')
 const event = require('./event.js')
+const email = require('./email')
 
 const users = mongojs('rebujito').collection('users')
 
@@ -71,39 +72,40 @@ function issueCouponInMicros(user) {
 function sendHappyBirthdayEmail(user) {
   console.log(user.emailAddress, 'sending a mail')
 
-  return new Promise((resolve) => {
-    let request = sendGrid.emptyRequest()
-    request.body = {
-      personalizations: [{
-        to: [{email: user.emailAddress}],
-        bcc: [{email: 'marcin@swarmloyalty.co.za'}],
-        subject: 'Happy Birhday!',
-      }],
-      from: {email: 'info@swarmloyalty.co.za'},
-      content: [{
-        type: 'text/html',
-        value: '<body>Happy Birthday, enjoy a birthday voucher on us.</body>'
-      }]
-    }
+  return email.getContents()
+  .then(emailText => {
 
-    request.method = 'POST'
-    request.path = '/v3/mail/send'
-    sendGrid.API(request, (response) => {
-      console.log(response.statusCode)
-      console.log(response.body)
-      console.log(response.headers)
-      event.log(
-        'birthday-coupon-email-sent',
-        {
-          uid: {id: user._id, brand: 'starbucks'},
-          provider: 'sendgrid',
-          response,
-        }
-      )
-      resolve()
+    return new Promise((resolve) => {
+
+      let request = sendGrid.emptyRequest()
+      request.body = {
+        personalizations: [{
+          to: [{email: user.emailAddress}],
+          bcc: [{email: 'marcin@swarmloyalty.co.za'}],
+          subject: 'Happy Birhday!',
+        }],
+        from: {email: 'info@swarmloyalty.co.za'},
+        content: [{ type: 'text/html', value: emailText }]
+      }
+
+      request.method = 'POST'
+      request.path = '/v3/mail/send'
+      sendGrid.API(request, (response) => {
+        console.log(response.statusCode)
+        console.log(response.body)
+        console.log(response.headers)
+        event.log(
+          'birthday-coupon-email-sent',
+          {
+            uid: {id: user._id, brand: 'starbucks'},
+            provider: 'sendgrid',
+            response,
+          }
+        )
+        resolve()
+      })
     })
   })
-
 }
 
 function start() {
