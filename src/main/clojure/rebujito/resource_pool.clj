@@ -53,26 +53,6 @@
                         ))
                  )))
       d*))
-
-  #_(checkout-physical-card [this card-number pin]
-    (log/info "checkout-physical-card" card-number pin)
-    (http-c/request (merge {:url "http://localhost:3001/starbucks/test/physical-card"
-                            :method :delete}
-
-                           {:headers {"Authorization" (format "Bearer %s" token)}
-                            :form-params {:cardNumber card-number
-                                          :pin pin}
-                            :insecure? true
-                            :content-type :json
-                            :accept :json
-                            :as :json
-                            :throw-exceptions true
-                            }))
-    #_(d/future
-      (Thread/sleep 100)
-      #_(throw (ex-info "pin doesn't match" {:status 409 :body {:code "400" :message "pin doesn't match"}}))
-      {:ok :ok}
-      ))
     )
 
 (defn new-prod-card-resource-pool [config]
