@@ -1,0 +1,13 @@
+{
+  "name": "birthday",
+  "scripts": {
+    "start": "node --harmony_destructuring ./index.js"
+  },
+  "dependencies": {
+    "bluebird": "3.4.1",
+    "lodash": "4.13.1",
+    "moment": "2.14.1",
+    "mongojs": "2.4.0",
+    "serialize-error": "2.0.0"
+  }
+}
