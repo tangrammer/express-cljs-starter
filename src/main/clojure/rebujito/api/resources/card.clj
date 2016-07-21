@@ -487,7 +487,7 @@
   (log/info "transfer-to-new-digital")
   (d/let-flow [
                from-card-number (:cardNumber (get-card-data-deferred-exception user-store user-id))
-               to-card-number (p/increment! counter-store :digital-card-number)
+               to-card-number (str (p/increment! counter-store :digital-card-number))
                updated? (d/chain
                  (fn [_]
                    (p/transfer mimi from-card-number to-card-number))
