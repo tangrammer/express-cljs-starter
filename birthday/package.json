@@ -9,6 +9,7 @@
     "micros": "git+ssh://git@github.com:naartjie/micros-api.git#3ac67e8",
     "moment": "2.14.1",
     "mongojs": "2.4.0",
+    "sendgrid": "3.0.9",
     "serialize-error": "2.0.0"
   }
 }
