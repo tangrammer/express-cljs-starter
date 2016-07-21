@@ -52,7 +52,7 @@
   :allowedRedemptionCount 1
   :voucherType "MSRPromotionalCoupon"
   :status (if (:redeemed mimi-coupon) "Redeemed" "Available")
-  :redemptionCount 0
+  :redemptionCount (if (:redeemed mimi-coupon) 1 0)
   :deliveryMethod "Email"
   :source "Unknown"
 
