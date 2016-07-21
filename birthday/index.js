@@ -64,7 +64,7 @@ function issueBirthdayVoucher(birthdayGuy) {
 }
 
 function issueCouponInMicros(user) {
-  if (!user.cards) return // try later guy
+  if (!user.cards) return Promise.resolve() // try later guy
   console.log(user.emailAddress, 'issuing micros coupon')
   return starbucks.issueCoupon({account: user.cards[0].cardNumber, code: 'FBD001'})
 }
