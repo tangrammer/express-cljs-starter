@@ -34,8 +34,12 @@ function birthdayIssueEvents(uid) {
 
 function issueBirthdayVoucher(birthdayGuy) {
 
-  console.log(birthdayGuy.emailAddress, 'issuing coupon')
+  if (!birthdayGuy.cards) {
+    console.log(birthdayGuy.emailAddress, 'no cards yet, not issuing coupon')
+    return Promise.resolve()
+  }
 
+  console.log(birthdayGuy.emailAddress, 'issuing coupon')
   return issueCouponInMicros(birthdayGuy)
   .then((coupon) => {
     console.log('issued coupon', coupon)
