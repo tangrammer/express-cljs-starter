@@ -8,6 +8,10 @@ const event = require('./event.js')
 
 const users = mongojs('rebujito').collection('users')
 
+micros.setBrand('starbucks')
+
+const starbucks = require('micros/lib/starbucks')
+
 function todaysBirthdays() {
   const today = moment()
   return users.findAsync({
@@ -58,10 +62,9 @@ function issueBirthdayVoucher(birthdayGuy) {
 }
 
 function issueCouponInMicros(user) {
-  //TK
-  console.log(user.emailAddress, 'todo, issue a coupon in micros')
-
-  return Promise.delay(500)
+  if (!user.cards) return // try later guy
+  console.log(user.emailAddress, 'issuing micros coupon')
+  return starbucks.issueCoupon({account: user.cards[0].cardNumber, code: 'FBD001'})
 }
 
 function sendHappyBirthdayEmail(user) {
