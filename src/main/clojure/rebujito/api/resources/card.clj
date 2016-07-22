@@ -333,47 +333,39 @@
                             :path {:card-id String}
                             :body s/Any}
                :response (fn [ctx]
-                           (try
+                           (dcatch ctx
+                             (do
+                               (util/validate* (-> schema :autoreload :post :paymentMethodId)  (-> ctx :parameters :body :paymentMethodId) [400 "Please supply a payment method id." "Missing payment method identifier attribute is required"])
 
-                             (util/validate* (-> schema :autoreload :post :paymentMethodId)  (-> ctx :parameters :body :paymentMethodId) [400 "Please supply a payment method id." "Missing payment method identifier attribute is required"])
+                               (util/validate* (-> schema :autoreload :post :autoReloadType)  (-> ctx :parameters :body :autoReloadType) [400 "autoReloadType must be set to 'Amount'."])
 
-                             (util/validate* (-> schema :autoreload :post :autoReloadType)  (-> ctx :parameters :body :autoReloadType) [400 "autoReloadType must be set to 'Amount'."])
+                               (util/validate* (-> schema :autoreload :post :triggerAmount)  (-> ctx :parameters :body :triggerAmount) [400 "Please supply a trigger amount." "For auto reload of type 'Amount', a valid trigger amount attribute is required."])
 
-                             (util/validate* (-> schema :autoreload :post :triggerAmount)  (-> ctx :parameters :body :triggerAmount) [400 "Please supply a trigger amount." "For auto reload of type 'Amount', a valid trigger amount attribute is required."])
-
-                             (util/validate* (-> schema :autoreload :post :amount)  (-> ctx :parameters :body :amount) [400 "Please supply an auto reload amount." "Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1500"] (fn [v] (if (= "Amount" (-> ctx :parameters :body :autoReloadType))
-                                                                                                                                                                                                                                                                                 (let [v1  (-> ctx :parameters :body :amount)]
-                                                                                                                                                                                                                                                                                   (and (> v1 9) (< v1 2001)))
-                                                                                                                                                                                                                                                                                 true)))
-
-                             ;; TODO: 400	121033	Invalid operation for card market.
-                             ;;       400	121034	Card resource not found to fulfill action.
-                             (-> (d/let-flow [auth-data (util/authenticated-data ctx)
-                                              payment-method-data (p/get-payment-method user-store (:user-id auth-data) (-> ctx :parameters :body :paymentMethodId))
-                                              body (-> ctx :parameters :body)
-                                              body (if (= (-> body :status ) "enabled") (assoc body :status "active") body)
-                                              auto-reload-data (when payment-method-data
-                                                                 (p/add-autoreload-profile-card user-store (:user-id auth-data)
-                                                                                                (-> (select-keys body (keys AutoReloadMongo))
-                                                                                                    (assoc  :cardId (-> ctx :parameters :path :card-id)))))]
-
-                                             (util/>200 ctx {
-                                                             :amount (-> body :amount)
-                                                             :autoReloadId (:autoReloadId auto-reload-data)
-                                                             :autoReloadType (-> body :autoReloadType)
-                                                             :cardId (-> ctx :parameters :path :card-id)
-                                                             :day (-> body :day)
-                                                             :disableUntilDate nil
-                                                             :paymentMethodId (-> body :paymentMethodId)
-                                                             :status (-> body :status)
-                                                             :stoppedDate nil
-                                                             :triggerAmount (-> body :triggerAmount)
-                                                             }))
-                                 (d/catch clojure.lang.ExceptionInfo
-                                     (fn [exception-info]
-                                       (domain-exception ctx (ex-data exception-info)))))
-                             (catch clojure.lang.ExceptionInfo e (domain-exception ctx (ex-data e)))))}}}
-
+                               (util/validate* (-> schema :autoreload :post :amount)  (-> ctx :parameters :body :amount) [400 "Please supply an auto reload amount." "Missing or invalid auto reload amount attribute is required. Amount must be within the range of 10-1500"] (fn [v] (if (= "Amount" (-> ctx :parameters :body :autoReloadType))
+                                                                                                                                                                                                                                                                                          (let [v1  (-> ctx :parameters :body :amount)]
+                                                                                                                                                                                                                                                                                            (and (> v1 9) (< v1 2001)))
+                                                                                                                                                                                                                                                                                          true)))
+                               (d/let-flow [auth-data (util/authenticated-data ctx)
+                                            payment-method-data (p/get-payment-method user-store (:user-id auth-data) (-> ctx :parameters :body :paymentMethodId))
+                                            body (-> ctx :parameters :body)
+                                            body (if (= (-> body :status ) "enabled") (assoc body :status "active") body)
+                                            auto-reload-data (when payment-method-data
+                                                               (p/add-autoreload-profile-card user-store (:user-id auth-data)
+                                                                                              (-> (select-keys body (keys AutoReloadMongo))
+                                                                                                  (assoc  :cardId (-> ctx :parameters :path :card-id)))))]
+                                           (util/>200 ctx {
+                                                           :amount (-> body :amount)
+                                                           :autoReloadId (:autoReloadId auto-reload-data)
+                                                           :autoReloadType (-> body :autoReloadType)
+                                                           :cardId (-> ctx :parameters :path :card-id)
+                                                           :day (-> body :day)
+                                                           :disableUntilDate nil
+                                                           :paymentMethodId (-> body :paymentMethodId)
+                                                           :status (-> body :status)
+                                                           :stoppedDate nil
+                                                           :triggerAmount (-> body :triggerAmount)
+                                                           }))
+                               )))}}}
       (merge (util/common-resource :me/cards))))
 
 (defn autoreload-disable* [ctx user-store user-id card-id]
