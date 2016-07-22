@@ -369,6 +369,11 @@
         (reset! payment-method-id (:paymentMethodId body))
         )
 
+      ;TK https://github.com/naartjie/rebujito/issues/103
+      ;(let [webhook-store (-> *system* :webhook-store)
+      ;      webhook-uuid (p/webhook-uuid webhook-store (:cardNumber card))]
+      ;  (p/change-state webhook-store webhook-uuid :ready))
+
       (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
                                   {:throw-exceptions false
@@ -386,6 +391,12 @@
                                    :content-type :json})
                       (print-body)
                       :status))))
+
+      ;TK https://github.com/naartjie/rebujito/issues/103
+      ;(let [webhook-store (-> *system* :webhook-store)
+      ;      webhook-uuid (p/webhook-uuid webhook-store (:cardNumber card))
+      ;      webhook-state (:state (p/current webhook-store webhook-uuid))]
+      ;  (is (= "done" webhook-state)))
 
       (let [path (bidi/path-for r ::card-reload/check :card-number (:cardNumber card))
             res @(http/get (format "http://localhost:%s%s"  port path)

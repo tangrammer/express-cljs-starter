@@ -10,6 +10,7 @@
    [rebujito.mongo :refer [id>mimi-id]]
    [rebujito.store.mocks :as mocks]
    [cheshire.core :as json]
+   [org.httpkit.client :as http]
    [schema.core :as s]
    [yada.resource :refer [resource]]))
 
@@ -345,14 +346,18 @@
                                                                                                                                                                                                                                                                                           (let [v1  (-> ctx :parameters :body :amount)]
                                                                                                                                                                                                                                                                                             (and (> v1 9) (< v1 2001)))
                                                                                                                                                                                                                                                                                           true)))
-                               (d/let-flow [auth-data (util/authenticated-data ctx)
-                                            payment-method-data (p/get-payment-method user-store (:user-id auth-data) (-> ctx :parameters :body :paymentMethodId))
+                               (d/let-flow [user-id (util/authenticated-user-id ctx)
+                                            payment-method-data (p/get-payment-method user-store user-id (-> ctx :parameters :body :paymentMethodId))
                                             body (-> ctx :parameters :body)
                                             body (if (= (-> body :status ) "enabled") (assoc body :status "active") body)
                                             auto-reload-data (when payment-method-data
-                                                               (p/add-autoreload-profile-card user-store (:user-id auth-data)
+                                                               (p/add-autoreload-profile-card user-store user-id
                                                                                               (-> (select-keys body (keys AutoReloadMongo))
-                                                                                                  (assoc  :cardId (-> ctx :parameters :path :card-id)))))]
+                                                                                                  (assoc  :cardId (-> ctx :parameters :path :card-id)))))
+                                            card-data (get-card-data user-store user-id)
+                                            card-number (:cardNumber card-data)]
+                                           ;TK https://github.com/naartjie/rebujito/issues/103
+                                           ;(http/get (format (:auto-reload-url app-config) card-number))
                                            (util/>200 ctx {
                                                            :amount (-> body :amount)
                                                            :autoReloadId (:autoReloadId auto-reload-data)

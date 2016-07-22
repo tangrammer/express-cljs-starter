@@ -124,6 +124,9 @@
                                                                                                :routingNumber (:card-token card-token-res)
                                                                                                })
                                           res-delete (p/delete-card-token payment-gateway {:cardToken (-> payment-method :routingNumber)})]
+
+                                         ;;(p/change-state webhook-store webhook-uuid :ready)
+
                                          (util/>200 ctx {
                                                          :fullName (-> updated-payment-method :fullName)
                                                          :billingAddressId (-> updated-payment-method :billingAddressId)
