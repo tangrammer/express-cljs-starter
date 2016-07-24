@@ -64,8 +64,8 @@
         mongo-account-data (merge
                             ;data-account
 
-                            (select-keys data-account [
-                                                       :emailAddress :market :countrySubdivision :registrationSource :receiveStarbucksEmailCommunications])
+                            (select-keys data-account [:emailAddress :market :countrySubdivision :registrationSource :receiveStarbucksEmailCommunications])
+
                             (->  {}
                                  (assoc :_id mongo-id)
                                  (assoc :password (p/sign crypto (:password data-account)))
