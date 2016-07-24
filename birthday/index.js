@@ -73,7 +73,7 @@ function issueCouponInMicros(user) {
 }
 
 function sendHappyBirthdayEmail(user) {
-  console.log(user.emailAddress, 'sending a mail')
+  console.log(user.emailAddress, 'sending a mail:')
 
   return email.getContents()
   .then(emailText => {
@@ -118,7 +118,8 @@ function start() {
   return recentBirthdays()
   .map(birthdayGuy => {
 
-    console.log(birthdayGuy.emailAddress, 'today\'s birthday guy')
+    let x = birthdayGuy
+    console.log(`${x.emailAddress} (${x.birthDay}/${x.birthMonth}): our birthday person`)
 
     return birthdayIssueEvents({id: birthdayGuy._id, brand: 'starbucks'})
     .then(issuedEvents => {
