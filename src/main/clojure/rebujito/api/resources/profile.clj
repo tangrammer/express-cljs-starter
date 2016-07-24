@@ -13,6 +13,7 @@
    [rebujito.schemas :refer (UpdateMongoUser)]
    [cheshire.core :as json]
    [schema.core :as s]
+   [plumbing.core :refer [?>]]
    [yada.resource :refer [resource]]))
 
 (def response-defaults {:favoriteStores []
@@ -23,6 +24,9 @@
 
 (defn update-user [ctx user-id user-store mimi]
   (d/let-flow [payload (util/remove-nils (-> ctx :parameters :body))
+               payload (-> payload
+                           (?> (:birthDay payload) (assoc :birthDay (Integer. (:birthDay payload))))
+                           (?> (:birthMonth payload) (assoc :birthMonth (Integer. (:birthMonth payload)))))
                current-user (p/find user-store user-id)
                email-exists? (when (and (:emailAddress payload) (not= (:emailAddress payload) (:emailAddress current-user)))
                                (account/check-account-mongo {:emailAddress (:emailAddress payload)} user-store))
