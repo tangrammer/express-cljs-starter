@@ -14,17 +14,16 @@ micros.setBrand('starbucks')
 
 const starbucks = require('micros/lib/starbucks')
 
-function todaysBirthdays() {
+function recentBirthdays() {
   const today = moment()
+  const yesterday = today.add(-1, 'day')
+
   return users.findAsync({
-    $or: [{
-      birthDay: today.date(),
-      birthMonth: today.month() + 1
-    },
-    {
-      birthDay: String(today.date()),
-      birthMonth: String(today.month() + 1)
-    }]
+    $or: [{ birthDay: today.date(), birthMonth: today.month() + 1 },
+          { birthDay: String(today.date()), birthMonth: String(today.month() + 1) },
+          { birthDay: yesterday.date(), birthMonth: yesterday.month() + 1 },
+          { birthDay: String(yesterday.date()), birthMonth: String(yesterday.month() + 1) }
+        ]
   })
 }
 
@@ -116,7 +115,7 @@ function start() {
 
   console.log('birthday job starting')
 
-  return todaysBirthdays()
+  return recentBirthdays()
   .map(birthdayGuy => {
 
     console.log(birthdayGuy.emailAddress, 'today\'s birthday guy')
