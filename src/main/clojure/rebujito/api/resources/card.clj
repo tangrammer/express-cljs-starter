@@ -8,6 +8,7 @@
    [rebujito.api.util :as util]
    [rebujito.util :refer (dtry dcatch error*)]
    [rebujito.mongo :refer [id>mimi-id]]
+   [rebujito.template :as template]
    [rebujito.store.mocks :as mocks]
    [cheshire.core :as json]
    [org.httpkit.client :as http]
@@ -328,7 +329,7 @@
                        (dcatch ctx (history* user-store mimi ctx (:user-id (util/authenticated-data ctx)))))}}}
    (merge (util/common-resource :me/cards))))
 
-(defn autoreload [user-store mimi payment-gateway app-config]
+(defn autoreload [user-store mimi payment-gateway app-config mailer]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}
                             :path {:card-id String}
@@ -347,6 +348,7 @@
                                                                                                                                                                                                                                                                                             (and (> v1 9) (< v1 2001)))
                                                                                                                                                                                                                                                                                           true)))
                                (d/let-flow [user-id (util/authenticated-user-id ctx)
+                                            user (p/find user-store user-id)
                                             payment-method-data (p/get-payment-method user-store user-id (-> ctx :parameters :body :paymentMethodId))
                                             body (-> ctx :parameters :body)
                                             body (if (= (-> body :status ) "enabled") (assoc body :status "active") body)
@@ -357,6 +359,13 @@
                                             card-data (get-card-data user-store user-id)
                                             card-number (:cardNumber card-data)
                                            ]
+
+                                 (p/send mailer {:subject      "Auto-reload enabled"
+                                                 :to           (:emailAddress user)
+                                                 :content-type "text/html"
+                                                 :content      (template/render-file
+                                                                 "templates/email/auto_reload_enable.html"
+                                                                 {})})
 
                                  ;TK https://github.com/naartjie/rebujito/issues/103
                                  (d/future

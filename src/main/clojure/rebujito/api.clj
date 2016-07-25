@@ -174,7 +174,7 @@
                                        ["/reload" (-> (card-reload/reload user-store mimi payment-gateway app-config)
                                                       (assoc :id ::card-reload/reload
                                                              :oauth {:post scopes/user}))]
-                                       ["/autoreload" (-> (card/autoreload user-store mimi payment-gateway app-config)
+                                       ["/autoreload" (-> (card/autoreload user-store mimi payment-gateway app-config mailer)
                                                           (assoc :id ::card/autoreload
                                                                  :oauth {:post scopes/user}))]
                                        ["/autoreload/disable" (-> (card/autoreload-disable user-store)

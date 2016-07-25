@@ -12,7 +12,7 @@
    [manifold.deferred :as d]
    [rebujito.protocols :as p]
    [rebujito.api-test :refer (print-body create-digital-card* parse-body)]
-   [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig  api-config)]
+   [rebujito.base-test :refer (system-fixture *system* *user-access-token* get-path  access-token-application access-token-user new-account-sb create-account new-sig api-config *user-account-data*)]
    [aleph.http :as http]
    [rebujito.api.resources
     [payment :as payment]
@@ -392,6 +392,10 @@
                       (print-body)
                       :status))))
 
+      (let [mails @(:mails (:mailer *system*))]
+        (is (= 3 (count mails)))
+        (is (= (:to (last mails)) (:emailAddress *user-account-data*))))
+
       ;TK https://github.com/naartjie/rebujito/issues/103
       ;(let [webhook-store (-> *system* :webhook-store)
       ;      webhook-uuid (p/webhook-uuid webhook-store (:cardNumber card))
@@ -408,7 +412,7 @@
             ]
         (is (= 200 (-> res :status)))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 3 (count mails)))))
+          (is (= 4 (count mails)))))
 
       (let [path (bidi/path-for r ::card/autoreload :card-id card-id)]
         (is (= 200(-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -444,7 +448,7 @@
         (is (-> body :payment-data))
         (let [mails @(:mails (:mailer *system*))]
 
-          (is (= 4 (count mails)))
+          (is (= 6 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
 ))
@@ -523,7 +527,7 @@
 ;        (is (= nil body))
         (let [mails @(:mails (:mailer *system*))]
 
-          (is (= 3 (count mails)))
+          (is (= 4 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           ))
 
@@ -561,7 +565,7 @@
         (is (-> body :payment-data))
         (let [mails @(:mails (:mailer *system*))]
 
-          (is (= 4 (count mails)))
+          (is (= 6 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
         )
@@ -580,7 +584,7 @@
         (is (= 200 (-> res :status)))
         (is (nil? body ))
         (let [mails @(:mails (:mailer *system*))]
-          (is (= 4 (count mails)))
+          (is (= 6 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
         )
@@ -604,7 +608,7 @@
         (is (-> body :payment-data))
         (let [mails @(:mails (:mailer *system*))]
 
-          (is (= 5 (count mails)))
+          (is (= 7 (count mails)))
           (is (= (select-keys (last mails) [:subject]) {:subject "Confirmation of Starbucks Card Automatic Reload"}))
           )
         )
