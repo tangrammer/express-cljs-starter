@@ -3,11 +3,7 @@
             [rebujito.protocols :as p]
             [schema.core :as s]
             [taoensso.timbre :as log]
-            [rebujito.security.auth :as auth])
-  )
-
-(defn extract-data [user]
-  (select-keys user [:_id]))
+            [rebujito.security.auth :as auth]))
 
 (some? (:a {:a false}))
 
