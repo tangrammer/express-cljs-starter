@@ -355,21 +355,27 @@
                                                                                               (-> (select-keys body (keys AutoReloadMongo))
                                                                                                   (assoc  :cardId (-> ctx :parameters :path :card-id)))))
                                             card-data (get-card-data user-store user-id)
-                                            card-number (:cardNumber card-data)]
-                                           ;TK https://github.com/naartjie/rebujito/issues/103
-                                           ;(http/get (format (:auto-reload-url app-config) card-number))
-                                           (util/>200 ctx {
-                                                           :amount (-> body :amount)
-                                                           :autoReloadId (:autoReloadId auto-reload-data)
-                                                           :autoReloadType (-> body :autoReloadType)
-                                                           :cardId (-> ctx :parameters :path :card-id)
-                                                           :day (-> body :day)
-                                                           :disableUntilDate nil
-                                                           :paymentMethodId (-> body :paymentMethodId)
-                                                           :status (-> body :status)
-                                                           :stoppedDate nil
-                                                           :triggerAmount (-> body :triggerAmount)
-                                                           }))
+                                            card-number (:cardNumber card-data)
+                                           ]
+
+                                 ;TK https://github.com/naartjie/rebujito/issues/103
+                                 (d/future
+                                   (Thread/sleep 200)
+                                   (http/get (format (:auto-reload-url app-config) card-number))
+                                   )
+
+                                 (util/>200 ctx {
+                                                 :amount (-> body :amount)
+                                                 :autoReloadId (:autoReloadId auto-reload-data)
+                                                 :autoReloadType (-> body :autoReloadType)
+                                                 :cardId (-> ctx :parameters :path :card-id)
+                                                 :day (-> body :day)
+                                                 :disableUntilDate nil
+                                                 :paymentMethodId (-> body :paymentMethodId)
+                                                 :status (-> body :status)
+                                                 :stoppedDate nil
+                                                 :triggerAmount (-> body :triggerAmount)
+                                                 }))
                                )))}}}
       (merge (util/common-resource :me/cards))))
 
