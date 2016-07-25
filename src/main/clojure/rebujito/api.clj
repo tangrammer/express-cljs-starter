@@ -123,7 +123,7 @@
                                              (assoc :id ::login/me-change-password
                                              :oauth {:post scopes/user}))]
 
-               ["/login/resend-verify-email" (-> (login/resend-verify-email authorizer mailer app-config)
+               ["/login/resend-verify-email" (-> (login/resend-verify-email authorizer mailer app-config user-store)
                                                  (assoc :id ::login/resend-verify-email
                                                         :oauth {:post scopes/user}))]
 

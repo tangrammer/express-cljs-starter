@@ -117,15 +117,16 @@
                                      (util/>403 ctx {:message (str "Forbidden: " "password doesn't match")}))))}}}
       (merge (util/common-resource :login))))
 
-(defn resend-verify-email [authorizer mailer app-config]
+(defn resend-verify-email [authorizer mailer app-config user-store]
   (-> {:methods
        {:post {:parameters {:query {:access_token String}}
                :response (fn [ctx]
                            (dcatch ctx
-                              (d/let-flow [user-data (util/authenticated-data ctx)
-                                           email-address (:emailAddress user-data)
+                              (d/let-flow [user-id (util/authenticated-user-id ctx)
+                                           user (p/find user-store user-id)
+                                           email-address (:emailAddress user)
                                            access-token (p/grant authorizer
-                                                                 {:_id (:user-id user-data)
+                                                                 {:_id user-id
                                                                   :emailAddress email-address}
                                                                  #{scopes/verify-email})
                                            link (format "%s/verify-new-user-email/%s"
@@ -139,7 +140,7 @@
                                                                 :content (template/render-file
                                                                           "templates/email/verify_email.html"
                                                                           (merge
-                                                                            (select-keys user-data [:firstName :lastName])
+                                                                            (select-keys user [:firstName :lastName])
                                                                             {:link link}))})
                                            ]
                                           (util/>200 ctx nil)
