@@ -223,7 +223,6 @@
 ;;                      print-body
                        :status)))
 
-
      (testing ::login/validate-password
        (let [path (get-path ::login/validate-password)]
          (is (= 200 (-> @(http/post (format "http://localhost:%s%s?access_token=%s"  port path *user-access-token*)
@@ -233,10 +232,7 @@
                                             (assoc (g/generate (-> login/schema :validate-password :post)) :password (:password *user-account-data*)))
                                      :content-type :json})
 ;                        print-body
-                        :status)))
-
-         ))))))
-
+                        :status)))))))))
 
 (deftest test-JWT
   (testing "decrypt JWT"
