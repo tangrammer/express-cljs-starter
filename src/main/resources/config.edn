@@ -1,7 +1,7 @@
 {
  :app-config {:sub-market #profile {:default "ZA"}
               :currency-code  #profile {:default "ZAR"}
-              :client-url "http://197.85.186.216:82/#"
+              :client-url "http://starbucksweb.dsg.co.za/#"
               :customer-admin "agent1@starbucks.co.za"
               ;TK: https://github.com/naartjie/rebujito/issues/103
               ;:auto-reload-url #profile {:prod "https://starbucks.swarmapps.co.za/starbucks/api/v1/check-reload/%s"
