@@ -47,10 +47,12 @@
    :firstName String
    :lastName String
    :receiveStarbucksEmailCommunications Boolean
+   (s/optional-key :mobileNumber) String
    (s/optional-key  :verifiedEmail)  Boolean})
 
 (def UpdateMongoUser
   {(s/optional-key :emailAddress) (s/maybe String)
+   (s/optional-key :mobileNumber) (s/maybe String)
    (s/optional-key :firstName) (s/maybe String)
    (s/optional-key :lastName) (s/maybe String)
    (s/optional-key :receiveStarbucksEmailCommunications) (s/maybe Boolean)

@@ -17,6 +17,7 @@
 
 (def schema {:post {:addressLine1                        String
                     (s/optional-key :addressLine2)       String
+                    (s/optional-key :mobileNumber)       String
                     :birthDay                            (s/conditional number? Integer :else String)
                     :birthMonth                          (s/conditional number? Integer :else String)
                     :city                                String
@@ -60,7 +61,12 @@
   (let [mimi-id (first mimi-res)
         mongo-id (p/generate-id user-store mimi-id)
         mongo-account-data (merge
-                             (select-keys data-account [:emailAddress :market :countrySubdivision :registrationSource :receiveStarbucksEmailCommunications])
+                             (select-keys data-account [:emailAddress
+                                                        :mobileNumber
+                                                        :market
+                                                        :countrySubdivision
+                                                        :registrationSource
+                                                        :receiveStarbucksEmailCommunications])
                              (-> {}
                                  (assoc :_id mongo-id)
                                  (assoc :password (p/sign crypto (:password data-account)))
