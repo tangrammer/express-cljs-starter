@@ -55,6 +55,8 @@
             user-id (:user-id (p/read-token (:authenticator *system*) *user-access-token*))
             path (bidi/path-for r api-id :user-id user-id)
             payload (g/generate (:put (:user customer-admin/schema)))
+            payload (assoc payload :birthDay (inc (rand-int 30))
+                                   :birthMonth (inc (rand-int 12)))
             ]
 
         ;; forbidden with no valid user logged (user-access-token instead of customer-admin-access-token)
