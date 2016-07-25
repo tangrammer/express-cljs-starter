@@ -66,6 +66,7 @@
                                          (select-keys user-data [:firstName
                                                                  :lastName
                                                                  :emailAddress
+                                                                 :mobileNumber
                                                                  :createdDate
                                                                  :birthDay
                                                                  :birthMonth

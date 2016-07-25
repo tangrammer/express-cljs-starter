@@ -145,7 +145,12 @@
   (:user-id (authenticated-data ctx)))
 
 (defn generate-user-data [user-data sub-market]
-  (let [user-data-selected (select-keys user-data [:firstName :lastName :emailAddress :verifiedEmail :receiveStarbucksEmailCommunications])]
+  (let [user-data-selected (select-keys user-data [:firstName
+                                                   :lastName
+                                                   :mobileNumber
+                                                   :emailAddress
+                                                   :verifiedEmail
+                                                   :receiveStarbucksEmailCommunications])]
     (log/info user-data-selected)
     (s/validate UserProfileData user-data-selected)
     (merge user-data-selected
