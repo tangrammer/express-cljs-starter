@@ -239,12 +239,6 @@
 
 
 (deftest test-JWT
-  (time
-   (testing "decrypt JWT"
-     (let [token-data (p/read-token  (-> *system* :authenticator) *user-access-token*)]
-       ;; (pprint token-data)
-       ;; (println "----")
-       ;; (pprint *user-account-data*)
-       ;; (println "----")
-       (is (pos? (count (clojure.set/intersection (set (p/read-token  (-> *system* :authenticator) *user-access-token*))
-                                                  (set  *user-account-data*)))))))))
+  (testing "decrypt JWT"
+    (let [token-data (p/read-token (-> *system* :authenticator) *user-access-token*)]
+      (is (some? (:_id token-data))))))

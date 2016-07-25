@@ -7,7 +7,7 @@
   )
 
 (defn extract-data [user]
-  (select-keys user [:_id :firstName :lastName :emailAddress :verifiedEmail]))
+  (select-keys user [:_id]))
 
 (some? (:a {:a false}))
 
