@@ -82,8 +82,8 @@
                                                                          :content (template/render-file
                                                                                    "templates/email/verify_email.html"
                                                                                    (merge
-                                        ; TODO don't have user yet - removed from template
-                                        ; (select-keys user [:firstName :lastName])
+                                                                                    ; TODO don't have user yet - removed from template
+                                                                                    ; (select-keys user [:firstName :lastName])
                                                                                     {:link link}))
                                                                          })))
 
