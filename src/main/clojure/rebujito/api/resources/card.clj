@@ -29,6 +29,8 @@
                                  :amount s/Num
                                  :paymentMethodId String}}})
 
+(def registration-bonus-points 125)
+
 (defn new-physical-card [data]
   (merge data {:digital false}))
 
@@ -149,9 +151,9 @@
                                                    (p/register-card mimi {:cardNumber card-number
                                                      :customerId (id>mimi-id user-id)}))
                                                  (fn [_]
-                                                   (p/increment-balance! mimi card-number 50 :loyalty))
+                                                   (p/increment-balance! mimi card-number registration-bonus-points :loyalty))
                                                  (fn [_]
-                                                   (p/increment-balance! mimi card-number 50 :rewards))
+                                                   (p/increment-balance! mimi card-number registration-bonus-points :rewards))
                                                  (fn [_]
                                                    (p/insert-card! user-store user-id card)))]
 
@@ -193,7 +195,7 @@
             :response (fn [ctx]
                         (dcatch ctx
                                 (let [user-id (util/authenticated-user-id ctx)
-                                      card (register-digital-card* counter-store user-store mimi user-id 50)]
+                                      card (register-digital-card* counter-store user-store mimi user-id registration-bonus-points)]
                                   (util/>200 ctx card))))}}}
 
    (merge (util/common-resource :me/cards))))

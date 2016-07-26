@@ -24,26 +24,26 @@
 
 (deftest points-needed-test
   (testing "that shit"
-    (is (= 100
+    (is (= 250
       (points-needed-for-next-reward 0)
-      (points-needed-for-next-reward 100)))
+      (points-needed-for-next-reward 250)))
     (is (= 1
-      (points-needed-for-next-reward 99)
-      (points-needed-for-next-reward 199)
-      (points-needed-for-next-reward 499)))
+      (points-needed-for-next-reward 249)
+      (points-needed-for-next-reward 499)
+      (points-needed-for-next-reward 749)))
     (is (= 50
-      (points-needed-for-next-reward 50)
-      (points-needed-for-next-reward 150)))
+      (points-needed-for-next-reward 200)
+      (points-needed-for-next-reward 450)))
     (is (= 49
-      (points-needed-for-next-reward 51)
-      (points-needed-for-next-reward 151)))))
+      (points-needed-for-next-reward 201)
+      (points-needed-for-next-reward 451)))))
 
 (deftest points-needed-for-reevaluation-test
   (testing "re-evaluation rules: how many more points do you need to stay on this tier"
     (is (= 0 (points-needed-for-reevaluation 0)))
-    (is (= 0 (points-needed-for-reevaluation 299)))
-    (is (= 300 (points-needed-for-reevaluation 300)))
-    (is (= 299 (points-needed-for-reevaluation 301)))
-    (is (= 1 (points-needed-for-reevaluation 599)))
-    (is (= 0 (points-needed-for-reevaluation 600)))
-    (is (= 0 (points-needed-for-reevaluation 601)))))
+    (is (= 0 (points-needed-for-reevaluation 749)))
+    (is (= 750 (points-needed-for-reevaluation 750)))
+    (is (= 749 (points-needed-for-reevaluation 751)))
+    (is (= 1 (points-needed-for-reevaluation 1499)))
+    (is (= 0 (points-needed-for-reevaluation 1500)))
+    (is (= 0 (points-needed-for-reevaluation 1501)))))

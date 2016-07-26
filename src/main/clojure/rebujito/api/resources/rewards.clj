@@ -14,8 +14,8 @@
    [yada.resource :refer [resource]])
   (:import [java.time Instant]))
 
-(def reward-every-x-points 100)
-(def gold-threshold 300)
+(def reward-every-x-points 250)
+(def gold-threshold 750)
 (def rewards-program {:programName "My Starbucks Rewards"
                       :numberOfTiers 2
                       :countryCodes ["ZA"]
