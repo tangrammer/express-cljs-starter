@@ -45,7 +45,6 @@
                                :postalCode String
                                :type String}}})
 
-
 (defn update-address* [ctx payload user-id address-id user-store]
   (d/let-flow [
                new-address (assoc payload :addressId address-id)
@@ -61,11 +60,11 @@
                                     (d/let-flow [user-id (util/authenticated-user-id ctx)
                                                  address (-> ctx :body)
                                                  address-id (p/insert-address user-store user-id address)]
-                                                (log/info ">====>>>"(str "/me/addresses/" address-id))
-                                                (-> ctx :response (assoc :status 201)
-                                                    ;; TODO use ::resource/addresses to generate :location
-                                                    (assoc-in [:headers :location] (str "/me/addresses/" address-id))))
-))}
+                                      (log/info ">====>>>"(str "/me/addresses/" address-id))
+                                      (-> ctx :response (assoc :status 201)
+                                          ;; TODO use ::resource/addresses to generate :location
+                                          (assoc-in [:headers :location] (str "/me/addresses/" address-id))))))}
+
         :get {:parameters {:query {:access_token String}}
               :response (fn [ctx]
                           (dcatch ctx
@@ -89,9 +88,6 @@
         :delete {:parameters {:query {:access_token String}
                               :path {:address-id String}}
                  :response (fn [ctx]
-                             ;; TODO: complete possible outputs
-                             ;;      400	111028	Cannot delete registration address.
-                             ;;      400	111037	Address is in use.
                              (dcatch ctx
                                      (d/let-flow [user-id (util/authenticated-user-id ctx)
                                                   address-id (-> ctx :parameters :path :address-id)
@@ -108,7 +104,7 @@
                                   (let [user-id (util/authenticated-user-id ctx)
                                         payload (-> ctx :parameters :body)
                                         address-id (get-in ctx [:parameters :path :address-id])]
-                                    (update-address* ctx payload user-id address-id user-store))))}
-        }}
 
-     (merge (util/common-resource :addresses))))
+                                    (update-address* ctx payload user-id address-id user-store))))}}}
+
+      (merge (util/common-resource :addresses))))
