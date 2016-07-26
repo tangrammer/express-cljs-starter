@@ -37,24 +37,23 @@
 (defn new-digital-card [data]
   (merge data {:digital true}))
 
-(def VALUE_LINK_ARB_CLASS "242")
-
-(def CURRENCY_CODE "ZAR")
+(def value-link-arb-class "242")
+(def currency-code "ZAR")
 
 (defn blank-card-data []
   {:primary true
-   :cardCurrency CURRENCY_CODE
+   :cardCurrency currency-code
    :nickname "My Card"
    :type "Standard"
    :actions ["Reload" "AutoReload"]
    :submarketCode "ZA"
-   :class VALUE_LINK_ARB_CLASS
+   :class value-link-arb-class
    :owner true
    :partner false
    :autoReloadProfile nil
    :balance 0
    :balanceDate (.toString (java.time.Instant/now))
-   :balanceCurrencyCode CURRENCY_CODE})
+   :balanceCurrencyCode currency-code})
 
 (def STORED_VALUE_PROGRAM "Starbucks Card")
 
