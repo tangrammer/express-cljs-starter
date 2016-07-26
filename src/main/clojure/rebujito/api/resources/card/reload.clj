@@ -64,10 +64,12 @@
                                                                                                               (= paymentMethodId (:paymentMethodId autoreload-profile)))
                                                                                                             (:paymentMethods user)))
 
+                                                                         reload-amount (long (:amount autoreload-profile))
+
                                                                          payment-data (-> (p/execute-payment
                                                                                            payment-gateway
                                                                                            (merge (select-keys user [:emailAddress :lastName :firstName])
-                                                                                                  {:amount  (long (:amount autoreload-profile))
+                                                                                                  {:amount reload-amount
                                                                                                    :currency (:currency-code app-config)
                                                                                                    :cvn "123" ;; TODO how can i find this value?
                                                                                                    :routingNumber (-> payment-method-data :routingNumber)
@@ -83,7 +85,7 @@
                                                                                                 (manifold.deferred/error-deferred e))))
 
                                                                          mimi-card-data (when payment-data
-                                                                                          (-> (p/increment-balance! mimi card-number (:amount autoreload-profile) :stored-value)
+                                                                                          (-> (p/increment-balance! mimi card-number reload-amount :stored-value)
                                                                                               (d/catch clojure.lang.ExceptionInfo
                                                                                                   (fn [e]
                                                                                                     (p/change-state webhook-store webhook-uuid :error)
@@ -99,7 +101,7 @@
                                                                                                      :content-type "text/html"
                                                                                                      :content (template/render-file
                                                                                                                "templates/email/reload_success.html"
-                                                                                                               {:amount (:amount autoreload-profile)
+                                                                                                               {:amount reload-amount
                                                                                                                 :balance (:balance mimi-card-data)
                                                                                                                 :cardNumber (:cardNumber card)
                                                                                                                 :address nil})}))
