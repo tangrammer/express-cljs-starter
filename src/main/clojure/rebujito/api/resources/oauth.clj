@@ -91,10 +91,11 @@
               (if-let [user (-> (p/find user-store {:emailAddress (get-in ctx [:parameters :body :username])
                                                     :password (p/sign crypto (get-in ctx [:parameters :body :password]))})
                                  first)]
-                (>201 ctx (-> (p/grant authorizer (select-keys user [:_id]) (let [scopes* #{scopes/application scopes/user}]
-                                                                            (if (customer-admin? ctx app-config)
-                                                                              (conj  scopes* scopes/customer-admin)
-                                                                              scopes*)) one-day-in-minutes)
+                (>201 ctx (-> (p/grant authorizer (select-keys user [:_id :emailAddress]) (let [scopes* #{scopes/application scopes/user}]
+                                                                                            (if (customer-admin? ctx app-config)
+                                                                                              (conj  scopes* scopes/customer-admin)
+                                                                                              scopes*))
+                                       one-day-in-minutes)
                               (sec/jwt authenticator one-day-in-minutes)))
 
                 (>400 ctx {:error "invalid_grant"
@@ -122,7 +123,7 @@
     (if (sec/valid? protected-data refresh-token token-store)
       (if (:user-id protected-data)
         (let [user (p/find user-store (:user-id protected-data))]
-          (>201 ctx  (-> (p/grant authorizer (select-keys user [:_id]) #{scopes/application scopes/user} one-day-in-minutes)
+          (>201 ctx  (-> (p/grant authorizer (select-keys user [:_id :emailAddress]) #{scopes/application scopes/user} one-day-in-minutes)
                          (sec/jwt authenticator one-day-in-minutes))))
         (>201 ctx (-> (p/grant authorizer {} #{scopes/application} one-day-in-minutes)
                             (sec/jwt authenticator one-day-in-minutes))))
