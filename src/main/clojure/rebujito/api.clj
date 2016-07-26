@@ -63,7 +63,7 @@
 
         [["/settings/" :platform "/" :version "/" :market] (yada/handler content/settings-json)]
 
-        ["/account/create" (-> (account/create  mimi user-store crypto mailer authorizer app-config)
+        ["/account/create" (-> (account/create  mimi user-store crypto mailer authorizer app-config counter-store)
                                (assoc :id ::account/create
                                       :oauth {:post scopes/application}))]
         ["/oauth/token" (->  (oauth/token-resource-owner  token-store user-store authenticator authorizer crypto api-client-store app-config)

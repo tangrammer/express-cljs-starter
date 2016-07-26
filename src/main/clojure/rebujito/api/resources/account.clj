@@ -13,7 +13,8 @@
     [buddy.core.codecs :refer (bytes->hex)]
     [schema.core :as s]
     [schema.coerce :as sc]
-    [yada.resource :refer [resource]]))
+    [yada.resource :refer [resource]]
+    [rebujito.api.resources.card :as card]))
 
 (def schema {:post {:addressLine1                        String
                     (s/optional-key :addressLine2)       String
@@ -103,7 +104,7 @@
                                 :body    "Account Management Service returns error that email address is already taken"
                                 }))))
 
-(defn create [mimi user-store crypto mailer authorizer app-config]
+(defn create [mimi user-store crypto mailer authorizer app-config counter-store]
   (-> {:methods
        {:post {:parameters {:query {:access_token              String
                                     :market                    String
@@ -117,11 +118,18 @@
                                                       current-market
                                                       (-> ctx :parameters :query :market))))]
                                (dcatch ctx
-                                       (d/let-flow [mimi-account (d/chain
+                                       (d/let-flow [create-digital-card (-> ctx :parameters :body :createDigitalCard)
+                                                    mimi-account (d/chain
                                                                    (check-account-mongo (select-keys (get-in ctx [:parameters :body]) [:emailAddress]) user-store)
                                                                    (fn [b]
                                                                      (p/create-account mimi (create-account-coercer (get-in ctx [:parameters :body])))))
+
                                                     mongo-account (create-account-mongo! (get-in ctx [:parameters :body]) mimi-account user-store crypto)
+
+                                                    user-id (:_id mongo-account)
+
+                                                    mimi-card (when (and create-digital-card mimi-account)
+                                                                (card/register-digital-card* counter-store user-store mimi user-id card/registration-bonus-points))
 
                                                     access-token (p/grant authorizer (select-keys mongo-account [:emailAddress :_id]) #{scopes/verify-email})
 
