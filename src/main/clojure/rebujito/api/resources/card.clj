@@ -106,7 +106,7 @@
            :response (fn [ctx]
                        (dcatch
                         ctx
-                        (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
+                        (d/let-flow [user-id (util/authenticated-user-id ctx)
                                      card-data (get-card-data user-store user-id)
                                      balances (when (:cardNumber card-data)
                                                 (p/balances mimi (:cardNumber card-data)))
@@ -123,7 +123,7 @@
            :response (fn [ctx]
                        (dcatch ctx
                                (do
-                                 (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
+                                 (d/let-flow [user-id (util/authenticated-user-id ctx)
                                               card-data (get-card-data user-store user-id)
                                               balances (when (:cardNumber card-data)
                                                         (p/balances mimi (:cardNumber card-data)))
@@ -142,8 +142,7 @@
                                  (let [card-number (-> ctx :parameters :body :cardNumber)
                                        card-pin (-> ctx :parameters :body :pin)
                                        card (new-physical-card {:cardNumber card-number})
-                                       auth-data (util/authenticated-data ctx)
-                                       user-id (:user-id auth-data)
+                                       user-id (util/authenticated-user-id ctx)
                                        card-id @(d/chain
                                                  (p/checkout-physical-card resource-pool card-number card-pin)
                                                  (fn [_]
@@ -193,8 +192,7 @@
     {:post {:parameters {:query {:access_token String}}
             :response (fn [ctx]
                         (dcatch ctx
-                                (let [auth-data (util/authenticated-data ctx)
-                                      user-id (:user-id auth-data)
+                                (let [user-id (util/authenticated-user-id ctx)
                                       card (register-digital-card* counter-store user-store mimi user-id 50)]
                                   (util/>200 ctx card))))}}}
 
@@ -326,7 +324,7 @@
                                 (s/optional-key :limit) String
                                 (s/optional-key :offset) String}}
            :response (fn [ctx]
-                       (dcatch ctx (history* user-store mimi ctx (:user-id (util/authenticated-data ctx)))))}}}
+                       (dcatch ctx (history* user-store mimi ctx (util/authenticated-user-id ctx))))}}}
    (merge (util/common-resource :me/cards))))
 
 (defn autoreload [user-store mimi payment-gateway app-config mailer]
@@ -409,7 +407,7 @@
        {:get {:parameters {:query {:access_token String}
                            :path {:card-id String}}
               :response (fn [ctx]
-                          (d/let-flow [user-id (:user-id (util/authenticated-data ctx))
+                          (d/let-flow [user-id (util/authenticated-user-id ctx)
                                        card-data (get-card-data user-store user-id)
                                        balances (when (:cardNumber card-data)
                                                    (p/balances mimi (:cardNumber card-data)))
@@ -485,7 +483,7 @@
                 :response (fn [ctx]
                             (dcatch ctx
                               (transfer-to* ctx
-                                            (:user-id (util/authenticated-data ctx))
+                                            (util/authenticated-user-id ctx)
                                             user-store
                                             mimi
                                             resource-pool

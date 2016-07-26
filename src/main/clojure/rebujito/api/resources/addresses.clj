@@ -58,9 +58,9 @@
                             :body (:post schema)}
                :response (fn [ctx]
                            (dcatch  ctx
-                                    (d/let-flow [auth-data (util/authenticated-data ctx)
+                                    (d/let-flow [user-id (util/authenticated-user-id ctx)
                                                  address (-> ctx :body)
-                                                 address-id (p/insert-address user-store (:user-id auth-data) address)]
+                                                 address-id (p/insert-address user-store user-id address)]
                                                 (log/info ">====>>>"(str "/me/addresses/" address-id))
                                                 (-> ctx :response (assoc :status 201)
                                                     ;; TODO use ::resource/addresses to generate :location
@@ -68,10 +68,11 @@
 ))}
         :get {:parameters {:query {:access_token String}}
               :response (fn [ctx]
-                          (dcatch ctx (d/let-flow [auth-data (util/authenticated-data ctx)
-                                           user-id (:user-id auth-data)
-                                           addresses (p/get-addresses user-store user-id)]
-                               (util/>200 ctx addresses))))}}}
+                          (dcatch ctx
+                                  (d/let-flow [user-id (util/authenticated-user-id ctx)
+                                               addresses (p/get-addresses user-store user-id)]
+                                    (util/>200 ctx addresses))))}}}
+
       (merge (util/common-resource :addresses))))
 
 (defn get-one [user-store]
@@ -79,12 +80,11 @@
        {:get {:parameters {:path {:address-id String}
                            :query {:access_token String}}
               :response (fn [ctx]
-                          (dcatch ctx (d/let-flow [auth-data (util/authenticated-data ctx)
-                                           user-id (:user-id auth-data)
-                                           address-id (-> ctx :parameters :path :address-id)
-                                           address (p/get-address user-store user-id address-id)
-                                           ]
-                                          (util/>200 ctx address))))}
+                          (dcatch ctx
+                                  (d/let-flow [user-id (util/authenticated-user-id ctx)
+                                               address-id (-> ctx :parameters :path :address-id)
+                                               address (p/get-address user-store user-id address-id)]
+                                    (util/>200 ctx address))))}
 
         :delete {:parameters {:query {:access_token String}
                               :path {:address-id String}}
@@ -93,20 +93,20 @@
                              ;;      400	111028	Cannot delete registration address.
                              ;;      400	111037	Address is in use.
                              (dcatch ctx
-                                     (d/let-flow [auth-data (util/authenticated-data ctx)
-                                                  user-id (:user-id auth-data)
+                                     (d/let-flow [user-id (util/authenticated-user-id ctx)
                                                   address-id (-> ctx :parameters :path :address-id)
                                                   address (p/get-address user-store user-id address-id)
                                                   res-mongo (p/remove-address user-store user-id address)]
 
-                                                 (util/>200 ctx nil))))}
+                                       (util/>200 ctx nil))))}
+
         :put {:parameters {:query {:access_token String}
                            :path {:address-id String}
                            :body (-> schema :put)}
               :response (fn [ctx]
                           (dcatch ctx
-                                  (let [payload (-> ctx :parameters :body)
-                                        user-id (-> ctx util/authenticated-data :user-id)
+                                  (let [user-id (util/authenticated-user-id ctx)
+                                        payload (-> ctx :parameters :body)
                                         address-id (get-in ctx [:parameters :path :address-id])]
                                     (update-address* ctx payload user-id address-id user-store))))}
         }}

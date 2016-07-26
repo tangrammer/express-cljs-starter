@@ -39,7 +39,7 @@
        {:put {:parameters {:query {:access_token String}}
               :response (fn [ctx]
                            (dcatch ctx
-                                   (d/let-flow [authenticated-data (util/authenticated-data ctx)
+                                   (d/let-flow [authenticated-data (util/authenticated-data* ctx)
                                                 user-id (:user-id authenticated-data)
                                                 new-email (:new-email authenticated-data)
                                                 updated? (p/update-by-id! user-store user-id {:emailAddress new-email
@@ -107,8 +107,7 @@
                                    (if (valid-pw? authenticator user-store crypto
                                                   (get-in ctx [:parameters :query :access_token])
                                                   (get-in ctx [:parameters :body :password]))
-                                     (d/let-flow [authenticated-data (util/authenticated-data ctx)
-                                                  user-id (:user-id authenticated-data)
+                                     (d/let-flow [user-id (util/authenticated-user-id ctx)
                                                   new-password (get-in ctx [:parameters :body :new_password])
                                                   updated? (p/update-by-id! user-store user-id {:password (p/sign crypto new-password)})]
                                                  (if (pos? (.getN updated?))
@@ -157,7 +156,7 @@
                                    (let [token (get-in ctx [:parameters :query :access_token])]
                                      (do
                                        (d/let-flow [new-password (get-in ctx [:parameters :body :new_password])
-                                                    auth-data (util/authenticated-data ctx)
+                                                    auth-data (util/authenticated-data* ctx)
                                                     user-id (:user-id auth-data)
                                                     updated? (p/update-by-id! user-store user-id {:password (p/sign crypto new-password)})]
                                                    (if (pos? (.getN updated?))
@@ -219,8 +218,7 @@
        {:put {:parameters {:query {:access_token String}}
               :response (fn [ctx]
                            (dcatch ctx
-                                   (d/let-flow [authenticated-data (util/authenticated-data ctx)
-                                                user-id (:user-id authenticated-data)
+                                   (d/let-flow [user-id (util/authenticated-user-id ctx)
                                                 updated? (p/update-by-id! user-store user-id {:verifiedEmail true})]
                                                (if (pos? (.getN updated?))
                                                  (let [res (p/invalidate! authorizer (get-in ctx [:parameters :query :access_token]))]

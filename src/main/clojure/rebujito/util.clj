@@ -54,7 +54,7 @@
               :message ~message
               :code ~code}
          ctx# (or (:ctx local-context#) {})
-         email#  (:emailAddress (rebujito.api.util/authenticated-data ctx#))]
+         email#  (:emailAddress (rebujito.api.util/authenticated-data* ctx#))]
      (if *send-bugsnag*
        (do
          (clj-bugsnag.core/notify

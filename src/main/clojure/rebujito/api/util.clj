@@ -138,11 +138,11 @@
                           {:authorization {:scheme :rebujito
                                            :methods  authorization}})})
 
-(defn authenticated-data [ctx]
+(defn authenticated-data* [ctx]
   (get-in ctx [:authentication "default"]))
 
 (defn authenticated-user-id [ctx]
-  (:user-id (authenticated-data ctx)))
+  (:user-id (authenticated-data* ctx)))
 
 (defn generate-user-data [user-data sub-market]
   (let [user-data-selected (select-keys user-data [:firstName
@@ -163,7 +163,7 @@
 
 (defn user-profile-data [ctx user-store submarket]
   (let [auth-user-id (authenticated-user-id ctx)
-        _     (log/info "auth-user-id"  auth-user-id (authenticated-data ctx))
+        _     (log/info "auth-user-id"  auth-user-id (authenticated-data* ctx))
         mongo-user (p/find user-store auth-user-id)]
     (log/info "mongo-user" mongo-user)
     (generate-user-data mongo-user submarket)))

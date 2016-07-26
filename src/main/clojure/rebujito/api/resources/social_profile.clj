@@ -1,7 +1,7 @@
 (ns rebujito.api.resources.social-profile
   (:require
    [rebujito.protocols :as p]
-   [rebujito.api.util :refer :all]
+   [rebujito.api.util :as util]
    [cheshire.core :as json]
    [manifold.deferred :as d]
    [schema.core :as s]
@@ -15,9 +15,9 @@
     {:put {:parameters {:query {:access_token String}
                         :body (-> schema :put)}
            :response (fn [ctx]
-                        (-> (d/let-flow [user-id (:user-id (authenticated-data ctx))
+                        (-> (d/let-flow [user-id (util/authenticated-user-id ctx)
                                          image-url (-> ctx :parameters :body :accountImageUrl)
                                          _ (p/update-by-id! user-store user-id {"socialProfile.account.accountImageUrl" image-url})]
-                              (>200 ctx nil))))}}}
+                              (util/>200 ctx nil))))}}}
 
-   (merge (common-resource :me/social-profile))))
+   (merge (util/common-resource :me/social-profile))))
