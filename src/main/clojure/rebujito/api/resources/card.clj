@@ -368,7 +368,7 @@
 
                                  ;TK https://github.com/naartjie/rebujito/issues/103
                                  (d/future
-                                   (Thread/sleep 200)
+                                   (Thread/sleep 500)
                                    (http/get (format (:auto-reload-url app-config) card-number))
                                    )
 

@@ -4,9 +4,9 @@
               :client-url "http://starbucksweb.dsg.co.za/#"
               :customer-admin "agent1@starbucks.co.za"
               ;TK: https://github.com/naartjie/rebujito/issues/103
-              ;:auto-reload-url #profile {:prod "https://starbucks.swarmapps.co.za/starbucks/api/v1/check-reload/%s"
-              ;                           :test "http://localhost:3001/starbucks/api/v1/check-reload/%s"
-              ;                           :dev "http://localhost:3000/starbucks/api/v1/check-reload/%s"}
+              :auto-reload-url #profile {:prod "https://starbucks.swarmapps.co.za/starbucks/api/v1/check-reload/%s"
+                                         :test "http://localhost:3001/starbucks/api/v1/check-reload/%s"
+                                         :dev "http://localhost:3000/starbucks/api/v1/check-reload/%s"}
               }
 
  :cookie-name "rebujito-cookie"
