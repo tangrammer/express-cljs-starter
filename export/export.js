@@ -87,9 +87,7 @@ function getAccounts() {
   return micros.get('Customer', {condition: '', values: [], resultCols: ['primaryposref']})
 }
 
-function microsToMongoId(id) {
-  return (_.repeat('0', 24) + Number(id).toString(16)).slice(-24)
-}
+const microsToMongoId = id => `${_.repeat('0', 24)}${Number(id).toString(16)}`.slice(-24)
 
 function exportCustomerProfile(custInMicros) {
 
