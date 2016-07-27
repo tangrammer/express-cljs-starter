@@ -124,7 +124,8 @@ function exportCustomerProfile(custInMicros) {
                                         created,
                                         birth_month,
                                         birth_day,
-                                        receive_starbucks_email_communications
+                                        receive_starbucks_email_communications,
+                                        mobile
                                       )
                               values(@id,
                                      @primaryposref,
@@ -134,7 +135,8 @@ function exportCustomerProfile(custInMicros) {
                                      @created,
                                      @birth_month,
                                      @birth_day,
-                                     @receive_starbucks_email_communications
+                                     @receive_starbucks_email_communications,
+                                     @mobile
                                    )`, err => {
 
         if (err) throw err
@@ -149,6 +151,7 @@ function exportCustomerProfile(custInMicros) {
           'birth_month': custInMongo ? custInMongo.birthMonth : null,
           'birth_day': custInMongo ? custInMongo.birthDay : null,
           'receive_starbucks_email_communications': custInMongo ? custInMongo.receiveStarbucksEmailCommunications : null,
+          'mobile': custInMongo ? custInMongo.mobileNumber : null,
         }, (err, recordsets, affected) => {
 
           if (err) return reject(err)
