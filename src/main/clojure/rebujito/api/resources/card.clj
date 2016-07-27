@@ -225,7 +225,7 @@
      :points [{
        :pointType "Default"
        :promotionName "Default"
-       :pointsEarned (-> amount (/ rand-per-stars) double Math/round)
+       :pointsEarned (-> amount (/ rand-per-stars) long)
        :localAmount 0.0,
        :localCurrency 0.0,
      }]
