@@ -270,9 +270,11 @@ function exportBalances(customer, balances) {
   table.columns.add('customer_id', sql.Int, {nullable: false})
   table.columns.add('program_id', sql.Int, {nullable: false})
   table.columns.add('balance', sql.Decimal(19, 2), {nullable: false})
+  table.columns.add('tier', sql.VarChar(128), {nullable:true})
 
   balances.programs.forEach((program) => {
-    table.rows.add(customer.id, program.id, program.balance)
+    const tierName = program.programTierId ? balances.tier.name : null
+    table.rows.add(customer.id, program.id, program.balance, tierName)
   })
 
   var request = new sql.Request()
