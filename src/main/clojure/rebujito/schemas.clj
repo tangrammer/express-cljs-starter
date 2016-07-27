@@ -62,6 +62,7 @@
 (def MongoCreateAccountAddress
   {:firstName String
    :lastName String
+   (s/optional-key :phoneNumber) String
    :addressLine1 String
    (s/optional-key :addressLine2) String
    :city String

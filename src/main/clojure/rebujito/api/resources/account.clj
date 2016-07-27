@@ -1,5 +1,6 @@
 (ns rebujito.api.resources.account
   (:require
+    [clojure.set :refer [rename-keys]]
     [manifold.deferred :as d]
     [taoensso.timbre :as log]
     [rebujito.api.util :as util]
@@ -87,7 +88,15 @@
         (let [user (p/get-and-insert! user-store mongo-account-data)
               address-id (p/insert-address user-store mongo-id
                                            (-> data-account
-                                               (select-keys [:firstName :lastName :addressLine1 :addressLine2 :city :postalCode :country])
+                                               (select-keys [:firstName
+                                                             :lastName
+                                                             :mobileNumber
+                                                             :addressLine1
+                                                             :addressLine2
+                                                             :city
+                                                             :postalCode
+                                                             :country])
+                                               (rename-keys {:mobileNumber :phoneNumber})
                                                (assoc :type "Registration")))
               ]
           user
