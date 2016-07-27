@@ -113,6 +113,7 @@ function exportCustomerProfile(custInMicros) {
       ps.input('birth_month', sql.Int)
       ps.input('birth_day', sql.Int)
       ps.input('receive_starbucks_email_communications', sql.Bit)
+      ps.input('mobile', sql.VarChar(128))
 
       ps.prepare(`insert into customers(id,
                                         primaryposref,
