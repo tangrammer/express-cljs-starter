@@ -11,7 +11,7 @@
   "dependencies": {
     "bluebird": "3.4.0",
     "lodash": "4.13.1",
-    "micros": "git+ssh://git@github.com:naartjie/micros-api.git#14f5614",
+    "micros": "git+ssh://git@github.com:naartjie/micros-api.git",
     "moment": "2.13.0",
     "mongojs": "2.4.0",
     "mssql": "3.3.0"
