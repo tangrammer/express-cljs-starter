@@ -15,7 +15,8 @@ RUN \
   if ! [[ -z "`git status -s`" ]]; then VERSION="!! DIRTY ${VERSION}"; fi && \
   sed -i "s/@@__VERSION__@@/${VERSION}/g;s/@@__BUILT__@@/${DATE}/g" ./src/main/resources/VERSION.edn
 
-RUN lein do clean, uberjar
+# RUN lein do clean, uberjar
 
 EXPOSE 3000
-CMD ["java", "-cp", "/src/src/main/resources:/src/target/rebujito.jar", "ring.rebujito"]
+# CMD ["java", "-cp", "/src/src/main/resources:/src/target/rebujito.jar", "ring.rebujito"]
+CMD ["lein", "with-profiles", "production", "run"]
