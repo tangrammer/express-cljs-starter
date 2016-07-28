@@ -195,7 +195,7 @@
           try-context '[oid autoreload-profile-card]]
       (util/dtry
        (do
-         (let [uuid (str (UUID/randomUUID))
+         (d/let-flow [uuid (str (UUID/randomUUID))
                autoreload-profile-card (assoc autoreload-profile-card
                                               :autoReloadId  uuid
                                               :active true)
@@ -205,9 +205,11 @@
 
                others (filter #(not= (:cardId %) (:cardId autoreload-profile-card)) cards)
 
-               card  (-> (or (first (filter #(= (:cardId %) (:cardId autoreload-profile-card)) cards))
-                             (util/error* 500 [500 ::card-not-found]))
-                         (assoc :autoReloadProfile autoreload-profile-card))
+               card  (or (first (filter #(= (:cardId %) (:cardId autoreload-profile-card)) cards))
+                         (util/error* 500 [500 ::card-not-found]))
+
+               card (assoc card :autoReloadProfile autoreload-profile-card)
+
 
                new-cards (conj others card)
                ]
