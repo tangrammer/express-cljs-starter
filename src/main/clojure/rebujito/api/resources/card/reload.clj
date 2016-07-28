@@ -65,6 +65,7 @@
                                                                                                             (:paymentMethods user)))
 
                                                                          reload-amount (long (:amount autoreload-profile))
+                                                                         reload-amount (Math/max reload-amount (- autoreload-threshold-amount current-balance))
 
                                                                          payment-data (-> (p/execute-payment
                                                                                            payment-gateway
